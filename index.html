@@ -6,38 +6,30 @@
     <title>Scratch32 - Sube y Juega</title>
     <style>
         :root {
-            --bg: #0f0f13;
-            --panel: #1a1a24;
-            --primary: #00ff6b; 
-            --primary-hover: #33ff88;
-            --danger: #ff4444;
-            --danger-hover: #ff6666;
-            --text: #ffffff;
-            --text-muted: #8e8e9f;
-            --radius: 12px;
+            --bg: #0f0f13; --panel: #1a1a24; --primary: #00ff6b; --primary-hover: #33ff88;
+            --danger: #ff4444; --danger-hover: #ff6666; --warning: #ffaa00; --text: #ffffff;
+            --text-muted: #8e8e9f; --radius: 12px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
         body { background-color: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-        header {
-            background-color: var(--panel); padding: 1rem 2rem; display: flex; justify-content: space-between;
-            align-items: center; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 15px rgba(0, 255, 107, 0.1);
-        }
-
+        header { background-color: var(--panel); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 15px rgba(0, 255, 107, 0.1); position: sticky; top: 0; z-index: 100; }
         .header-logo { cursor: pointer; display: flex; align-items: center; transition: transform 0.2s; }
         .header-logo:hover { transform: scale(1.05); }
-
         .header-actions { display: flex; align-items: center; gap: 15px; }
 
         .auth-bar { display: flex; gap: 10px; align-items: center; }
         .user-pfp-small { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); cursor: pointer; }
 
         .warp-badge { background-color: #333; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; color: #fff; }
-
         .ss-icon { background-color: #2a2a35; color: var(--text-muted); padding: 5px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; border: 1px solid #444; transition: all 0.2s; }
         .ss-icon:hover { color: var(--primary); border-color: var(--primary); }
+
+        /* Notificaciones y Chat Iconos */
+        .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; position: relative; color: var(--text); transition: transform 0.2s; }
+        .icon-btn:hover { transform: scale(1.1); color: var(--primary); }
+        .badge-count { position: absolute; top: -5px; right: -8px; background: var(--danger); color: white; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; display: none; }
 
         main { flex: 1; padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; }
 
@@ -57,10 +49,14 @@
         button:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
         button:active:not(:disabled) { transform: translateY(0); }
         button:disabled { background-color: #555; cursor: not-allowed; color: #888; }
-        button.btn-danger { background-color: var(--danger); color: white; width: 100%; margin-top: 10px; }
-        button.btn-danger:hover:not(:disabled) { background-color: var(--danger-hover); }
-        button.btn-secondary { background-color: #333; color: white; }
-        button.btn-secondary:hover:not(:disabled) { background-color: #444; }
+        
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover:not(:disabled) { background-color: var(--danger-hover); }
+        .btn-warning { background-color: var(--warning); color: black; }
+        .btn-warning:hover:not(:disabled) { background-color: #ffcc00; }
+        .btn-secondary { background-color: #333; color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #444; }
+        .btn-small { padding: 5px 10px; font-size: 0.8rem; }
 
         .search-bar { width: 100%; padding: 1rem; margin-bottom: 1.5rem; background-color: var(--panel); border: 1px solid var(--primary); border-radius: var(--radius); color: var(--text); font-size: 1.1rem; }
 
@@ -73,10 +69,8 @@
 
         .project-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; }
         .project-author { color: var(--primary); font-size: 0.9rem; margin-bottom: 1rem; cursor: pointer; text-decoration: underline; }
-        
         .project-stats { display: flex; gap: 10px; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
         .stat-item { display: flex; align-items: center; gap: 4px; }
-
         .play-btn { margin-top: auto; width: 100%; text-align: center; }
 
         #loading-msg { color: var(--primary); margin-top: 1rem; padding: 10px; background: rgba(0, 255, 107, 0.1); border-radius: 8px; font-family: monospace; }
@@ -86,57 +80,53 @@
         .view.active { display: flex; }
 
         /* Iframe Juego */
+        #game-header { background: var(--panel); padding: 1rem; border-radius: var(--radius); margin-bottom: 1rem; border: 1px solid #333; display: flex; justify-content: space-between; align-items: center;}
         #game-iframe { width: 100%; height: 75vh; border: 2px solid var(--primary); border-radius: var(--radius); background-color: #000; box-shadow: 0 4px 20px rgba(0, 255, 107, 0.1); margin-bottom: 1rem; }
 
         /* Comentarios */
         .comments-section { background-color: var(--panel); border-radius: var(--radius); padding: 2rem; border: 1px solid #333; }
-        .comment-form { background-color: var(--bg); padding: 1rem; border-radius: 8px; border: 1px solid #222; }
         .comment-list { margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; }
         .comment-item { display: flex; gap: 1rem; background-color: var(--bg); padding: 1rem; border-radius: 8px; border: 1px solid #333; flex-direction: column; position: relative; }
         .comment-header-row { display: flex; gap: 1rem; z-index: 2; }
         .comment-pfp { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); flex-shrink: 0; background-color: #000; }
         .comment-content { flex: 1; }
         .comment-name { font-weight: bold; color: var(--primary); cursor: pointer; }
-        .comment-date { font-size: 0.8rem; color: var(--text-muted); margin-left: 10px; }
         .comment-text { color: #ddd; margin-top: 5px; word-break: break-word; }
         .reply-btn { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; padding: 0; margin-top: 5px; cursor: pointer; }
-        .reply-btn:hover { color: var(--primary); background: none; transform: none; }
-        
+        .reply-btn:hover { color: var(--primary); }
         .replies-list { margin-left: 3rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem; border-left: 2px solid #333; padding-left: 1rem; z-index: 2; }
         .reply-item { display: flex; gap: 0.5rem; padding: 5px; border-radius: 6px; }
         .reply-pfp { width: 25px; height: 25px; border-radius: 50%; border: 1px solid var(--primary); object-fit: cover; }
 
-        /* EFECTOS VISUALES ADMIN INCREÍBLES */
-        .admin-comment {
-            border: 2px solid #ff00ff !important;
-            background: linear-gradient(135deg, #1e1233 0%, #12221a 100%) !important;
-            box-shadow: 0 0 20px rgba(0, 255, 107, 0.4), inset 0 0 15px rgba(255, 0, 255, 0.2);
-            overflow: hidden;
-            position: relative;
-        }
-        .admin-comment::before, .admin-profile-fx::before {
-            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(0,255,107,0.15) 0%, transparent 50%);
-            animation: rotateAura 8s linear infinite; pointer-events: none; z-index: 1;
-        }
-        .admin-profile-fx {
-            position: relative; overflow: hidden; border-color: #ff00ff !important;
-            box-shadow: 0 0 30px rgba(255, 0, 255, 0.6), 0 0 15px rgba(0, 255, 107, 0.6) !important;
-        }
-        .admin-badge-sparkle {
-            background: linear-gradient(45deg, #ff00ff, #00ff6b, #00ffff, #ff00ff);
-            background-size: 300% 300%;
-            animation: moveGradient 3s ease infinite, pulseGlow 1s infinite alternate;
-            color: #000; font-weight: 900; padding: 2px 8px; border-radius: 4px;
-            font-size: 0.75rem; letter-spacing: 1px; display: inline-block; margin-left: 8px;
-            vertical-align: middle; box-shadow: 0 0 8px #00ff6b;
-        }
+        /* CHAT PRIVADO */
+        .chat-container { display: flex; height: 70vh; background: var(--panel); border-radius: var(--radius); border: 1px solid #333; overflow: hidden; }
+        .chat-sidebar { width: 250px; border-right: 1px solid #333; background: var(--bg); overflow-y: auto; }
+        .contact-item { padding: 15px; border-bottom: 1px solid #222; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.2s; }
+        .contact-item:hover, .contact-item.active { background: #1a1a24; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg-bubble { max-width: 70%; padding: 10px 15px; border-radius: 15px; word-wrap: break-word; }
+        .msg-mine { align-self: flex-end; background: var(--primary); color: #000; border-bottom-right-radius: 0; }
+        .msg-theirs { align-self: flex-start; background: #333; border-bottom-left-radius: 0; }
+        .chat-input { padding: 1rem; border-top: 1px solid #333; display: flex; gap: 10px; background: var(--bg); }
+
+        /* Notificaciones Modal */
+        #notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--panel); border: 1px solid var(--primary); border-radius: var(--radius); box-shadow: 0 5px 20px rgba(0,0,0,0.8); z-index: 200; display: none; max-height: 400px; overflow-y: auto; }
+        .notif-item { padding: 15px; border-bottom: 1px solid #333; font-size: 0.9rem; cursor: pointer; }
+        .notif-item:hover { background: #222; }
+
+        /* Efectos Visuales Admin */
+        .admin-comment { border: 2px solid #ff00ff !important; background: linear-gradient(135deg, #1e1233 0%, #12221a 100%) !important; box-shadow: 0 0 20px rgba(0, 255, 107, 0.4), inset 0 0 15px rgba(255, 0, 255, 0.2); overflow: hidden; position: relative; }
+        .admin-comment::before, .admin-profile-fx::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(0,255,107,0.15) 0%, transparent 50%); animation: rotateAura 8s linear infinite; pointer-events: none; z-index: 1; }
+        .admin-profile-fx { position: relative; overflow: hidden; border-color: #ff00ff !important; box-shadow: 0 0 30px rgba(255, 0, 255, 0.6), 0 0 15px rgba(0, 255, 107, 0.6) !important; }
+        .admin-badge-sparkle { background: linear-gradient(45deg, #ff00ff, #00ff6b, #00ffff, #ff00ff); background-size: 300% 300%; animation: moveGradient 3s ease infinite, pulseGlow 1s infinite alternate; color: #000; font-weight: 900; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; letter-spacing: 1px; display: inline-block; margin-left: 8px; vertical-align: middle; box-shadow: 0 0 8px #00ff6b; }
+        
         @keyframes rotateAura { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes moveGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         @keyframes pulseGlow { 0% { transform: scale(1); box-shadow: 0 0 5px #00ff6b, 0 0 10px #ff00ff; } 100% { transform: scale(1.03); box-shadow: 0 0 12px #00ff6b, 0 0 20px #ff00ff; } }
 
-        /* Modales */
-        #auth-modal, #settings-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
+        /* Modales Generales */
+        .overlay-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
         .auth-box { background: var(--panel); padding: 2rem; border-radius: var(--radius); width: 100%; max-width: 450px; border: 1px solid var(--primary); position: relative; margin: auto; }
         .close-auth { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem; color: var(--text-muted); }
         .auth-tabs { display: flex; margin-bottom: 1rem; border-bottom: 1px solid #333; }
@@ -155,26 +145,39 @@
         <div class="header-actions">
             <div class="warp-badge">⚡ Powered by Warp & YYF</div>
             <div class="ss-icon" onclick="promptAdmin()" title="Activar Modo Admin">SS</div>
-            <div class="auth-bar" id="auth-bar">
-                </div>
+            
+            <button class="icon-btn" onclick="toggleNotifications()" id="btn-notif" style="display:none;" title="Notificaciones">
+                🔔<span class="badge-count" id="notif-badge">0</span>
+            </button>
+            <button class="icon-btn" onclick="openChat()" id="btn-chat" style="display:none;" title="Mensajes">
+                💬<span class="badge-count" id="chat-badge">0</span>
+            </button>
+
+            <div class="auth-bar" id="auth-bar"></div>
+        </div>
+
+        <div id="notif-modal">
+            <div style="padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between;">
+                <h4 style="color:var(--primary);">Notificaciones</h4>
+                <button class="btn-secondary btn-small" onclick="clearNotifications()">Limpiar</button>
+            </div>
+            <div id="notif-list"></div>
         </div>
     </header>
 
-    <div id="auth-modal">
+    <div id="auth-modal" class="overlay-modal">
         <div class="auth-box">
             <span class="close-auth" onclick="closeAuthModal()">&times;</span>
             <div class="auth-tabs">
                 <div class="auth-tab active" onclick="switchAuthTab('login')">Iniciar Sesión</div>
                 <div class="auth-tab" onclick="switchAuthTab('register')">Registrarse</div>
             </div>
-            
             <div id="login-form" class="auth-form active">
                 <input type="text" id="log-user" placeholder="Usuario">
                 <input type="password" id="log-pass" placeholder="Contraseña">
                 <button onclick="login()">Entrar</button>
                 <p id="log-status" style="color: var(--danger); font-size: 0.9rem;"></p>
             </div>
-
             <div id="register-form" class="auth-form">
                 <input type="text" id="reg-user" placeholder="Usuario">
                 <input type="password" id="reg-pass" placeholder="Contraseña">
@@ -186,7 +189,7 @@
         </div>
     </div>
 
-    <div id="settings-modal">
+    <div id="settings-modal" class="overlay-modal">
         <div class="auth-box" style="border-color: var(--primary);">
             <span class="close-auth" onclick="closeSettingsModal()">&times;</span>
             <h3 style="color: var(--primary); margin-bottom: 1rem; text-align: center;">⚙️ Ajustes de Cuenta</h3>
@@ -201,14 +204,14 @@
                 <input type="file" id="set-pfp" accept="image/*">
                 <button id="set-btn" onclick="updateAccount()">Guardar Cambios</button>
                 <p id="set-status" style="font-size: 0.9rem; text-align: center; color: var(--primary);"></p>
-                
                 <button class="btn-danger" style="margin-top: 5px;" onclick="deleteMyAccount()">🗑️ Eliminar Mi Cuenta</button>
 
                 <div id="admin-settings-section" style="display:none; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
                     <h4 style="color: gold; text-align: center; margin-bottom: 10px;">👑 Panel de Administrador</h4>
-                    <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Comando Secreto (Por si hay hackers)</label>
+                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewAdminSecret()">👁️ Ver Comando Secreto Actual</button>
+                    <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Comando Secreto</label>
                     <input type="text" id="set-admin-pass" placeholder="Nuevo comando (Ej: /seguro123)">
-                    <button onclick="updateAdminSecret()" class="btn-secondary" style="margin-top:5px; width:100%;">Actualizar Comando</button>
+                    <button onclick="updateAdminSecret()" class="btn-warning" style="margin-top:5px; width:100%;">Actualizar Comando</button>
                 </div>
             </div>
         </div>
@@ -219,18 +222,9 @@
             <div class="section-box" id="publish-box" style="display: none;">
                 <h2>Publicar un Proyecto</h2>
                 <div class="form-group">
-                    <div class="input-box">
-                        <label>Nombre del Juego</label>
-                        <input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" autocomplete="off">
-                    </div>
-                    <div class="input-box">
-                        <label>Archivo (.sb3, .pmp)</label>
-                        <input type="file" id="proj-file" accept=".sb3,.pmp">
-                    </div>
-                    <div class="input-box">
-                        <label>Imagen de Portada (Opcional)</label>
-                        <input type="file" id="proj-image" accept="image/*">
-                    </div>
+                    <div class="input-box"><label>Nombre del Juego</label><input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" autocomplete="off"></div>
+                    <div class="input-box"><label>Archivo (.sb3, .pmp)</label><input type="file" id="proj-file" accept=".sb3,.pmp"></div>
+                    <div class="input-box"><label>Imagen de Portada (Opcional)</label><input type="file" id="proj-image" accept="image/*"></div>
                 </div>
                 <button id="publish-btn" onclick="publishProject()" style="width: 100%;">Subir y Publicar</button>
                 <p id="publish-status" style="font-size: 0.9rem; margin-top: 10px;"></p>
@@ -242,8 +236,10 @@
             </div>
 
             <h2 style="margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">🌎 Galería Global</h2>
-            <input type="text" id="search-input" class="search-bar" placeholder="🔍 Buscar proyectos o autores..." onkeyup="filterGallery()">
+            <input type="text" id="search-input" class="search-bar" placeholder="🔍 Buscar proyectos o usuarios..." onkeyup="filterGallery()">
             
+            <div id="users-container" style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;"></div>
+
             <div id="loading-msg">Iniciando conexión con ikelene.dev...</div>
             <div class="gallery" id="gallery-container"></div>
         </div>
@@ -252,12 +248,17 @@
             <div class="section-box" style="display: flex; align-items: center; gap: 20px; position: relative;">
                 <img id="prof-pfp" src="" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover;">
                 <div style="flex: 1;">
-                    <h2 id="prof-name" style="border: none; margin: 0; font-size: 2.2rem; padding-bottom: 0;"></h2>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <h2 id="prof-name" style="border: none; margin: 0; font-size: 2.2rem; padding-bottom: 0;"></h2>
+                        <button id="btn-follow" class="btn-secondary btn-small" style="display:none;" onclick="toggleFollow()">Seguir</button>
+                    </div>
                     <p style="color: var(--primary); font-weight: bold; margin-top: 5px;" id="prof-role"></p>
-                    <p style="color: var(--text-muted); margin-top: 10px; max-width: 600px;" id="prof-bio"></p>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;" id="prof-stats-txt">0 Seguidores</p>
+                    <p style="color: #ddd; margin-top: 10px; max-width: 600px;" id="prof-bio"></p>
                     
-                    <div id="profile-admin-actions" style="display: none; margin-top: 10px;">
-                        <button class="btn-danger" style="width: auto; padding: 5px 10px; font-size: 0.8rem;" onclick="adminDeleteUser()">🗑️ Banear/Eliminar Cuenta de este Usuario</button>
+                    <div id="profile-admin-actions" style="display: none; margin-top: 10px; gap: 10px;">
+                        <button class="btn-warning btn-small" onclick="adminBanUser()">🔨 Banear Usuario</button>
+                        <button class="btn-danger btn-small" onclick="adminDeleteUser()">🗑️ Eliminar Base de Datos</button>
                     </div>
                 </div>
             </div>
@@ -266,31 +267,51 @@
         </div>
 
         <div id="game-view" class="view">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <button onclick="goHome()" class="btn-secondary">⬅️ Volver</button>
-                <div class="project-stats" id="game-stats-bar" style="margin: 0; font-size: 1rem;">
-                    </div>
+            <div id="game-header">
+                <div>
+                    <h2 id="view-game-title" style="margin:0; color:var(--primary);">Cargando...</h2>
+                    <p id="view-game-author" style="color:var(--text-muted); margin:0; cursor:pointer; text-decoration:underline;">...</p>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="project-stats" id="game-stats-bar" style="margin: 0; font-size: 1.1rem;"></div>
+                    <button class="btn-secondary" onclick="copyProjectLink()">🔗 Compartir</button>
+                    <button onclick="goHome()" class="btn-danger">❌ Cerrar</button>
+                </div>
             </div>
+            
             <iframe id="game-iframe" src="" allow="autoplay; camera; microphone; clipboard-read; clipboard-write"></iframe>
             
             <div class="comments-section">
                 <h3>Comentarios del Proyecto</h3>
                 <div id="comment-input-area" class="comment-form form-group" style="display: none;">
-                    <div class="input-box" style="flex: 1;">
-                        <input type="text" id="cmt-text" placeholder="Escribe tu comentario aquí..." autocomplete="off">
-                    </div>
+                    <div class="input-box" style="flex: 1;"><input type="text" id="cmt-text" placeholder="Escribe tu comentario aquí..." autocomplete="off"></div>
                     <button id="cmt-btn" onclick="postComment()" style="align-self: stretch;">Enviar</button>
                 </div>
                 <p id="cmt-login-req" style="color: var(--danger); font-size: 0.9rem;">Inicia sesión para comentar.</p>
-                <p id="cmt-status" style="color: var(--primary); font-size: 0.9rem; margin-top: 5px;"></p>
-                
                 <div id="comments-list" class="comment-list"></div>
+            </div>
+        </div>
+
+        <div id="chat-view" class="view">
+            <h2 style="margin-bottom: 1rem; color: var(--primary);">💬 Mensajes Directos</h2>
+            <div class="chat-container">
+                <div class="chat-sidebar" id="chat-sidebar">
+                    </div>
+                <div class="chat-main">
+                    <div id="chat-header" style="padding: 15px; background: #222; border-bottom: 1px solid #333; font-weight: bold;">Selecciona un chat</div>
+                    <div class="chat-messages" id="chat-messages">
+                        </div>
+                    <div class="chat-input" id="chat-input-area" style="display:none;">
+                        <input type="text" id="chat-input-text" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+                        <button onclick="sendChatMessage()">Enviar</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
     <script>
-        // CONFIGURACIÓN CORE
+        // --- CONSTANTES CORE ---
         const SERVER_URL = 'https://ikelene.dev/storage/';
         const API_KEY = '723cb2775320f1d255393b2d93d2f9262331d7e7'; 
         const YYF_URL = 'https://yyf.mubilop.com';
@@ -299,35 +320,92 @@
         const CMT_PREFIX = 'scratch32_cmts_';
         const USER_PREFIX = 'scratch32_usr_';
         const CONFIG_PREFIX = 'scratch32_cfg_';
+        const CHAT_PREFIX = 'scratch32_chat_';
         
-        // ESTADO GLOBAL
+        // --- ESTADO GLOBAL ---
         let currentUser = null; 
         let currentProjectKey = ''; 
         let allProjects = [];
-        let viewedUser = ''; // Usuario que estamos viendo en el perfil actualmente
+        let allUsernames = []; // NUEVO: Para guardar todos los usuarios registrados
+        let viewedUser = ''; 
+        let cloudLinkSocket = null;
+        let activeChatUser = '';
+        let unreadNotifs = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
-            checkSession();
-            loadAllProjects();
+            checkSession().then(() => {
+                loadAllProjects().then(() => {
+                    // Routing: Compartir URL directa
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if(urlParams.has('p')) {
+                        const targetProj = urlParams.get('p');
+                        if (allProjects.find(x => x._key === targetProj)) {
+                            playProject(targetProj);
+                        } else {
+                            alert("El proyecto compartido ya no existe.");
+                            // Limpiar URL
+                            window.history.replaceState({}, document.title, window.location.pathname);
+                        }
+                    }
+                });
+            });
         });
 
-        // --- SISTEMA DE USUARIOS ---
+        // --- FUNCIONES UTILIDAD DB ---
+        async function dbGet(key) {
+            try {
+                const res = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key }) });
+                const data = await res.json();
+                if (data.success && data.data) return JSON.parse(data.data.value);
+            } catch(e) {}
+            return null;
+        }
+        async function dbStore(key, valueObj) {
+            await fetch(SERVER_URL + 'store.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key, value: JSON.stringify(valueObj), mimeType: 'application/json' }) });
+        }
+        async function dbDelete(key) {
+            await fetch(SERVER_URL + 'delete.php', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key }) });
+        }
 
-        function checkSession() {
+        function escapeHTML(str) {
+            if (typeof str !== 'string') return '';
+            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+        }
+
+        // --- SISTEMA DE USUARIOS Y AUTO-LOGOUT ---
+        async function checkSession() {
             const saved = localStorage.getItem('scratch32_session');
             if (saved) {
-                currentUser = JSON.parse(saved);
-                document.getElementById('publish-box').style.display = 'block';
-                document.getElementById('comment-input-area').style.display = 'flex';
-                document.getElementById('cmt-login-req').style.display = 'none';
-                renderAuthBar();
+                const tempUser = JSON.parse(saved);
+                // VERIFICACIÓN DE SEGURIDAD CONTRA BAN/ELIMINACIÓN
+                const liveUser = await dbGet(USER_PREFIX + tempUser.username.toLowerCase());
+                if (!liveUser || liveUser.banned) {
+                    alert(liveUser ? "Tu cuenta ha sido baneada de la plataforma." : "Tu cuenta fue eliminada del sistema.");
+                    localStorage.removeItem('scratch32_session');
+                    currentUser = null;
+                } else {
+                    currentUser = liveUser; // Actualizamos datos frescos
+                    localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
+                    
+                    document.getElementById('publish-box').style.display = 'block';
+                    document.getElementById('comment-input-area').style.display = 'flex';
+                    document.getElementById('cmt-login-req').style.display = 'none';
+                    document.getElementById('btn-notif').style.display = 'inline-block';
+                    document.getElementById('btn-chat').style.display = 'inline-block';
+                    
+                    initCloudLink(); // Iniciar WebSockets para chat real-time
+                    updateNotifBadge();
+                }
             } else {
                 currentUser = null;
                 document.getElementById('publish-box').style.display = 'none';
                 document.getElementById('comment-input-area').style.display = 'none';
                 document.getElementById('cmt-login-req').style.display = 'block';
-                renderAuthBar();
+                document.getElementById('btn-notif').style.display = 'none';
+                document.getElementById('btn-chat').style.display = 'none';
+                if(cloudLinkSocket) cloudLinkSocket.close();
             }
+            renderAuthBar();
         }
 
         function renderAuthBar() {
@@ -337,11 +415,11 @@
                 bar.innerHTML = `
                     <span style="font-size: 0.9rem;">Hola, <b style="color: var(--primary);">${currentUser.username}</b></span>
                     <img src="${currentUser.pfp || fallbackPfp}" class="user-pfp-small" onclick="viewProfile('${currentUser.username}')" title="Mi Perfil" onerror="this.src='${fallbackPfp}'">
-                    <button class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="openSettingsModal()">⚙️ Cuenta</button>
-                    <button class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="logout()">Salir</button>
+                    <button class="btn-secondary btn-small" onclick="openSettingsModal()">⚙️</button>
+                    <button class="btn-danger btn-small" onclick="logout()">Salir</button>
                 `;
             } else {
-                bar.innerHTML = `<button onclick="openAuthModal()">Iniciar Sesión / Registro</button>`;
+                bar.innerHTML = `<button onclick="openAuthModal()">Ingresar</button>`;
             }
         }
 
@@ -355,25 +433,15 @@
             document.getElementById('set-pass').value = currentUser.password || '';
             document.getElementById('set-bio').value = currentUser.bio || '';
             document.getElementById('set-status').textContent = '';
-
-            if (currentUser.role === 'admin') {
-                document.getElementById('admin-settings-section').style.display = 'block';
-            } else {
-                document.getElementById('admin-settings-section').style.display = 'none';
-            }
+            document.getElementById('admin-settings-section').style.display = currentUser.role === 'admin' ? 'block' : 'none';
         }
         function closeSettingsModal() { document.getElementById('settings-modal').style.display = 'none'; }
 
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-            if(tab === 'login') {
-                document.querySelectorAll('.auth-tab')[0].classList.add('active');
-                document.getElementById('login-form').classList.add('active');
-            } else {
-                document.querySelectorAll('.auth-tab')[1].classList.add('active');
-                document.getElementById('register-form').classList.add('active');
-            }
+            if(tab === 'login') { document.querySelectorAll('.auth-tab')[0].classList.add('active'); document.getElementById('login-form').classList.add('active'); } 
+            else { document.querySelectorAll('.auth-tab')[1].classList.add('active'); document.getElementById('register-form').classList.add('active'); }
         }
 
         async function register() {
@@ -384,38 +452,29 @@
             const btn = document.getElementById('reg-btn');
 
             if (!user || !pass) { status.textContent = "Falta usuario o contraseña"; return; }
-            if (user.includes(" ")) { status.textContent = "El usuario no puede tener espacios"; return; }
+            if (user.includes(" ") || user.includes(":")) { status.textContent = "Sin espacios ni caracteres raros"; return; }
 
             btn.disabled = true;
             try {
                 const userKey = USER_PREFIX + user.toLowerCase();
-                
-                const checkRes = await fetch(SERVER_URL + 'get.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: userKey })
-                });
-                const checkData = await checkRes.json();
-                if (checkData.success && checkData.data) throw new Error("El nombre de usuario ya existe");
+                const checkData = await dbGet(userKey);
+                if (checkData) throw new Error("El nombre de usuario ya existe");
 
                 status.textContent = "Subiendo imagen...";
                 let pfpUrl = 'https://via.placeholder.com/100/1a1a24/00ff6b?text=' + user[0].toUpperCase();
                 if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
 
                 status.textContent = "Creando cuenta...";
-                const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '' };
+                // Estructura nueva con followers y notificaciones
+                const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '', followers: [], following: [], notifications: [], banned: false };
 
-                await fetch(SERVER_URL + 'store.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: userKey, value: JSON.stringify(userData), mimeType: 'application/json' })
-                });
-
+                await dbStore(userKey, userData);
                 localStorage.setItem('scratch32_session', JSON.stringify(userData));
-                checkSession();
+                await checkSession();
                 closeAuthModal();
-                alert("¡Cuenta creada con éxito!");
-            } catch (e) {
-                status.style.color = 'var(--danger)'; status.textContent = e.message;
-            } finally { btn.disabled = false; }
+                alert("¡Bienvenido a Scratch32!");
+                loadAllProjects(); // Refrescar para tener el nuevo usuario en el buscador
+            } catch (e) { status.style.color = 'var(--danger)'; status.textContent = e.message; } finally { btn.disabled = false; }
         }
 
         async function login() {
@@ -428,17 +487,13 @@
 
             try {
                 const userKey = USER_PREFIX + user.toLowerCase();
-                const res = await fetch(SERVER_URL + 'get.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: userKey })
-                });
-                const data = await res.json();
+                const dbUser = await dbGet(userKey);
 
-                if (data.success && data.data && data.data.value) {
-                    const dbUser = JSON.parse(data.data.value);
+                if (dbUser) {
+                    if (dbUser.banned) throw new Error("Esta cuenta está BANEADA.");
                     if (dbUser.password === pass) {
                         localStorage.setItem('scratch32_session', JSON.stringify(dbUser));
-                        checkSession();
+                        await checkSession();
                         closeAuthModal();
                         status.textContent = "";
                         loadAllProjects();
@@ -447,7 +502,6 @@
             } catch (e) { status.textContent = e.message; }
         }
 
-        // --- ADMINISTRACIÓN DE CUENTA ---
         async function updateAccount() {
             const newUser = document.getElementById('set-user').value.trim();
             const newPass = document.getElementById('set-pass').value.trim();
@@ -456,717 +510,514 @@
             const status = document.getElementById('set-status');
             const btn = document.getElementById('set-btn');
 
-            if (!newUser || !newPass) { status.style.color = 'var(--danger)'; status.textContent = "El nombre y contraseña no pueden estar vacíos"; return; }
-            if (newUser.includes(" ")) { status.style.color = 'var(--danger)'; status.textContent = "El nombre no puede tener espacios"; return; }
+            if (!newUser || !newPass || newUser.includes(" ")) { status.style.color = 'var(--danger)'; status.textContent = "Datos inválidos"; return; }
 
             btn.disabled = true; status.style.color = 'var(--text)'; status.textContent = "Procesando...";
-
             try {
-                const oldUser = currentUser.username;
-                const oldKey = USER_PREFIX + oldUser.toLowerCase();
+                const oldKey = USER_PREFIX + currentUser.username.toLowerCase();
                 const newKey = USER_PREFIX + newUser.toLowerCase();
 
-                if (oldUser.toLowerCase() !== newUser.toLowerCase()) {
-                    const checkRes = await fetch(SERVER_URL + 'get.php', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ apiKey: API_KEY, key: newKey })
-                    });
-                    const checkData = await checkRes.json();
-                    if (checkData.success && checkData.data) throw new Error("El nuevo nombre ya está en uso");
+                if (oldKey !== newKey) {
+                    if (await dbGet(newKey)) throw new Error("Nombre ya en uso");
                 }
 
                 let pfpUrl = currentUser.pfp;
-                if (pfpFile) {
-                    status.textContent = "Subiendo nueva foto...";
-                    pfpUrl = await uploadFileToYYF(pfpFile);
-                }
+                if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
 
-                const updatedData = { username: newUser, password: newPass, pfp: pfpUrl, role: currentUser.role, bio: newBio };
+                currentUser.username = newUser; currentUser.password = newPass; currentUser.pfp = pfpUrl; currentUser.bio = newBio;
+                
+                await dbStore(newKey, currentUser);
+                if (oldKey !== newKey) await dbDelete(oldKey);
 
-                status.textContent = "Guardando cambios...";
-                await fetch(SERVER_URL + 'store.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: newKey, value: JSON.stringify(updatedData), mimeType: 'application/json' })
-                });
-
-                if (oldUser.toLowerCase() !== newUser.toLowerCase()) {
-                    await fetch(SERVER_URL + 'delete.php', {
-                        method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ apiKey: API_KEY, key: oldKey })
-                    });
-                }
-
-                localStorage.setItem('scratch32_session', JSON.stringify(updatedData));
-                checkSession();
-                closeSettingsModal();
-                alert("¡Cuenta actualizada correctamente!");
-                loadAllProjects(); // Refrescar nombres en galería
-            } catch(e) {
-                status.style.color = 'var(--danger)'; status.textContent = e.message;
-            } finally { btn.disabled = false; }
+                localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
+                await checkSession(); closeSettingsModal();
+                alert("Cuenta actualizada!"); loadAllProjects();
+            } catch(e) { status.style.color = 'var(--danger)'; status.textContent = e.message; } finally { btn.disabled = false; }
         }
 
         async function deleteMyAccount() {
-            if (!confirm("⚠️ ¿ESTÁS COMPLETAMENTE SEGURO? Esta acción borrará tu cuenta para siempre de la base de datos y no se puede deshacer.")) return;
-            
-            try {
-                const userKey = USER_PREFIX + currentUser.username.toLowerCase();
-                await fetch(SERVER_URL + 'delete.php', {
-                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: userKey })
-                });
-                alert("Tu cuenta ha sido eliminada. Hasta la próxima.");
-                logout();
-            } catch(e) { alert("Error al eliminar la cuenta: " + e.message); }
+            if (!confirm("⚠️ ¿BORRAR CUENTA PARA SIEMPRE?")) return;
+            try { await dbDelete(USER_PREFIX + currentUser.username.toLowerCase()); logout(); } catch(e) {}
         }
+        function logout() { localStorage.removeItem('scratch32_session'); checkSession(); goHome(); }
 
-        async function adminDeleteUser() {
-            if (!viewedUser) return;
-            if (!confirm(`⚠️ MODO DIOS: ¿Seguro que quieres borrar la cuenta de ${viewedUser} para siempre?`)) return;
-            
-            try {
-                const userKey = USER_PREFIX + viewedUser.toLowerCase();
-                await fetch(SERVER_URL + 'delete.php', {
-                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: userKey })
-                });
-                alert(`La cuenta de ${viewedUser} ha sido purgada de la existencia.`);
-                goHome();
-            } catch(e) { alert("Error: " + e.message); }
-        }
-
-        function logout() {
-            localStorage.removeItem('scratch32_session');
-            checkSession();
-            goHome();
-        }
-
-        // --- MODO ADMIN AVANZADO ---
-
+        // --- ADMIN SECRETS & BANS ---
         async function getAdminSecret() {
-            try {
-                const res = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: CONFIG_PREFIX + 'admin' }) });
-                const data = await res.json();
-                if (data.success && data.data && data.data.value) return JSON.parse(data.data.value).secret;
-            } catch(e) {}
-            return '/sus32'; // Por defecto
+            const data = await dbGet(CONFIG_PREFIX + 'admin');
+            return data ? data.secret : '/sus32';
         }
-
+        async function viewAdminSecret() { alert("El comando actual es: " + await getAdminSecret()); }
+        
         async function promptAdmin() {
-            if (!currentUser) { alert("Inicia sesión primero para volverte admin."); return; }
+            if (!currentUser) { alert("Inicia sesión."); return; }
             if (currentUser.role === 'admin') { alert("Ya eres admin."); return; }
             
             const currentSecret = await getAdminSecret();
-            const pwd = prompt("Ingresa el comando secreto:");
-            
-            if (pwd === currentSecret) {
+            if (prompt("Ingresa el comando:") === currentSecret) {
                 currentUser.role = 'admin';
-                localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
-                
-                const userKey = USER_PREFIX + currentUser.username.toLowerCase();
-                await fetch(SERVER_URL + 'store.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: userKey, value: JSON.stringify(currentUser), mimeType: 'application/json' })
-                });
-                
-                alert("Modo Admin ACTIVADO. Eres dios.");
-                closeSettingsModal();
-                loadAllProjects();
-            } else { alert("Comando incorrecto."); }
+                await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
+                alert("Modo Dios Activado."); checkSession(); loadAllProjects();
+            } else { alert("Nop."); }
+        }
+        async function updateAdminSecret() {
+            const n = document.getElementById('set-admin-pass').value.trim();
+            if (n) { await dbStore(CONFIG_PREFIX + 'admin', { secret: n }); alert("Cambiado a: " + n); document.getElementById('set-admin-pass').value=''; }
         }
 
-        async function updateAdminSecret() {
-            const newSecret = document.getElementById('set-admin-pass').value.trim();
-            if (!newSecret) return;
+        async function adminBanUser() {
+            if (!viewedUser || !confirm(`¿Banear a ${viewedUser}? No podrá entrar más.`)) return;
             try {
-                await fetch(SERVER_URL + 'store.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: CONFIG_PREFIX + 'admin', value: JSON.stringify({ secret: newSecret }), mimeType: 'application/json' })
-                });
-                alert(`¡Comando secreto actualizado a: ${newSecret}! No lo olvides.`);
-                document.getElementById('set-admin-pass').value = '';
-            } catch(e) { alert("Error al actualizar: " + e.message); }
+                const uKey = USER_PREFIX + viewedUser.toLowerCase();
+                const uData = await dbGet(uKey);
+                if(uData) { uData.banned = true; await dbStore(uKey, uData); alert("Baneado exitosamente."); goHome(); }
+            } catch(e){}
+        }
+        async function adminDeleteUser() {
+            if (!viewedUser || !confirm(`⚠️ ELIMINAR A ${viewedUser} DE LA DB?`)) return;
+            try { await dbDelete(USER_PREFIX + viewedUser.toLowerCase()); alert("Erradicado."); goHome(); loadAllProjects(); } catch(e){}
+        }
+
+        // --- SISTEMA DE SEGUIDORES Y NOTIFICACIONES ---
+        async function toggleFollow() {
+            if (!currentUser || !viewedUser || currentUser.username === viewedUser) return;
+            
+            const myKey = USER_PREFIX + currentUser.username.toLowerCase();
+            const targetKey = USER_PREFIX + viewedUser.toLowerCase();
+            
+            const targetData = await dbGet(targetKey);
+            if(!targetData) return;
+
+            // Arreglar objetos antiguos
+            currentUser.following = currentUser.following || [];
+            targetData.followers = targetData.followers || [];
+
+            const isFollowing = currentUser.following.includes(viewedUser);
+            
+            if (isFollowing) {
+                currentUser.following = currentUser.following.filter(x => x !== viewedUser);
+                targetData.followers = targetData.followers.filter(x => x !== currentUser.username);
+            } else {
+                currentUser.following.push(viewedUser);
+                targetData.followers.push(currentUser.username);
+                // Enviar notificación al target
+                pushNotification(targetData, `👤 ${currentUser.username} ha comenzado a seguirte.`);
+            }
+
+            await dbStore(myKey, currentUser);
+            await dbStore(targetKey, targetData);
+            
+            localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
+            
+            // Refrescar UI del perfil
+            document.getElementById('btn-follow').textContent = isFollowing ? 'Seguir' : 'Dejar de seguir';
+            document.getElementById('btn-follow').className = isFollowing ? 'btn-secondary btn-small' : 'btn-danger btn-small';
+            document.getElementById('prof-stats-txt').textContent = `${targetData.followers.length} Seguidores`;
+        }
+
+        async function pushNotification(targetUserObj, text) {
+            targetUserObj.notifications = targetUserObj.notifications || [];
+            targetUserObj.notifications.unshift({ text: text, date: Date.now(), read: false });
+            // Guardar solo las últimas 20 para no saturar DB
+            if(targetUserObj.notifications.length > 20) targetUserObj.notifications.pop();
+        }
+
+        function toggleNotifications() {
+            const modal = document.getElementById('notif-modal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+            if(modal.style.display === 'block') renderNotifications();
+        }
+
+        async function renderNotifications() {
+            // Recargar mis datos
+            const myData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
+            if(!myData) return;
+            currentUser = myData; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
+
+            const list = document.getElementById('notif-list');
+            list.innerHTML = '';
+            const notifs = currentUser.notifications || [];
+            
+            if(notifs.length === 0) list.innerHTML = '<p style="padding:10px; color:gray;">Nada nuevo por aquí.</p>';
+            
+            notifs.forEach(n => {
+                const d = new Date(n.date).toLocaleString();
+                list.innerHTML += `<div class="notif-item" style="${n.read ? 'opacity:0.6;' : 'font-weight:bold;'}">${n.text}<br><span style="font-size:0.7rem;color:gray;">${d}</span></div>`;
+                n.read = true;
+            });
+            
+            updateNotifBadge();
+            // Guardar como leídas
+            await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
+        }
+
+        function updateNotifBadge() {
+            if(!currentUser) return;
+            const notifs = currentUser.notifications || [];
+            const unread = notifs.filter(n => !n.read).length;
+            const badge = document.getElementById('notif-badge');
+            if(unread > 0) { badge.style.display = 'block'; badge.textContent = unread; } 
+            else { badge.style.display = 'none'; }
+        }
+
+        async function clearNotifications() {
+            if(!currentUser) return;
+            currentUser.notifications = [];
+            await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
+            renderNotifications();
         }
 
         // --- SUBIDA DE PROYECTOS ---
-
         async function uploadFileToYYF(file) {
             const formData = new FormData(); formData.append('file', file, file.name);
             const res = await fetch(`${YYF_URL}/api/upload`, { method: 'POST', body: formData });
-            if (!res.ok) throw new Error(`Error de YYF`);
-            const data = await res.json(); return YYF_URL + data.fileUrl;
+            if (!res.ok) throw new Error(`Error YYF`);
+            return YYF_URL + (await res.json()).fileUrl;
         }
 
         async function publishProject() {
             if (!currentUser) return;
-            const name = document.getElementById('proj-name').value.trim();
-            const fileInput = document.getElementById('proj-file');
-            const imageInput = document.getElementById('proj-image');
-            const statusText = document.getElementById('publish-status');
-            const btn = document.getElementById('publish-btn');
+            const name = document.getElementById('proj-name').value.trim(), fileIn = document.getElementById('proj-file'), imgIn = document.getElementById('proj-image'), sts = document.getElementById('publish-status'), btn = document.getElementById('publish-btn');
+            if(!name || fileIn.files.length === 0) { sts.style.color = '#ff4444'; sts.textContent = 'Falta info.'; return; }
 
-            if(!name || fileInput.files.length === 0) { statusText.style.color = '#ff4444'; statusText.textContent = 'Falta el nombre o el archivo.'; return; }
-
-            btn.disabled = true; statusText.style.color = 'var(--text)';
-            
+            btn.disabled = true; sts.style.color = 'var(--text)';
             try {
-                statusText.textContent = 'Paso 1/3: Subiendo a YYF...';
-                const projectUrl = await uploadFileToYYF(fileInput.files[0]);
+                sts.textContent = 'Subiendo juego...'; const url = await uploadFileToYYF(fileIn.files[0]);
+                let imgUrl = 'https://via.placeholder.com/400x200/1a1a24/00ff6b?text=Sin+Portada';
+                if (imgIn.files.length > 0) { sts.textContent = 'Subiendo portada...'; imgUrl = await uploadFileToYYF(imgIn.files[0]); }
 
-                let imageUrl = 'https://via.placeholder.com/400x200/1a1a24/00ff6b?text=Sin+Portada';
-                if (imageInput.files.length > 0) {
-                    statusText.textContent = 'Paso 2/3: Subiendo portada...';
-                    imageUrl = await uploadFileToYYF(imageInput.files[0]);
-                }
-
-                statusText.textContent = 'Paso 3/3: Guardando en DB...';
-                const projectData = {
-                    name: name,
-                    author: currentUser.username,
-                    url: projectUrl, 
-                    imageUrl: imageUrl,
-                    timestamp: Date.now(),
-                    views: 0,
-                    likes: [],
-                    dislikes: [],
-                    featured: false
-                };
-
-                const uniqueKey = PROJ_PREFIX + Date.now();
-                await fetch(SERVER_URL + 'store.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: uniqueKey, value: JSON.stringify(projectData), mimeType: 'application/json' })
-                });
-
-                statusText.style.color = '#00ff88'; statusText.textContent = '¡Publicado con éxito!';
-                document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; document.getElementById('proj-image').value = '';
+                sts.textContent = 'Guardando DB...';
+                const pData = { name: name, author: currentUser.username, url: url, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false };
+                await dbStore(PROJ_PREFIX + Date.now(), pData);
+                sts.style.color = '#00ff88'; sts.textContent = '¡Exito!'; document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = '';
                 loadAllProjects(); 
-            } catch (error) {
-                statusText.style.color = '#ff4444'; statusText.textContent = 'Error: ' + error.message;
-            } finally { btn.disabled = false; }
+            } catch (e) { sts.style.color = '#ff4444'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
-        // --- CARGA DE PROYECTOS Y RENDER ---
-
+        // --- CARGA GALERÍA Y NAVEGACIÓN ---
         async function loadAllProjects() {
-            const loading = document.getElementById('loading-msg');
-            loading.style.display = 'block'; loading.textContent = "Obteniendo datos...";
-            
+            const ld = document.getElementById('loading-msg'); ld.style.display = 'block'; ld.textContent = "Obteniendo datos...";
             try {
-                const resList = await fetch(SERVER_URL + 'listKeys.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY })
-                });
-                const listData = await resList.json();
-                if(!listData.success) throw new Error('Error de servidor');
-
-                const keys = listData.keys.filter(k => k.startsWith(PROJ_PREFIX)).reverse();
+                const res = await fetch(SERVER_URL + 'listKeys.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY }) });
+                const listData = await res.json();
                 
+                // Obtener Proyectos
+                const keys = listData.keys.filter(k => k.startsWith(PROJ_PREFIX)).reverse();
                 allProjects = [];
-                for (const key of keys) {
-                    try {
-                        const resGet = await fetch(SERVER_URL + 'get.php', {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ apiKey: API_KEY, key: key })
-                        });
-                        const getData = await resGet.json();
-                        if (getData.success && getData.data && getData.data.value) {
-                            const pData = JSON.parse(getData.data.value);
-                            pData._key = key; 
-                            allProjects.push(pData);
-                        }
-                    } catch (err) {}
+                for (const k of keys) {
+                    const d = await dbGet(k); if(d) { d._key = k; allProjects.push(d); }
                 }
 
-                loading.style.display = 'none';
-                renderGalleries();
-            } catch (error) {
-                loading.style.color = '#ff4444'; loading.textContent = `Error: ${error.message}`;
-            }
+                // Obtener Lista de Usuarios para el buscador
+                const userKeys = listData.keys.filter(k => k.startsWith(USER_PREFIX));
+                allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
+
+                ld.style.display = 'none'; filterGallery();
+            } catch (e) { ld.style.color = '#ff4444'; ld.textContent = e.message; }
         }
 
         function filterGallery() {
-            renderGalleries(document.getElementById('search-input').value.toLowerCase());
-        }
+            const f = document.getElementById('search-input').value.toLowerCase();
+            const gc = document.getElementById('gallery-container'), fc = document.getElementById('featured-container'), fs = document.getElementById('featured-section');
+            const uc = document.getElementById('users-container');
+            
+            gc.innerHTML = ''; fc.innerHTML = ''; uc.innerHTML = '';
+            let hf = false;
 
-        function renderGalleries(filter = '') {
-            const globalContainer = document.getElementById('gallery-container');
-            const featuredContainer = document.getElementById('featured-container');
-            const featuredSection = document.getElementById('featured-section');
-
-            globalContainer.innerHTML = '';
-            featuredContainer.innerHTML = '';
-
-            let hasFeatured = false;
-
-            allProjects.forEach(proj => {
-                // Aplicar filtro de búsqueda
-                const match = proj.name.toLowerCase().includes(filter) || proj.author.toLowerCase().includes(filter);
-                
-                if (match) {
-                    globalContainer.appendChild(createCardHTML(proj));
-                }
-
-                // Destacados (ignoran el filtro para no desaparecer, o puedes aplicarles el filtro)
-                if (proj.featured) {
-                    hasFeatured = true;
-                    if (match || filter === '') featuredContainer.appendChild(createCardHTML(proj));
-                }
+            // 1. Filtrar Proyectos
+            allProjects.forEach(p => {
+                const match = p.name.toLowerCase().includes(f) || p.author.toLowerCase().includes(f);
+                if (match) gc.appendChild(createCardHTML(p));
+                if (p.featured) { hf = true; if(match || f==='') fc.appendChild(createCardHTML(p)); }
             });
+            fs.style.display = hf ? 'block' : 'none';
 
-            featuredSection.style.display = hasFeatured ? 'block' : 'none';
-        }
+            // 2. Filtrar Usuarios (Si se está buscando algo)
+            if (f.trim() !== '') {
+                const matchedUsers = allUsernames.filter(u => u.toLowerCase().includes(f));
+                if (matchedUsers.length > 0) {
+                    const title = document.createElement('div');
+                    title.style.width = '100%'; title.style.color = 'var(--primary)'; title.style.fontSize = '0.9rem'; title.innerText = 'Usuarios encontrados:';
+                    uc.appendChild(title);
 
-        function createCardHTML(proj) {
-            const card = document.createElement('div');
-            card.className = 'project-card';
-            
-            const likesCount = proj.likes ? proj.likes.length : 0;
-            const viewsCount = proj.views || 0;
-            const badgeHtml = proj.featured ? `<div class="featured-badge">⭐ Destacado</div>` : '';
-
-            // COMPROBACIÓN DE PERMISOS CRUZADA PARA BORRAR O DESTACAR PROYECTOS
-            let actionsHtml = '';
-            if (currentUser) {
-                const isAdmin = currentUser.role === 'admin';
-                const isProjectCreator = proj.author === currentUser.username;
-
-                if (isAdmin) {
-                    const featText = proj.featured ? 'Quitar Destacado' : '⭐ Destacar';
-                    actionsHtml = `
-                        <button class="btn-secondary" style="margin-top: 5px;" onclick="toggleFeatured('${proj._key}')">${featText}</button>
-                        <button class="btn-danger" onclick="deleteProject('${proj._key}')">🗑️ Eliminar</button>
-                    `;
-                } else if (isProjectCreator) {
-                    // Si el usuario logueado es el dueño legítimo, le damos solo la papelera
-                    actionsHtml = `
-                        <button class="btn-danger" onclick="deleteProject('${proj._key}')">🗑️ Eliminar</button>
-                    `;
-                }
-            }
-
-            card.innerHTML = `
-                ${badgeHtml}
-                <img class="project-image" src="${escapeHTML(proj.imageUrl)}" loading="lazy">
-                <div class="project-title">${escapeHTML(proj.name)}</div>
-                <div class="project-author" onclick="viewProfile('${escapeHTML(proj.author)}')">Por: @${escapeHTML(proj.author)}</div>
-                
-                <div class="project-stats">
-                    <div class="stat-item">👁️ ${viewsCount}</div>
-                    <div class="stat-item">👍 ${likesCount}</div>
-                </div>
-
-                <button class="play-btn" onclick="playProject('${proj._key}')">⚡ Jugar</button>
-                ${actionsHtml}
-            `;
-            return card;
-        }
-
-        // --- ACCIONES DE PROYECTOS (Vistas, Likes, Admin, Creadores) ---
-
-        async function updateProjectDB(key, newObj) {
-            await fetch(SERVER_URL + 'store.php', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ apiKey: API_KEY, key: key, value: JSON.stringify(newObj), mimeType: 'application/json' })
-            });
-        }
-
-        async function deleteProject(key) {
-            const proj = allProjects.find(p => p._key === key);
-            if (!proj) return;
-
-            // Validar de nuevo en la función por seguridad extrema
-            const isAdmin = currentUser && currentUser.role === 'admin';
-            const isProjectCreator = currentUser && proj.author === currentUser.username;
-
-            if (!isAdmin && !isProjectCreator) {
-                alert("No tienes permisos para eliminar este proyecto.");
-                return;
-            }
-
-            if (!confirm(`¿Estás completamente seguro de eliminar "${proj.name}"? Esta acción borrará el juego y sus comentarios para siempre.`)) return;
-            
-            try {
-                // Borrar datos del proyecto
-                await fetch(SERVER_URL + 'delete.php', {
-                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: key })
-                });
-
-                // Borrar base de datos de comentarios asociada
-                const cmtKey = key.replace(PROJ_PREFIX, CMT_PREFIX);
-                fetch(SERVER_URL + 'delete.php', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
-                
-                // Si borramos el proyecto mientras lo teníamos abierto, volvemos al home
-                if (currentProjectKey === key) {
-                    goHome();
-                } else {
-                    loadAllProjects();
-                }
-            } catch(e) { alert("Error al eliminar: " + e.message); }
-        }
-
-        async function toggleFeatured(key) {
-            const proj = allProjects.find(p => p._key === key);
-            if(!proj) return;
-            proj.featured = !proj.featured;
-            await updateProjectDB(key, proj);
-            filterGallery(); // Renderizar manteniendo el filtro
-        }
-
-        async function toggleLike(type) {
-            if (!currentUser) { alert("Inicia sesión para votar"); return; }
-            const proj = allProjects.find(p => p._key === currentProjectKey);
-            if (!proj) return;
-
-            proj.likes = proj.likes || []; proj.dislikes = proj.dislikes || [];
-            const user = currentUser.username;
-
-            if (type === 'like') {
-                proj.dislikes = proj.dislikes.filter(u => u !== user);
-                if (proj.likes.includes(user)) proj.likes = proj.likes.filter(u => u !== user);
-                else proj.likes.push(user);
-            } else {
-                proj.likes = proj.likes.filter(u => u !== user);
-                if (proj.dislikes.includes(user)) proj.dislikes = proj.dislikes.filter(u => u !== user);
-                else proj.dislikes.push(user);
-            }
-
-            renderGameStats(proj); 
-            await updateProjectDB(currentProjectKey, proj);
-        }
-
-        function renderGameStats(proj) {
-            const bar = document.getElementById('game-stats-bar');
-            const likes = proj.likes ? proj.likes.length : 0;
-            const dislikes = proj.dislikes ? proj.dislikes.length : 0;
-            const views = proj.views || 0;
-            
-            let likeStyle = (currentUser && proj.likes && proj.likes.includes(currentUser.username)) ? 'color: var(--primary);' : '';
-            let disStyle = (currentUser && proj.dislikes && proj.dislikes.includes(currentUser.username)) ? 'color: var(--danger);' : '';
-
-            bar.innerHTML = `
-                <div class="stat-item" style="margin-right: 15px;">👁️ ${views} vistas</div>
-                <div class="stat-item" style="cursor: pointer; ${likeStyle}" onclick="toggleLike('like')">👍 ${likes}</div>
-                <div class="stat-item" style="cursor: pointer; margin-left:10px; ${disStyle}" onclick="toggleLike('dislike')">👎 ${dislikes}</div>
-            `;
-        }
-
-        // --- NAVEGACIÓN Y JUEGO ---
-
-        function switchView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-        }
-
-        function goHome() {
-            document.getElementById('game-iframe').src = '';
-            currentProjectKey = '';
-            viewedUser = '';
-            switchView('home-view');
-            filterGallery(); 
-        }
-
-        async function viewProfile(username) {
-            switchView('profile-view');
-            viewedUser = username; // Guardamos a quién estamos viendo
-
-            const profPfp = document.getElementById('prof-pfp');
-            const profName = document.getElementById('prof-name');
-            const profBio = document.getElementById('prof-bio');
-            const profRole = document.getElementById('prof-role');
-            const adminActions = document.getElementById('profile-admin-actions');
-            
-            profName.textContent = username;
-            profBio.textContent = "Cargando info...";
-            adminActions.style.display = 'none'; // Ocultar por defecto
-            
-            // Validar si el usuario activo es admin y no está viendo su propio perfil
-            if (currentUser && currentUser.role === 'admin' && currentUser.username.toLowerCase() !== username.toLowerCase()) {
-                adminActions.style.display = 'block';
-            }
-
-            const fallbackPfp = 'https://via.placeholder.com/110/1a1a24/00ff6b?text=' + username[0].toUpperCase();
-            profPfp.src = fallbackPfp;
-            profPfp.classList.remove('admin-profile-fx'); // Quitar efecto por si acaso
-
-            const userKey = USER_PREFIX + username.toLowerCase();
-            try {
-                const res = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: userKey }) });
-                const data = await res.json();
-                if (data.success && data.data) {
-                    const uData = JSON.parse(data.data.value);
-                    profPfp.src = uData.pfp || fallbackPfp;
-                    profBio.textContent = uData.bio || 'Este usuario es un misterio... no ha escrito biografía.';
-                    
-                    if (uData.role === 'admin') {
-                        profRole.innerHTML = '👑 Administrador';
-                        profPfp.classList.add('admin-profile-fx');
-                        profName.innerHTML = escapeHTML(username) + ' <span class="admin-badge-sparkle">👑 ADMIN</span>';
-                    } else {
-                        profRole.innerHTML = 'Jugador';
-                        profName.textContent = username;
-                    }
-                } else {
-                    profBio.textContent = 'Usuario sin cuenta registrada (Anónimo).';
-                    profRole.textContent = 'Jugador';
-                }
-            } catch(e) {
-                profBio.textContent = '';
-            }
-
-            // Evitar que la imagen rota arruine el perfil
-            profPfp.onerror = function() { this.src = fallbackPfp; };
-
-            const pGallery = document.getElementById('profile-gallery');
-            pGallery.innerHTML = '';
-            const userProjs = allProjects.filter(p => p.author === username);
-            if(userProjs.length === 0) pGallery.innerHTML = '<p>No ha publicado nada aún.</p>';
-            userProjs.forEach(p => pGallery.appendChild(createCardHTML(p)));
-        }
-
-        async function playProject(key) {
-            const proj = allProjects.find(p => p._key === key);
-            if (!proj) return;
-            
-            currentProjectKey = key;
-            switchView('game-view');
-            
-            // LA URL MÁGICA DE PANTALLA COMPLETA DE TURBOWARP
-            const warpUrl = 'https://warp.mistium.com/fullscreen.html?project_url=' + encodeURIComponent(proj.url);
-            document.getElementById('game-iframe').src = warpUrl;
-
-            proj.views = (proj.views || 0) + 1;
-            renderGameStats(proj);
-            updateProjectDB(key, proj); 
-
-            loadComments(key);
-        }
-
-        // --- SISTEMA DE COMENTARIOS MODERABLE ---
-
-        async function loadComments(projectKey) {
-            const listDiv = document.getElementById('comments-list');
-            listDiv.innerHTML = '<p style="color: var(--text-muted);">Cargando comentarios...</p>';
-            const cmtKey = projectKey.replace(PROJ_PREFIX, CMT_PREFIX);
-
-            const proj = allProjects.find(p => p._key === projectKey);
-            const isProjectCreator = proj && currentUser && (proj.author === currentUser.username);
-            const isAdmin = currentUser && (currentUser.role === 'admin');
-
-            try {
-                const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
-                const getData = await resGet.json();
-                
-                if (getData.success && getData.data && getData.data.value) {
-                    const comments = JSON.parse(getData.data.value);
-                    if (comments.length === 0) { listDiv.innerHTML = '<p style="color: var(--text-muted);">Sé el primero en comentar.</p>'; return; }
-                    
-                    listDiv.innerHTML = '';
-                    comments.forEach(cmt => {
-                        const dateObj = new Date(cmt.date);
-                        
-                        const isCmtAdmin = cmt.role === 'admin';
-                        const cmtClass = isCmtAdmin ? 'comment-item admin-comment' : 'comment-item';
-                        const adminBadge = isCmtAdmin ? `<span class="admin-badge-sparkle">👑 ADMIN</span>` : '';
-                        const safePfp = escapeHTML(cmt.pfpUrl) || 'https://via.placeholder.com/40/1a1a24/00ff6b?text=' + cmt.name[0].toUpperCase();
-
-                        const isCmtAuthor = currentUser && (cmt.name === currentUser.username);
-                        let deleteCmtBtnHtml = '';
-                        if (isAdmin || isProjectCreator || isCmtAuthor) {
-                            deleteCmtBtnHtml = `<button class="reply-btn" style="color: var(--danger); font-size: 0.8rem; margin-left: 10px;" onclick="deleteComment('${cmt.id}')">🗑️ Eliminar</button>`;
-                        }
-
-                        let repliesHtml = '';
-                        if(cmt.replies && cmt.replies.length > 0) {
-                            repliesHtml = '<div class="replies-list">';
-                            cmt.replies.forEach(rep => {
-                                const repDate = new Date(rep.date).toLocaleDateString();
-                                const isRepAdmin = rep.role === 'admin';
-                                const safeRepPfp = escapeHTML(rep.pfpUrl) || 'https://via.placeholder.com/25/1a1a24/00ff6b?text=' + rep.name[0].toUpperCase();
-                                
-                                const repStyle = isRepAdmin ? 'border: 1px solid #00ff6b; background: rgba(0,255,107,0.05); box-shadow: 0 0 10px rgba(0,255,107,0.3);' : '';
-                                const repAdminBadge = isRepAdmin ? `<span class="admin-badge-sparkle" style="font-size: 0.65rem; padding: 1px 4px;">👑 ADMIN</span>` : '';
-
-                                const isRepAuthor = currentUser && (rep.name === currentUser.username);
-                                let deleteRepBtnHtml = '';
-                                if (isAdmin || isProjectCreator || isRepAuthor) {
-                                    deleteRepBtnHtml = `<button class="reply-btn" style="color: var(--danger); font-size: 0.75rem; margin-left: 8px; display: inline-block;" onclick="deleteReply('${cmt.id}', '${rep.id}')">🗑️</button>`;
-                                }
-
-                                repliesHtml += `
-                                    <div class="reply-item" style="${repStyle}">
-                                        <img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://via.placeholder.com/25/1a1a24/00ff6b?text=?'">
-                                        <div style="flex: 1;">
-                                            <b style="color:var(--primary); font-size:0.85rem; cursor:pointer;" onclick="viewProfile('${escapeHTML(rep.name)}')">${escapeHTML(rep.name)}</b> 
-                                            ${repAdminBadge} 
-                                            <span style="font-size:0.7rem; color:gray;">${repDate}</span>
-                                            ${deleteRepBtnHtml}
-                                            <div style="font-size:0.85rem; color:#ccc; margin-top: 2px;">${escapeHTML(rep.text)}</div>
-                                        </div>
-                                    </div>
-                                `;
-                            });
-                            repliesHtml += '</div>';
-                        }
-
-                        const replyInputHtml = currentUser ? `
-                            <div id="reply-box-${cmt.id}" style="display:none; margin-top: 10px; display:flex; gap:10px; position: relative; z-index: 5;">
-                                <input type="text" id="reply-text-${cmt.id}" placeholder="Respuesta..." style="padding: 5px; font-size: 0.8rem;">
-                                <button onclick="postReply('${cmt.id}')" style="padding: 5px 10px; font-size: 0.8rem;">Enviar</button>
-                            </div>
-                        ` : '';
-
-                        const cmtHtml = `
-                            <div class="${cmtClass}">
-                                <div class="comment-header-row">
-                                    <img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(cmt.name)}')" onerror="this.src='https://via.placeholder.com/40/1a1a24/00ff6b?text=?'">
-                                    <div class="comment-content">
-                                        <div>
-                                            <span class="comment-name" onclick="viewProfile('${escapeHTML(cmt.name)}')">@${escapeHTML(cmt.name)}</span> 
-                                            ${adminBadge}
-                                            <span class="comment-date">${dateObj.toLocaleDateString()}</span>
-                                        </div>
-                                        <div class="comment-text">${escapeHTML(cmt.text)}</div>
-                                        ${currentUser ? `<button class="reply-btn" onclick="document.getElementById('reply-box-${cmt.id}').style.display='flex'">Responder</button>` : ''}
-                                        ${deleteCmtBtnHtml}
-                                        ${replyInputHtml}
-                                    </div>
-                                </div>
-                                ${repliesHtml}
-                            </div>
-                        `;
-                        listDiv.innerHTML += cmtHtml;
+                    matchedUsers.forEach(u => {
+                        const uBtn = document.createElement('button');
+                        uBtn.className = 'btn-secondary btn-small';
+                        uBtn.innerHTML = `👤 ${escapeHTML(u)}`;
+                        uBtn.onclick = () => viewProfile(u);
+                        uc.appendChild(uBtn);
                     });
-                } else {
-                    listDiv.innerHTML = '<p style="color: var(--text-muted);">Sé el primero en comentar.</p>';
                 }
-            } catch (err) { listDiv.innerHTML = '<p style="color: #ff4444;">Error al cargar comentarios.</p>'; }
+            }
+        }
+
+        function createCardHTML(p) {
+            const c = document.createElement('div'); c.className = 'project-card';
+            const adm = (currentUser && currentUser.role === 'admin') ? `<button class="btn-secondary btn-small" onclick="toggleFeatured('${p._key}')">${p.featured?'Quitar Destacado':'⭐ Destacar'}</button><button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️</button>` : '';
+            const own = (currentUser && p.author === currentUser.username && (!currentUser || currentUser.role !== 'admin')) ? `<button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️ Eliminar</button>` : '';
+            
+            c.innerHTML = `
+                ${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''}
+                <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy">
+                <div class="project-title">${escapeHTML(p.name)}</div>
+                <div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div>
+                <div class="project-stats"><div class="stat-item">👁️ ${p.views||0}</div><div class="stat-item">👍 ${p.likes?p.likes.length:0}</div></div>
+                <button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar</button>
+                <div style="display:flex; gap:5px; margin-top:5px;">${adm}${own}</div>
+            `;
+            return c;
+        }
+
+        async function deleteProject(k) {
+            const p = allProjects.find(x => x._key === k); if(!p) return;
+            if((!currentUser || (currentUser.role!=='admin' && p.author!==currentUser.username))) return;
+            if(!confirm(`¿Borrar "${p.name}"?`)) return;
+            try { await dbDelete(k); await dbDelete(k.replace(PROJ_PREFIX, CMT_PREFIX)); if(currentProjectKey===k) goHome(); else loadAllProjects(); } catch(e){}
+        }
+        async function toggleFeatured(k) { const p=allProjects.find(x=>x._key===k); if(p){ p.featured=!p.featured; await dbStore(k,p); filterGallery(); } }
+        async function toggleLike(t) {
+            if(!currentUser) return alert("Loguéate."); const p=allProjects.find(x=>x._key===currentProjectKey); if(!p) return;
+            p.likes=p.likes||[]; p.dislikes=p.dislikes||[]; const u=currentUser.username;
+            if(t==='like') { p.dislikes=p.dislikes.filter(x=>x!==u); if(p.likes.includes(u)) p.likes=p.likes.filter(x=>x!==u); else p.likes.push(u); }
+            else { p.likes=p.likes.filter(x=>x!==u); if(p.dislikes.includes(u)) p.dislikes=p.dislikes.filter(x=>x!==u); else p.dislikes.push(u); }
+            renderGameStats(p); await dbStore(currentProjectKey, p);
+        }
+
+        function renderGameStats(p) {
+            const b=document.getElementById('game-stats-bar');
+            const lStyle = (currentUser&&p.likes&&p.likes.includes(currentUser.username))?'color:var(--primary);':'';
+            const dStyle = (currentUser&&p.dislikes&&p.dislikes.includes(currentUser.username))?'color:var(--danger);':'';
+            b.innerHTML = `<div class="stat-item" style="margin-right:15px;">👁️ ${p.views||0} vistas</div><div class="stat-item" style="cursor:pointer;${lStyle}" onclick="toggleLike('like')">👍 ${p.likes?p.likes.length:0}</div><div class="stat-item" style="cursor:pointer;margin-left:10px;${dStyle}" onclick="toggleLike('dislike')">👎 ${p.dislikes?p.dislikes.length:0}</div>`;
+        }
+
+        function switchView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function goHome() { document.getElementById('game-iframe').src=''; currentProjectKey=''; viewedUser=''; window.history.replaceState({}, document.title, window.location.pathname); switchView('home-view'); filterGallery(); }
+        
+        async function viewProfile(u) {
+            switchView('profile-view'); viewedUser=u;
+            const n=document.getElementById('prof-name'), b=document.getElementById('prof-bio'), r=document.getElementById('prof-role'), p=document.getElementById('prof-pfp'), fbtn=document.getElementById('btn-follow');
+            n.textContent=u; b.textContent="Cargando..."; p.src='https://via.placeholder.com/110/1a1a24/00ff6b?text='+u[0].toUpperCase(); p.classList.remove('admin-profile-fx');
+            document.getElementById('profile-admin-actions').style.display = (currentUser&&currentUser.role==='admin'&&currentUser.username!==u)?'flex':'none';
+            fbtn.style.display = (currentUser && currentUser.username !== u) ? 'inline-block' : 'none';
+
+            try {
+                const d = await dbGet(USER_PREFIX + u.toLowerCase());
+                if(d) {
+                    p.src=d.pfp||p.src; b.textContent=d.bio||'Sin biografía.';
+                    document.getElementById('prof-stats-txt').textContent = `${d.followers?d.followers.length:0} Seguidores`;
+                    if(d.role==='admin') { r.innerHTML='👑 Administrador'; p.classList.add('admin-profile-fx'); n.innerHTML=escapeHTML(u)+' <span class="admin-badge-sparkle">👑 ADMIN</span>'; } else { r.innerHTML='Jugador'; }
+                    if(currentUser && d.followers && d.followers.includes(currentUser.username)) { fbtn.textContent='Dejar de seguir'; fbtn.className='btn-danger btn-small'; } else { fbtn.textContent='Seguir'; fbtn.className='btn-secondary btn-small'; }
+                } else { b.textContent='Anónimo o Baneado.'; }
+            } catch(e){}
+            const pg=document.getElementById('profile-gallery'); pg.innerHTML=''; const up=allProjects.filter(x=>x.author===u);
+            if(up.length===0) pg.innerHTML='<p>Nada publicado.</p>'; up.forEach(x=>pg.appendChild(createCardHTML(x)));
+        }
+
+        async function playProject(k) {
+            const p = allProjects.find(x=>x._key===k); if(!p) return; currentProjectKey=k; switchView('game-view');
+            // Modificación Link URL:
+            window.history.replaceState({}, document.title, "?p=" + k);
+            
+            document.getElementById('view-game-title').textContent = p.name;
+            document.getElementById('view-game-author').textContent = "@" + p.author;
+            document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
+
+            document.getElementById('game-iframe').src = 'https://warp.mistium.com/fullscreen.html?project_url=' + encodeURIComponent(p.url);
+            p.views=(p.views||0)+1; renderGameStats(p); updateProjectDB(k,p); loadComments(k);
+        }
+
+        function copyProjectLink() {
+            const url = window.location.origin + window.location.pathname + '?p=' + currentProjectKey;
+            navigator.clipboard.writeText(url);
+            alert("¡Enlace copiado al portapapeles!\n" + url);
+        }
+
+        // --- SISTEMA DE COMENTARIOS ---
+        async function loadComments(k) {
+            const lst=document.getElementById('comments-list'); lst.innerHTML='<p>Cargando...</p>'; const cK=k.replace(PROJ_PREFIX,CMT_PREFIX);
+            const p=allProjects.find(x=>x._key===k); const isOwn=p&&currentUser&&p.author===currentUser.username; const isAdm=currentUser&&currentUser.role==='admin';
+            try {
+                const d=await dbGet(cK); if(d) {
+                    if(d.length===0) { lst.innerHTML='<p>Sé el primero en comentar.</p>'; return; } lst.innerHTML='';
+                    d.forEach(c => {
+                        const isCAdm=c.role==='admin', cCls=isCAdm?'comment-item admin-comment':'comment-item', bAdm=isCAdm?'<span class="admin-badge-sparkle">👑 ADMIN</span>':'';
+                        let dBtn=''; if(isAdm||isOwn||(currentUser&&c.name===currentUser.username)) dBtn=`<button class="reply-btn" style="color:var(--danger);" onclick="deleteComment('${c.id}')">🗑️</button>`;
+                        
+                        let rHtml=''; if(c.replies) { rHtml='<div class="replies-list">'; c.replies.forEach(r=>{
+                            const isRAdm=r.role==='admin', rSty=isRAdm?'border:1px solid #00ff6b;background:rgba(0,255,107,0.05);':'', rBAdm=isRAdm?'<span class="admin-badge-sparkle" style="font-size:0.65rem;">👑</span>':'';
+                            let rDBtn=''; if(isAdm||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.75rem;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
+                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${escapeHTML(r.pfpUrl)}" class="reply-pfp"><div><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rDBtn}<div style="font-size:0.85rem;color:#ccc;">${escapeHTML(r.text)}</div></div></div>`;
+                        }); rHtml+='</div>';}
+                        
+                        const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative;"><input type="text" id="rt-${c.id}" placeholder="Respuesta..." style="padding:5px;"><button onclick="postReply('${c.id}')" style="padding:5px;">Enviar</button></div>`:'';
+                        lst.innerHTML+=`<div class="${cCls}"><div class="comment-header-row"><img src="${escapeHTML(c.pfpUrl)}" class="comment-pfp" onclick="viewProfile('${escapeHTML(c.name)}')"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm}</div><div class="comment-text">${escapeHTML(c.text)}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${dBtn}${rInp}</div></div>${rHtml}</div>`;
+                    });
+                } else lst.innerHTML='<p>Sé el primero en comentar.</p>';
+            } catch(e) { lst.innerHTML='<p>Error.</p>'; }
         }
 
         async function postComment() {
-            if (!currentUser || !currentProjectKey) return;
-            const textInput = document.getElementById('cmt-text').value.trim();
-            const btn = document.getElementById('cmt-btn');
-            if (!textInput) return;
-
-            btn.disabled = true;
+            if(!currentUser||!currentProjectKey) return; const t=document.getElementById('cmt-text').value.trim(); if(!t) return;
             try {
-                const cmtKey = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
-                let comments = [];
-                try {
-                    const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
-                    const getData = await resGet.json();
-                    if (getData.success && getData.data) comments = JSON.parse(getData.data.value);
-                } catch(e) {}
-
-                comments.push({
-                    id: 'cmt_' + Date.now() + Math.floor(Math.random()*1000),
-                    name: currentUser.username,
-                    text: textInput,
-                    pfpUrl: currentUser.pfp,
-                    date: Date.now(),
-                    role: currentUser.role, 
-                    replies: []
-                });
-
-                await fetch(SERVER_URL + 'store.php', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey: API_KEY, key: cmtKey, value: JSON.stringify(comments), mimeType: 'application/json' })
-                });
-
-                document.getElementById('cmt-text').value = '';
-                loadComments(currentProjectKey); 
-            } catch (error) { alert("Error: " + error.message); } 
-            finally { btn.disabled = false; }
-        }
-
-        async function postReply(commentId) {
-            if (!currentUser || !currentProjectKey) return;
-            const textInput = document.getElementById(`reply-text-${commentId}`).value.trim();
-            if (!textInput) return;
-
-            try {
-                const cmtKey = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
-                const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
-                const getData = await resGet.json();
+                const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k)||[];
+                c.push({id:'cmt_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[]});
+                await dbStore(k, c); document.getElementById('cmt-text').value=''; loadComments(currentProjectKey);
                 
-                let comments = JSON.parse(getData.data.value);
-                const targetCmt = comments.find(c => c.id === commentId);
-                
-                if (targetCmt) {
-                    targetCmt.replies = targetCmt.replies || [];
-                    targetCmt.replies.push({ 
-                        id: 'rep_' + Date.now() + Math.floor(Math.random()*1000),
-                        name: currentUser.username, 
-                        text: textInput, 
-                        pfpUrl: currentUser.pfp, 
-                        date: Date.now(),
-                        role: currentUser.role
-                    });
-                    
-                    await fetch(SERVER_URL + 'store.php', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ apiKey: API_KEY, key: cmtKey, value: JSON.stringify(comments), mimeType: 'application/json' })
-                    });
-                    loadComments(currentProjectKey);
-                }
-            } catch(e) { alert("Error al responder"); }
-        }
-
-        // --- SISTEMA DE ELIMINACIÓN DE COMENTARIOS ---
-
-        async function deleteComment(commentId) {
-            if (!confirm("¿Estás seguro de que deseas eliminar este comentario?")) return;
-            if (!currentProjectKey) return;
-
-            const cmtKey = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
-            try {
-                const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
-                const getData = await resGet.json();
-                
-                if (getData.success && getData.data) {
-                    let comments = JSON.parse(getData.data.value);
-                    comments = comments.filter(c => c.id !== commentId);
-
-                    await fetch(SERVER_URL + 'store.php', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ apiKey: API_KEY, key: cmtKey, value: JSON.stringify(comments), mimeType: 'application/json' })
-                    });
-                    loadComments(currentProjectKey);
-                }
-            } catch (e) { alert("Error al eliminar comentario: " + e.message); }
-        }
-
-        async function deleteReply(commentId, replyId) {
-            if (!confirm("¿Deseas eliminar esta respuesta?")) return;
-            if (!currentProjectKey) return;
-
-            const cmtKey = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
-            try {
-                const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
-                const getData = await resGet.json();
-                
-                if (getData.success && getData.data) {
-                    let comments = JSON.parse(getData.data.value);
-                    const targetCmt = comments.find(c => c.id === commentId);
-                    
-                    if (targetCmt && targetCmt.replies) {
-                        targetCmt.replies = targetCmt.replies.filter(r => r.id !== replyId);
-
-                        await fetch(SERVER_URL + 'store.php', {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ apiKey: API_KEY, key: cmtKey, value: JSON.stringify(comments), mimeType: 'application/json' })
-                        });
-                        loadComments(currentProjectKey);
+                // Notificar al dueño del proyecto
+                const proj = allProjects.find(x => x._key === currentProjectKey);
+                if(proj && proj.author !== currentUser.username) {
+                    const targetData = await dbGet(USER_PREFIX + proj.author.toLowerCase());
+                    if(targetData) {
+                        await pushNotification(targetData, `💬 ${currentUser.username} comentó en tu proyecto "${proj.name}".`);
+                        await dbStore(USER_PREFIX + proj.author.toLowerCase(), targetData);
                     }
                 }
-            } catch (e) { alert("Error al eliminar respuesta: " + e.message); }
+            } catch(e) {}
+        }
+        async function postReply(cid) {
+            if(!currentUser||!currentProjectKey) return; const t=document.getElementById(`rt-${cid}`).value.trim(); if(!t) return;
+            try {
+                const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid);
+                if(tg) {
+                    tg.replies=tg.replies||[]; tg.replies.push({id:'rep_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role});
+                    await dbStore(k,c); loadComments(currentProjectKey);
+                    
+                    // Notificar al dueño del comentario original si no soy yo
+                    if(tg.name !== currentUser.username) {
+                        const targetData = await dbGet(USER_PREFIX + tg.name.toLowerCase());
+                        if(targetData) {
+                            await pushNotification(targetData, `↩️ ${currentUser.username} respondió a tu comentario.`);
+                            await dbStore(USER_PREFIX + tg.name.toLowerCase(), targetData);
+                        }
+                    }
+                }
+            } catch(e){}
+        }
+        async function deleteComment(id) { if(!confirm("¿Borrar?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(c){ c=c.filter(x=>x.id!==id); await dbStore(k,c); loadComments(currentProjectKey); } }
+        async function deleteReply(cid, rid) { if(!confirm("¿Borrar respuesta?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid); if(tg&&tg.replies){ tg.replies=tg.replies.filter(x=>x.id!==rid); await dbStore(k,c); loadComments(currentProjectKey); } }
+
+        // --- SISTEMA DE CHAT (CLOUDLINK + DB) ---
+        function initCloudLink() {
+            if (cloudLinkSocket) cloudLinkSocket.close();
+            try {
+                cloudLinkSocket = new WebSocket('wss://cl.mikedev101.cc/');
+                cloudLinkSocket.onopen = () => {
+                    // Handshake Cloudlink
+                    cloudLinkSocket.send(JSON.stringify({ cmd: "handshake", val: { language: "Scratch32", version: "1.0" } }));
+                    // Conectarse a sala global de S32
+                    cloudLinkSocket.send(JSON.stringify({ cmd: "setid", val: "s32_" + currentUser.username.toLowerCase() }));
+                };
+                cloudLinkSocket.onmessage = (e) => {
+                    try {
+                        const msg = JSON.parse(e.data);
+                        // CloudLink envía mensajes directos por P2P o globales si usamos variables
+                        // Simulemos que usamos variables globales de Cloudlink para avisar
+                        if (msg.cmd === "gvar" && msg.name.startsWith(CHAT_PREFIX + currentUser.username.toLowerCase())) {
+                            // Alguien nos envió un mensaje
+                            const sender = msg.name.split('_from_')[1];
+                            unreadNotifs++;
+                            document.getElementById('chat-badge').textContent = unreadNotifs;
+                            document.getElementById('chat-badge').style.display = 'block';
+                            
+                            // Si tenemos el chat abierto con esa persona, recargar DB
+                            if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
+                                loadChatMessages(activeChatUser);
+                                unreadNotifs--; document.getElementById('chat-badge').textContent = unreadNotifs;
+                                if(unreadNotifs<=0) document.getElementById('chat-badge').style.display = 'none';
+                            }
+                        }
+                    } catch(err){}
+                };
+            } catch(e){}
         }
 
-        function escapeHTML(str) {
-            if (typeof str !== 'string') return '';
-            return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
+        async function openChat() {
+            if(!currentUser) return;
+            switchView('chat-view');
+            unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none';
+            document.getElementById('chat-messages').innerHTML = '<p style="color:gray;">Selecciona un usuario a la izquierda para chatear.</p>';
+            document.getElementById('chat-input-area').style.display = 'none';
+            document.getElementById('chat-header').textContent = "Selecciona un chat";
+            
+            // Cargar barra lateral con gente a la que sigo y me siguen
+            const side = document.getElementById('chat-sidebar');
+            side.innerHTML = '';
+            
+            const miData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
+            let contacts = new Set([...(miData.following||[]), ...(miData.followers||[])]);
+            
+            if(contacts.size === 0) { side.innerHTML = '<p style="padding:10px; color:gray;">Sigue a alguien para poder chatear.</p>'; return; }
+            
+            contacts.forEach(async c => {
+                const u = await dbGet(USER_PREFIX + c.toLowerCase());
+                if(u) {
+                    const d = document.createElement('div'); d.className = 'contact-item';
+                    d.innerHTML = `<img src="${u.pfp}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;"> <b>${u.username}</b>`;
+                    d.onclick = () => {
+                        document.querySelectorAll('.contact-item').forEach(x=>x.classList.remove('active'));
+                        d.classList.add('active');
+                        startChatWith(u.username);
+                    };
+                    side.appendChild(d);
+                }
+            });
+        }
+
+        function getChatDBKey(u1, u2) {
+            const arr = [u1.toLowerCase(), u2.toLowerCase()].sort();
+            return CHAT_PREFIX + arr[0] + "_" + arr[1];
+        }
+
+        async function startChatWith(username) {
+            activeChatUser = username;
+            document.getElementById('chat-header').textContent = "💬 Chateando con " + username;
+            document.getElementById('chat-input-area').style.display = 'flex';
+            loadChatMessages(username);
+        }
+
+        async function loadChatMessages(username) {
+            const box = document.getElementById('chat-messages');
+            box.innerHTML = '<p>Cargando...</p>';
+            const key = getChatDBKey(currentUser.username, username);
+            const history = await dbGet(key) || [];
+            
+            box.innerHTML = '';
+            if(history.length===0) box.innerHTML = '<p style="color:gray;text-align:center;">No hay mensajes previos.</p>';
+            
+            history.forEach(m => {
+                const isMe = m.sender === currentUser.username;
+                const d = new Date(m.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                box.innerHTML += `
+                    <div class="msg-bubble ${isMe ? 'msg-mine' : 'msg-theirs'}">
+                        ${escapeHTML(m.text)}
+                        <div style="font-size:0.6rem; margin-top:3px; opacity:0.6; text-align:${isMe?'right':'left'};">${d}</div>
+                    </div>
+                `;
+            });
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input-text');
+            const txt = input.value.trim();
+            if(!txt || !activeChatUser) return;
+            input.value = '';
+
+            // Guardar en DB
+            const key = getChatDBKey(currentUser.username, activeChatUser);
+            const history = await dbGet(key) || [];
+            history.push({ sender: currentUser.username, text: txt, date: Date.now() });
+            
+            // Solo guardar últimos 50 para no reventar base de datos
+            if(history.length > 50) history.shift();
+            await dbStore(key, history);
+
+            // Enviar Ping por CloudLink
+            if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) {
+                const targetVar = CHAT_PREFIX + activeChatUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase();
+                cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: targetVar, val: "ping" }));
+            }
+
+            loadChatMessages(activeChatUser);
         }
     </script>
 </body>
