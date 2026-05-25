@@ -223,7 +223,7 @@
                 <h2>Publicar un Proyecto</h2>
                 <div class="form-group">
                     <div class="input-box"><label>Nombre del Juego</label><input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" autocomplete="off"></div>
-                    <div class="input-box"><label>Archivo (.sb3, .pmp)</label><input type="file" id="proj-file" accept=".sb3,.pmp"></div>
+                    <div class="input-box"><label>Archivo (.sb3)</label><input type="file" id="proj-file" accept=".sb3"></div>
                     <div class="input-box"><label>Imagen de Portada (Opcional)</label><input type="file" id="proj-image" accept="image/*"></div>
                 </div>
                 <button id="publish-btn" onclick="publishProject()" style="width: 100%;">Subir y Publicar</button>
@@ -377,6 +377,15 @@
             return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag]));
         }
 
+        // NUEVO: Transforma URLs en texto convertido a enlaces clickeables de manera segura
+        function linkify(text) {
+            if(!text) return '';
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return text.replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" style="color: var(--primary); text-decoration: underline;">${url}</a>`;
+            });
+        }
+
         // --- SISTEMA DE USUARIOS Y AUTO-LOGOUT ---
         
         async function verifyBanStatus(dbUser, userKey) {
@@ -486,7 +495,6 @@
                 if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
 
                 status.textContent = "Creando cuenta...";
-                // Incluimos array bloqueados
                 const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '', followers: [], following: [], notifications: [], blocked: [], banned: false };
 
                 await dbStore(userKey, userData);
@@ -693,13 +701,13 @@
             switchView('profile-view'); viewedUser=u;
             window.history.replaceState({}, document.title, "?u=" + u);
             const n=document.getElementById('prof-name'), b=document.getElementById('prof-bio'), r=document.getElementById('prof-role'), p=document.getElementById('prof-pfp'), fbtn=document.getElementById('btn-follow');
-            n.textContent=u; b.textContent="Cargando..."; p.src='https://via.placeholder.com/110/1a1a24/00ff6b?text='+u[0].toUpperCase(); p.classList.remove('admin-profile-fx');
+            n.textContent=u; b.innerHTML="Cargando..."; p.src='https://via.placeholder.com/110/1a1a24/00ff6b?text='+u[0].toUpperCase(); p.classList.remove('admin-profile-fx');
             document.getElementById('profile-admin-actions').style.display = (currentUser&&currentUser.role==='admin'&&currentUser.username!==u)?'flex':'none';
             fbtn.style.display = (currentUser && currentUser.username !== u) ? 'inline-block' : 'none';
             try {
                 const d = await dbGet(USER_PREFIX + u.toLowerCase());
                 if(d) {
-                    p.src=d.pfp||p.src; b.textContent=d.bio||'Sin biografía.';
+                    p.src=d.pfp||p.src; b.innerHTML=linkify(escapeHTML(d.bio||'Sin biografía.'));
                     document.getElementById('prof-stats-txt').textContent = `${d.followers?d.followers.length:0} Seguidores`;
                     if(d.role==='admin') { r.innerHTML='👑 Administrador'; p.classList.add('admin-profile-fx'); n.innerHTML=escapeHTML(u)+' <span class="admin-badge-sparkle">👑 ADMIN</span>'; } else { r.innerHTML='Jugador'; }
                     if(currentUser && d.followers && d.followers.includes(currentUser.username)) { fbtn.textContent='Dejar de seguir'; fbtn.className='btn-danger btn-small'; } else { fbtn.textContent='Seguir'; fbtn.className='btn-secondary btn-small'; }
@@ -739,10 +747,10 @@
                         let rHtml=''; if(c.replies) { rHtml='<div class="replies-list">'; c.replies.forEach(r=>{
                             const isRAdm=r.role==='admin', rSty=isRAdm?'border:1px solid #00ff6b;background:rgba(0,255,107,0.05);':'', rBAdm=isRAdm?'<span class="admin-badge-sparkle" style="font-size:0.65rem;">👑</span>':'';
                             let rDBtn=''; if(isAdm||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.75rem;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
-                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${escapeHTML(r.pfpUrl)}" class="reply-pfp"><div><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rDBtn}<div style="font-size:0.85rem;color:#ccc;">${escapeHTML(r.text)}</div></div></div>`;
+                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${escapeHTML(r.pfpUrl)}" class="reply-pfp"><div><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rDBtn}<div style="font-size:0.85rem;color:#ccc;">${linkify(escapeHTML(r.text))}</div></div></div>`;
                         }); rHtml+='</div>';}
                         const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative;"><input type="text" id="rt-${c.id}" placeholder="Respuesta..." style="padding:5px;"><button onclick="postReply('${c.id}')" style="padding:5px;">Enviar</button></div>`:'';
-                        lst.innerHTML+=`<div class="${cCls}"><div class="comment-header-row"><img src="${escapeHTML(c.pfpUrl)}" class="comment-pfp" onclick="viewProfile('${escapeHTML(c.name)}')"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm}</div><div class="comment-text">${escapeHTML(c.text)}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${dBtn}${rInp}</div></div>${rHtml}</div>`;
+                        lst.innerHTML+=`<div class="${cCls}"><div class="comment-header-row"><img src="${escapeHTML(c.pfpUrl)}" class="comment-pfp" onclick="viewProfile('${escapeHTML(c.name)}')"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm}</div><div class="comment-text">${linkify(escapeHTML(c.text))}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
                 } else lst.innerHTML='<p>Sé el primero en comentar.</p>';
             } catch(e) { lst.innerHTML='<p>Error.</p>'; }
@@ -857,7 +865,7 @@
             else currentUser.blocked.push(activeChatUser);
             await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
             localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
-            startChatWith(activeChatUser); // Recargar UI
+            startChatWith(activeChatUser);
         }
 
         async function wipeChatContact() {
@@ -871,7 +879,6 @@
         async function loadChatMessages(username) {
             const box = document.getElementById('chat-messages'); box.innerHTML = '<p>Cargando...</p>';
             
-            // Verificar estado de bloqueo del otro lado
             const otherUser = await dbGet(USER_PREFIX + username.toLowerCase());
             const amIBlocked = otherUser && otherUser.blocked && otherUser.blocked.includes(currentUser.username);
             const didIBlock = currentUser.blocked && currentUser.blocked.includes(username);
@@ -904,7 +911,7 @@
 
                 box.innerHTML += `
                     <div class="msg-bubble ${isMe ? 'msg-mine' : 'msg-theirs'}">
-                        ${escapeHTML(m.text)}${editedStr}
+                        ${linkify(escapeHTML(m.text))}${editedStr}
                         <div style="font-size:0.6rem; margin-top:3px; opacity:0.6; text-align:${isMe?'right':'left'};">${d}</div>
                         ${msgActions}
                     </div>
