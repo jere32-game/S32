@@ -326,7 +326,7 @@
         let currentUser = null; 
         let currentProjectKey = ''; 
         let allProjects = [];
-        let allUsernames = []; // NUEVO: Para guardar todos los usuarios registrados
+        let allUsernames = []; 
         let viewedUser = ''; 
         let cloudLinkSocket = null;
         let activeChatUser = '';
@@ -373,14 +373,42 @@
         }
 
         // --- SISTEMA DE USUARIOS Y AUTO-LOGOUT ---
+        
+        // NUEVO: Función para comprobar si el baneo ya expiró
+        async function verifyBanStatus(dbUser, userKey) {
+            if (dbUser && dbUser.banned) {
+                if (dbUser.bannedUntil && Date.now() > dbUser.bannedUntil) {
+                    // El tiempo pasó, desbanear al usuario
+                    dbUser.banned = false;
+                    dbUser.bannedUntil = null;
+                    await dbStore(userKey, dbUser);
+                    return false; // Ya no está baneado
+                }
+                return true; // Sigue baneado
+            }
+            return false;
+        }
+
         async function checkSession() {
             const saved = localStorage.getItem('scratch32_session');
             if (saved) {
                 const tempUser = JSON.parse(saved);
-                // VERIFICACIÓN DE SEGURIDAD CONTRA BAN/ELIMINACIÓN
-                const liveUser = await dbGet(USER_PREFIX + tempUser.username.toLowerCase());
-                if (!liveUser || liveUser.banned) {
-                    alert(liveUser ? "Tu cuenta ha sido baneada de la plataforma." : "Tu cuenta fue eliminada del sistema.");
+                const userKey = USER_PREFIX + tempUser.username.toLowerCase();
+                const liveUser = await dbGet(userKey);
+                
+                // VERIFICACIÓN DE SEGURIDAD CON TIEMPO
+                const isBanned = await verifyBanStatus(liveUser, userKey);
+                
+                if (!liveUser || isBanned) {
+                    let msg = "Tu cuenta fue eliminada del sistema.";
+                    if (liveUser && liveUser.banned) {
+                        if (liveUser.bannedUntil) {
+                            msg = `Estás baneado temporalmente hasta: ${new Date(liveUser.bannedUntil).toLocaleString()}`;
+                        } else {
+                            msg = "Tu cuenta ha sido baneada permanentemente.";
+                        }
+                    }
+                    alert(msg);
                     localStorage.removeItem('scratch32_session');
                     currentUser = null;
                 } else {
@@ -465,7 +493,6 @@
                 if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
 
                 status.textContent = "Creando cuenta...";
-                // Estructura nueva con followers y notificaciones
                 const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '', followers: [], following: [], notifications: [], banned: false };
 
                 await dbStore(userKey, userData);
@@ -473,7 +500,7 @@
                 await checkSession();
                 closeAuthModal();
                 alert("¡Bienvenido a Scratch32!");
-                loadAllProjects(); // Refrescar para tener el nuevo usuario en el buscador
+                loadAllProjects();
             } catch (e) { status.style.color = 'var(--danger)'; status.textContent = e.message; } finally { btn.disabled = false; }
         }
 
@@ -490,7 +517,14 @@
                 const dbUser = await dbGet(userKey);
 
                 if (dbUser) {
-                    if (dbUser.banned) throw new Error("Esta cuenta está BANEADA.");
+                    const isBanned = await verifyBanStatus(dbUser, userKey);
+                    if (isBanned) {
+                        if (dbUser.bannedUntil) {
+                            throw new Error(`Baneado hasta: ${new Date(dbUser.bannedUntil).toLocaleString()}`);
+                        } else {
+                            throw new Error("Esta cuenta está BANEADA permanentemente.");
+                        }
+                    }
                     if (dbUser.password === pass) {
                         localStorage.setItem('scratch32_session', JSON.stringify(dbUser));
                         await checkSession();
@@ -565,11 +599,38 @@
         }
 
         async function adminBanUser() {
-            if (!viewedUser || !confirm(`¿Banear a ${viewedUser}? No podrá entrar más.`)) return;
+            if (!viewedUser || !confirm(`¿Banear a ${viewedUser}?`)) return;
+            
+            const duracionStr = prompt("¿Tiempo de baneo? Ej: '30s' (segundos), '15m' (minutos), '2h' (horas), '1d' (días). Escribe '0' para siempre.");
+            if (duracionStr === null) return; // Canceló
+            
+            let multiplicador = 0;
+            if (duracionStr.endsWith('s')) multiplicador = 1000;
+            else if (duracionStr.endsWith('m')) multiplicador = 60 * 1000;
+            else if (duracionStr.endsWith('h')) multiplicador = 60 * 60 * 1000;
+            else if (duracionStr.endsWith('d')) multiplicador = 24 * 60 * 60 * 1000;
+            
+            let bannedUntil = null;
+            if (multiplicador > 0) {
+                const valor = parseInt(duracionStr);
+                if (!isNaN(valor)) bannedUntil = Date.now() + (valor * multiplicador);
+            } else if (duracionStr !== '0') {
+                alert("Formato inválido. Debes usar s, m, h o d."); return;
+            }
+
             try {
                 const uKey = USER_PREFIX + viewedUser.toLowerCase();
                 const uData = await dbGet(uKey);
-                if(uData) { uData.banned = true; await dbStore(uKey, uData); alert("Baneado exitosamente."); goHome(); }
+                if(uData) { 
+                    uData.banned = true; 
+                    uData.bannedUntil = bannedUntil;
+                    await dbStore(uKey, uData); 
+                    
+                    if(bannedUntil) alert(`Usuario baneado hasta ${new Date(bannedUntil).toLocaleString()}`);
+                    else alert("Usuario baneado de forma permanente.");
+                    
+                    goHome(); 
+                }
             } catch(e){}
         }
         async function adminDeleteUser() {
@@ -587,7 +648,6 @@
             const targetData = await dbGet(targetKey);
             if(!targetData) return;
 
-            // Arreglar objetos antiguos
             currentUser.following = currentUser.following || [];
             targetData.followers = targetData.followers || [];
 
@@ -599,7 +659,6 @@
             } else {
                 currentUser.following.push(viewedUser);
                 targetData.followers.push(currentUser.username);
-                // Enviar notificación al target
                 pushNotification(targetData, `👤 ${currentUser.username} ha comenzado a seguirte.`);
             }
 
@@ -608,7 +667,6 @@
             
             localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
             
-            // Refrescar UI del perfil
             document.getElementById('btn-follow').textContent = isFollowing ? 'Seguir' : 'Dejar de seguir';
             document.getElementById('btn-follow').className = isFollowing ? 'btn-secondary btn-small' : 'btn-danger btn-small';
             document.getElementById('prof-stats-txt').textContent = `${targetData.followers.length} Seguidores`;
@@ -617,7 +675,6 @@
         async function pushNotification(targetUserObj, text) {
             targetUserObj.notifications = targetUserObj.notifications || [];
             targetUserObj.notifications.unshift({ text: text, date: Date.now(), read: false });
-            // Guardar solo las últimas 20 para no saturar DB
             if(targetUserObj.notifications.length > 20) targetUserObj.notifications.pop();
         }
 
@@ -628,7 +685,6 @@
         }
 
         async function renderNotifications() {
-            // Recargar mis datos
             const myData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
             if(!myData) return;
             currentUser = myData; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
@@ -646,7 +702,6 @@
             });
             
             updateNotifBadge();
-            // Guardar como leídas
             await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
         }
 
@@ -700,14 +755,12 @@
                 const res = await fetch(SERVER_URL + 'listKeys.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY }) });
                 const listData = await res.json();
                 
-                // Obtener Proyectos
                 const keys = listData.keys.filter(k => k.startsWith(PROJ_PREFIX)).reverse();
                 allProjects = [];
                 for (const k of keys) {
                     const d = await dbGet(k); if(d) { d._key = k; allProjects.push(d); }
                 }
 
-                // Obtener Lista de Usuarios para el buscador
                 const userKeys = listData.keys.filter(k => k.startsWith(USER_PREFIX));
                 allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
 
@@ -723,7 +776,6 @@
             gc.innerHTML = ''; fc.innerHTML = ''; uc.innerHTML = '';
             let hf = false;
 
-            // 1. Filtrar Proyectos
             allProjects.forEach(p => {
                 const match = p.name.toLowerCase().includes(f) || p.author.toLowerCase().includes(f);
                 if (match) gc.appendChild(createCardHTML(p));
@@ -731,7 +783,6 @@
             });
             fs.style.display = hf ? 'block' : 'none';
 
-            // 2. Filtrar Usuarios (Si se está buscando algo)
             if (f.trim() !== '') {
                 const matchedUsers = allUsernames.filter(u => u.toLowerCase().includes(f));
                 if (matchedUsers.length > 0) {
@@ -814,7 +865,6 @@
 
         async function playProject(k) {
             const p = allProjects.find(x=>x._key===k); if(!p) return; currentProjectKey=k; switchView('game-view');
-            // Modificación Link URL:
             window.history.replaceState({}, document.title, "?p=" + k);
             
             document.getElementById('view-game-title').textContent = p.name;
@@ -822,7 +872,12 @@
             document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
 
             document.getElementById('game-iframe').src = 'https://warp.mistium.com/fullscreen.html?project_url=' + encodeURIComponent(p.url);
-            p.views=(p.views||0)+1; renderGameStats(p); updateProjectDB(k,p); loadComments(k);
+            
+            p.views=(p.views||0)+1; 
+            renderGameStats(p); 
+            // CORRECCIÓN APLICADA AQUÍ: se reemplaza updateProjectDB por await dbStore
+            await dbStore(k, p); 
+            loadComments(k);
         }
 
         function copyProjectLink() {
@@ -862,7 +917,6 @@
                 c.push({id:'cmt_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[]});
                 await dbStore(k, c); document.getElementById('cmt-text').value=''; loadComments(currentProjectKey);
                 
-                // Notificar al dueño del proyecto
                 const proj = allProjects.find(x => x._key === currentProjectKey);
                 if(proj && proj.author !== currentUser.username) {
                     const targetData = await dbGet(USER_PREFIX + proj.author.toLowerCase());
@@ -881,7 +935,6 @@
                     tg.replies=tg.replies||[]; tg.replies.push({id:'rep_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role});
                     await dbStore(k,c); loadComments(currentProjectKey);
                     
-                    // Notificar al dueño del comentario original si no soy yo
                     if(tg.name !== currentUser.username) {
                         const targetData = await dbGet(USER_PREFIX + tg.name.toLowerCase());
                         if(targetData) {
@@ -901,24 +954,18 @@
             try {
                 cloudLinkSocket = new WebSocket('wss://cl.mikedev101.cc/');
                 cloudLinkSocket.onopen = () => {
-                    // Handshake Cloudlink
                     cloudLinkSocket.send(JSON.stringify({ cmd: "handshake", val: { language: "Scratch32", version: "1.0" } }));
-                    // Conectarse a sala global de S32
                     cloudLinkSocket.send(JSON.stringify({ cmd: "setid", val: "s32_" + currentUser.username.toLowerCase() }));
                 };
                 cloudLinkSocket.onmessage = (e) => {
                     try {
                         const msg = JSON.parse(e.data);
-                        // CloudLink envía mensajes directos por P2P o globales si usamos variables
-                        // Simulemos que usamos variables globales de Cloudlink para avisar
                         if (msg.cmd === "gvar" && msg.name.startsWith(CHAT_PREFIX + currentUser.username.toLowerCase())) {
-                            // Alguien nos envió un mensaje
                             const sender = msg.name.split('_from_')[1];
                             unreadNotifs++;
                             document.getElementById('chat-badge').textContent = unreadNotifs;
                             document.getElementById('chat-badge').style.display = 'block';
                             
-                            // Si tenemos el chat abierto con esa persona, recargar DB
                             if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
                                 loadChatMessages(activeChatUser);
                                 unreadNotifs--; document.getElementById('chat-badge').textContent = unreadNotifs;
@@ -938,7 +985,6 @@
             document.getElementById('chat-input-area').style.display = 'none';
             document.getElementById('chat-header').textContent = "Selecciona un chat";
             
-            // Cargar barra lateral con gente a la que sigo y me siguen
             const side = document.getElementById('chat-sidebar');
             side.innerHTML = '';
             
@@ -1002,16 +1048,13 @@
             if(!txt || !activeChatUser) return;
             input.value = '';
 
-            // Guardar en DB
             const key = getChatDBKey(currentUser.username, activeChatUser);
             const history = await dbGet(key) || [];
             history.push({ sender: currentUser.username, text: txt, date: Date.now() });
             
-            // Solo guardar últimos 50 para no reventar base de datos
             if(history.length > 50) history.shift();
             await dbStore(key, history);
 
-            // Enviar Ping por CloudLink
             if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) {
                 const targetVar = CHAT_PREFIX + activeChatUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase();
                 cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: targetVar, val: "ping" }));
