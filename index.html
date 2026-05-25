@@ -26,8 +26,8 @@
             align-items: center; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 15px rgba(0, 255, 107, 0.1);
         }
 
-        header h1 { font-size: 1.5rem; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        header h1 span { color: var(--primary); }
+        .header-logo { cursor: pointer; display: flex; align-items: center; transition: transform 0.2s; }
+        .header-logo:hover { transform: scale(1.05); }
 
         .header-actions { display: flex; align-items: center; gap: 15px; }
 
@@ -149,8 +149,8 @@
 <body>
 
     <header>
-        <div onclick="goHome()">
-            <h1>Scratch<span>32</span></h1>
+        <div class="header-logo" onclick="goHome()">
+            <img src="https://yyf.mubilop.com/file/4222769a/scratch%2032.svg" alt="Scratch32 Logo" style="height: 45px;">
         </div>
         <div class="header-actions">
             <div class="warp-badge">⚡ Powered by Warp & YYF</div>
@@ -201,6 +201,8 @@
                 <input type="file" id="set-pfp" accept="image/*">
                 <button id="set-btn" onclick="updateAccount()">Guardar Cambios</button>
                 <p id="set-status" style="font-size: 0.9rem; text-align: center; color: var(--primary);"></p>
+                
+                <button class="btn-danger" style="margin-top: 5px;" onclick="deleteMyAccount()">🗑️ Eliminar Mi Cuenta</button>
 
                 <div id="admin-settings-section" style="display:none; margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
                     <h4 style="color: gold; text-align: center; margin-bottom: 10px;">👑 Panel de Administrador</h4>
@@ -249,10 +251,14 @@
         <div id="profile-view" class="view">
             <div class="section-box" style="display: flex; align-items: center; gap: 20px; position: relative;">
                 <img id="prof-pfp" src="" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover;">
-                <div>
+                <div style="flex: 1;">
                     <h2 id="prof-name" style="border: none; margin: 0; font-size: 2.2rem; padding-bottom: 0;"></h2>
                     <p style="color: var(--primary); font-weight: bold; margin-top: 5px;" id="prof-role"></p>
                     <p style="color: var(--text-muted); margin-top: 10px; max-width: 600px;" id="prof-bio"></p>
+                    
+                    <div id="profile-admin-actions" style="display: none; margin-top: 10px;">
+                        <button class="btn-danger" style="width: auto; padding: 5px 10px; font-size: 0.8rem;" onclick="adminDeleteUser()">🗑️ Banear/Eliminar Cuenta de este Usuario</button>
+                    </div>
                 </div>
             </div>
             <h2 style="margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">Proyectos Publicados</h2>
@@ -298,6 +304,7 @@
         let currentUser = null; 
         let currentProjectKey = ''; 
         let allProjects = [];
+        let viewedUser = ''; // Usuario que estamos viendo en el perfil actualmente
 
         document.addEventListener('DOMContentLoaded', () => {
             checkSession();
@@ -497,6 +504,35 @@
             } catch(e) {
                 status.style.color = 'var(--danger)'; status.textContent = e.message;
             } finally { btn.disabled = false; }
+        }
+
+        async function deleteMyAccount() {
+            if (!confirm("⚠️ ¿ESTÁS COMPLETAMENTE SEGURO? Esta acción borrará tu cuenta para siempre de la base de datos y no se puede deshacer.")) return;
+            
+            try {
+                const userKey = USER_PREFIX + currentUser.username.toLowerCase();
+                await fetch(SERVER_URL + 'delete.php', {
+                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey: API_KEY, key: userKey })
+                });
+                alert("Tu cuenta ha sido eliminada. Hasta la próxima.");
+                logout();
+            } catch(e) { alert("Error al eliminar la cuenta: " + e.message); }
+        }
+
+        async function adminDeleteUser() {
+            if (!viewedUser) return;
+            if (!confirm(`⚠️ MODO DIOS: ¿Seguro que quieres borrar la cuenta de ${viewedUser} para siempre?`)) return;
+            
+            try {
+                const userKey = USER_PREFIX + viewedUser.toLowerCase();
+                await fetch(SERVER_URL + 'delete.php', {
+                    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey: API_KEY, key: userKey })
+                });
+                alert(`La cuenta de ${viewedUser} ha sido purgada de la existencia.`);
+                goHome();
+            } catch(e) { alert("Error: " + e.message); }
         }
 
         function logout() {
@@ -826,20 +862,30 @@
         function goHome() {
             document.getElementById('game-iframe').src = '';
             currentProjectKey = '';
+            viewedUser = '';
             switchView('home-view');
             filterGallery(); 
         }
 
         async function viewProfile(username) {
             switchView('profile-view');
+            viewedUser = username; // Guardamos a quién estamos viendo
+
             const profPfp = document.getElementById('prof-pfp');
             const profName = document.getElementById('prof-name');
             const profBio = document.getElementById('prof-bio');
             const profRole = document.getElementById('prof-role');
+            const adminActions = document.getElementById('profile-admin-actions');
             
             profName.textContent = username;
             profBio.textContent = "Cargando info...";
+            adminActions.style.display = 'none'; // Ocultar por defecto
             
+            // Validar si el usuario activo es admin y no está viendo su propio perfil
+            if (currentUser && currentUser.role === 'admin' && currentUser.username.toLowerCase() !== username.toLowerCase()) {
+                adminActions.style.display = 'block';
+            }
+
             const fallbackPfp = 'https://via.placeholder.com/110/1a1a24/00ff6b?text=' + username[0].toUpperCase();
             profPfp.src = fallbackPfp;
             profPfp.classList.remove('admin-profile-fx'); // Quitar efecto por si acaso
