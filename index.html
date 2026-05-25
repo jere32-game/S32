@@ -58,7 +58,7 @@
         .btn-secondary:hover:not(:disabled) { background-color: #444; }
         .btn-small { padding: 5px 10px; font-size: 0.8rem; }
 
-        .search-bar { width: 100%; padding: 1rem; margin-bottom: 1.5rem; background-color: var(--panel); border: 1px solid var(--primary); border-radius: var(--radius); color: var(--text); font-size: 1.1rem; }
+        .search-bar { width: 100%; padding: 1rem; background-color: var(--panel); border: 1px solid var(--primary); border-radius: var(--radius); color: var(--text); font-size: 1.1rem; }
 
         .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
         .project-card { background-color: var(--panel); border-radius: var(--radius); padding: 1.5rem; border: 1px solid #333; transition: border-color 0.3s; display: flex; flex-direction: column; position: relative; }
@@ -236,7 +236,11 @@
             </div>
 
             <h2 style="margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">🌎 Galería Global</h2>
-            <input type="text" id="search-input" class="search-bar" placeholder="🔍 Buscar proyectos o usuarios..." onkeyup="filterGallery()">
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <input type="text" id="search-input" class="search-bar" style="margin-bottom: 0; flex: 1; min-width: 250px;" placeholder="🔍 Buscar proyectos o usuarios..." onkeyup="filterGallery()">
+                <button class="btn-warning" onclick="playRandomProject()">🎲 Proyecto Aleatorio</button>
+            </div>
             
             <div id="users-container" style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;"></div>
 
@@ -245,12 +249,13 @@
         </div>
 
         <div id="profile-view" class="view">
-            <div class="section-box" style="display: flex; align-items: center; gap: 20px; position: relative;">
+            <div class="section-box" style="display: flex; align-items: center; gap: 20px; position: relative; flex-wrap: wrap;">
                 <img id="prof-pfp" src="" style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover;">
-                <div style="flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="flex: 1; min-width: 250px;">
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                         <h2 id="prof-name" style="border: none; margin: 0; font-size: 2.2rem; padding-bottom: 0;"></h2>
                         <button id="btn-follow" class="btn-secondary btn-small" style="display:none;" onclick="toggleFollow()">Seguir</button>
+                        <button class="btn-secondary btn-small" onclick="copyProfileLink()">🔗 Copiar Link</button>
                     </div>
                     <p style="color: var(--primary); font-weight: bold; margin-top: 5px;" id="prof-role"></p>
                     <p style="color: var(--text-muted); font-size: 0.9rem;" id="prof-stats-txt">0 Seguidores</p>
@@ -295,12 +300,10 @@
         <div id="chat-view" class="view">
             <h2 style="margin-bottom: 1rem; color: var(--primary);">💬 Mensajes Directos</h2>
             <div class="chat-container">
-                <div class="chat-sidebar" id="chat-sidebar">
-                    </div>
+                <div class="chat-sidebar" id="chat-sidebar"></div>
                 <div class="chat-main">
                     <div id="chat-header" style="padding: 15px; background: #222; border-bottom: 1px solid #333; font-weight: bold;">Selecciona un chat</div>
-                    <div class="chat-messages" id="chat-messages">
-                        </div>
+                    <div class="chat-messages" id="chat-messages"></div>
                     <div class="chat-input" id="chat-input-area" style="display:none;">
                         <input type="text" id="chat-input-text" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') sendChatMessage()">
                         <button onclick="sendChatMessage()">Enviar</button>
@@ -335,7 +338,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkSession().then(() => {
                 loadAllProjects().then(() => {
-                    // Routing: Compartir URL directa
+                    // Routing de enlaces directos
                     const urlParams = new URLSearchParams(window.location.search);
                     if(urlParams.has('p')) {
                         const targetProj = urlParams.get('p');
@@ -343,9 +346,11 @@
                             playProject(targetProj);
                         } else {
                             alert("El proyecto compartido ya no existe.");
-                            // Limpiar URL
                             window.history.replaceState({}, document.title, window.location.pathname);
                         }
+                    } else if (urlParams.has('u')) {
+                        const targetUser = urlParams.get('u');
+                        viewProfile(targetUser);
                     }
                 });
             });
@@ -374,17 +379,14 @@
 
         // --- SISTEMA DE USUARIOS Y AUTO-LOGOUT ---
         
-        // NUEVO: Función para comprobar si el baneo ya expiró
         async function verifyBanStatus(dbUser, userKey) {
             if (dbUser && dbUser.banned) {
                 if (dbUser.bannedUntil && Date.now() > dbUser.bannedUntil) {
-                    // El tiempo pasó, desbanear al usuario
-                    dbUser.banned = false;
-                    dbUser.bannedUntil = null;
+                    dbUser.banned = false; dbUser.bannedUntil = null;
                     await dbStore(userKey, dbUser);
-                    return false; // Ya no está baneado
+                    return false;
                 }
-                return true; // Sigue baneado
+                return true; 
             }
             return false;
         }
@@ -396,23 +398,18 @@
                 const userKey = USER_PREFIX + tempUser.username.toLowerCase();
                 const liveUser = await dbGet(userKey);
                 
-                // VERIFICACIÓN DE SEGURIDAD CON TIEMPO
                 const isBanned = await verifyBanStatus(liveUser, userKey);
                 
                 if (!liveUser || isBanned) {
                     let msg = "Tu cuenta fue eliminada del sistema.";
                     if (liveUser && liveUser.banned) {
-                        if (liveUser.bannedUntil) {
-                            msg = `Estás baneado temporalmente hasta: ${new Date(liveUser.bannedUntil).toLocaleString()}`;
-                        } else {
-                            msg = "Tu cuenta ha sido baneada permanentemente.";
-                        }
+                        if (liveUser.bannedUntil) msg = `Estás baneado temporalmente hasta: ${new Date(liveUser.bannedUntil).toLocaleString()}`;
+                        else msg = "Tu cuenta ha sido baneada permanentemente.";
                     }
                     alert(msg);
-                    localStorage.removeItem('scratch32_session');
-                    currentUser = null;
+                    localStorage.removeItem('scratch32_session'); currentUser = null;
                 } else {
-                    currentUser = liveUser; // Actualizamos datos frescos
+                    currentUser = liveUser; 
                     localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
                     
                     document.getElementById('publish-box').style.display = 'block';
@@ -421,8 +418,7 @@
                     document.getElementById('btn-notif').style.display = 'inline-block';
                     document.getElementById('btn-chat').style.display = 'inline-block';
                     
-                    initCloudLink(); // Iniciar WebSockets para chat real-time
-                    updateNotifBadge();
+                    initCloudLink(); updateNotifBadge();
                 }
             } else {
                 currentUser = null;
@@ -473,11 +469,8 @@
         }
 
         async function register() {
-            const user = document.getElementById('reg-user').value.trim();
-            const pass = document.getElementById('reg-pass').value.trim();
-            const pfpFile = document.getElementById('reg-pfp').files[0];
-            const status = document.getElementById('reg-status');
-            const btn = document.getElementById('reg-btn');
+            const user = document.getElementById('reg-user').value.trim(), pass = document.getElementById('reg-pass').value.trim();
+            const pfpFile = document.getElementById('reg-pfp').files[0], status = document.getElementById('reg-status'), btn = document.getElementById('reg-btn');
 
             if (!user || !pass) { status.textContent = "Falta usuario o contraseña"; return; }
             if (user.includes(" ") || user.includes(":")) { status.textContent = "Sin espacios ni caracteres raros"; return; }
@@ -493,233 +486,117 @@
                 if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
 
                 status.textContent = "Creando cuenta...";
-                const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '', followers: [], following: [], notifications: [], banned: false };
+                // Incluimos array bloqueados
+                const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '', followers: [], following: [], notifications: [], blocked: [], banned: false };
 
                 await dbStore(userKey, userData);
                 localStorage.setItem('scratch32_session', JSON.stringify(userData));
-                await checkSession();
-                closeAuthModal();
-                alert("¡Bienvenido a Scratch32!");
-                loadAllProjects();
+                await checkSession(); closeAuthModal(); alert("¡Bienvenido a Scratch32!"); loadAllProjects();
             } catch (e) { status.style.color = 'var(--danger)'; status.textContent = e.message; } finally { btn.disabled = false; }
         }
 
         async function login() {
-            const user = document.getElementById('log-user').value.trim();
-            const pass = document.getElementById('log-pass').value.trim();
-            const status = document.getElementById('log-status');
-            
+            const user = document.getElementById('log-user').value.trim(), pass = document.getElementById('log-pass').value.trim(), status = document.getElementById('log-status');
             if (!user || !pass) { status.textContent = "Falta info"; return; }
             status.textContent = "Comprobando...";
-
             try {
                 const userKey = USER_PREFIX + user.toLowerCase();
                 const dbUser = await dbGet(userKey);
-
                 if (dbUser) {
                     const isBanned = await verifyBanStatus(dbUser, userKey);
                     if (isBanned) {
-                        if (dbUser.bannedUntil) {
-                            throw new Error(`Baneado hasta: ${new Date(dbUser.bannedUntil).toLocaleString()}`);
-                        } else {
-                            throw new Error("Esta cuenta está BANEADA permanentemente.");
-                        }
+                        if (dbUser.bannedUntil) throw new Error(`Baneado hasta: ${new Date(dbUser.bannedUntil).toLocaleString()}`);
+                        else throw new Error("Esta cuenta está BANEADA permanentemente.");
                     }
                     if (dbUser.password === pass) {
                         localStorage.setItem('scratch32_session', JSON.stringify(dbUser));
-                        await checkSession();
-                        closeAuthModal();
-                        status.textContent = "";
-                        loadAllProjects();
-                    } else { throw new Error("Contraseña incorrecta"); }
-                } else { throw new Error("Usuario no encontrado"); }
+                        await checkSession(); closeAuthModal(); status.textContent = ""; loadAllProjects();
+                    } else throw new Error("Contraseña incorrecta");
+                } else throw new Error("Usuario no encontrado");
             } catch (e) { status.textContent = e.message; }
         }
 
         async function updateAccount() {
-            const newUser = document.getElementById('set-user').value.trim();
-            const newPass = document.getElementById('set-pass').value.trim();
-            const newBio = document.getElementById('set-bio').value.trim();
-            const pfpFile = document.getElementById('set-pfp').files[0];
-            const status = document.getElementById('set-status');
-            const btn = document.getElementById('set-btn');
-
+            const newUser = document.getElementById('set-user').value.trim(), newPass = document.getElementById('set-pass').value.trim(), newBio = document.getElementById('set-bio').value.trim(), pfpFile = document.getElementById('set-pfp').files[0], status = document.getElementById('set-status'), btn = document.getElementById('set-btn');
             if (!newUser || !newPass || newUser.includes(" ")) { status.style.color = 'var(--danger)'; status.textContent = "Datos inválidos"; return; }
-
             btn.disabled = true; status.style.color = 'var(--text)'; status.textContent = "Procesando...";
             try {
-                const oldKey = USER_PREFIX + currentUser.username.toLowerCase();
-                const newKey = USER_PREFIX + newUser.toLowerCase();
-
-                if (oldKey !== newKey) {
-                    if (await dbGet(newKey)) throw new Error("Nombre ya en uso");
-                }
-
-                let pfpUrl = currentUser.pfp;
-                if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
-
+                const oldKey = USER_PREFIX + currentUser.username.toLowerCase(), newKey = USER_PREFIX + newUser.toLowerCase();
+                if (oldKey !== newKey) { if (await dbGet(newKey)) throw new Error("Nombre ya en uso"); }
+                let pfpUrl = currentUser.pfp; if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
                 currentUser.username = newUser; currentUser.password = newPass; currentUser.pfp = pfpUrl; currentUser.bio = newBio;
-                
                 await dbStore(newKey, currentUser);
                 if (oldKey !== newKey) await dbDelete(oldKey);
-
                 localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
-                await checkSession(); closeSettingsModal();
-                alert("Cuenta actualizada!"); loadAllProjects();
+                await checkSession(); closeSettingsModal(); alert("Cuenta actualizada!"); loadAllProjects();
             } catch(e) { status.style.color = 'var(--danger)'; status.textContent = e.message; } finally { btn.disabled = false; }
         }
 
-        async function deleteMyAccount() {
-            if (!confirm("⚠️ ¿BORRAR CUENTA PARA SIEMPRE?")) return;
-            try { await dbDelete(USER_PREFIX + currentUser.username.toLowerCase()); logout(); } catch(e) {}
-        }
+        async function deleteMyAccount() { if (!confirm("⚠️ ¿BORRAR CUENTA PARA SIEMPRE?")) return; try { await dbDelete(USER_PREFIX + currentUser.username.toLowerCase()); logout(); } catch(e) {} }
         function logout() { localStorage.removeItem('scratch32_session'); checkSession(); goHome(); }
 
         // --- ADMIN SECRETS & BANS ---
-        async function getAdminSecret() {
-            const data = await dbGet(CONFIG_PREFIX + 'admin');
-            return data ? data.secret : '/sus32';
-        }
+        async function getAdminSecret() { const data = await dbGet(CONFIG_PREFIX + 'admin'); return data ? data.secret : '/sus32'; }
         async function viewAdminSecret() { alert("El comando actual es: " + await getAdminSecret()); }
-        
         async function promptAdmin() {
             if (!currentUser) { alert("Inicia sesión."); return; }
             if (currentUser.role === 'admin') { alert("Ya eres admin."); return; }
-            
-            const currentSecret = await getAdminSecret();
-            if (prompt("Ingresa el comando:") === currentSecret) {
-                currentUser.role = 'admin';
-                await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
+            if (prompt("Ingresa el comando:") === await getAdminSecret()) {
+                currentUser.role = 'admin'; await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
                 alert("Modo Dios Activado."); checkSession(); loadAllProjects();
-            } else { alert("Nop."); }
+            } else alert("Nop.");
         }
-        async function updateAdminSecret() {
-            const n = document.getElementById('set-admin-pass').value.trim();
-            if (n) { await dbStore(CONFIG_PREFIX + 'admin', { secret: n }); alert("Cambiado a: " + n); document.getElementById('set-admin-pass').value=''; }
-        }
+        async function updateAdminSecret() { const n = document.getElementById('set-admin-pass').value.trim(); if (n) { await dbStore(CONFIG_PREFIX + 'admin', { secret: n }); alert("Cambiado a: " + n); document.getElementById('set-admin-pass').value=''; } }
 
         async function adminBanUser() {
             if (!viewedUser || !confirm(`¿Banear a ${viewedUser}?`)) return;
-            
             const duracionStr = prompt("¿Tiempo de baneo? Ej: '30s' (segundos), '15m' (minutos), '2h' (horas), '1d' (días). Escribe '0' para siempre.");
-            if (duracionStr === null) return; // Canceló
-            
+            if (duracionStr === null) return;
             let multiplicador = 0;
             if (duracionStr.endsWith('s')) multiplicador = 1000;
             else if (duracionStr.endsWith('m')) multiplicador = 60 * 1000;
             else if (duracionStr.endsWith('h')) multiplicador = 60 * 60 * 1000;
             else if (duracionStr.endsWith('d')) multiplicador = 24 * 60 * 60 * 1000;
-            
             let bannedUntil = null;
-            if (multiplicador > 0) {
-                const valor = parseInt(duracionStr);
-                if (!isNaN(valor)) bannedUntil = Date.now() + (valor * multiplicador);
-            } else if (duracionStr !== '0') {
-                alert("Formato inválido. Debes usar s, m, h o d."); return;
-            }
-
+            if (multiplicador > 0) { const valor = parseInt(duracionStr); if (!isNaN(valor)) bannedUntil = Date.now() + (valor * multiplicador); } else if (duracionStr !== '0') { alert("Formato inválido. Debes usar s, m, h o d."); return; }
             try {
-                const uKey = USER_PREFIX + viewedUser.toLowerCase();
-                const uData = await dbGet(uKey);
+                const uKey = USER_PREFIX + viewedUser.toLowerCase(); const uData = await dbGet(uKey);
                 if(uData) { 
-                    uData.banned = true; 
-                    uData.bannedUntil = bannedUntil;
-                    await dbStore(uKey, uData); 
-                    
-                    if(bannedUntil) alert(`Usuario baneado hasta ${new Date(bannedUntil).toLocaleString()}`);
-                    else alert("Usuario baneado de forma permanente.");
-                    
+                    uData.banned = true; uData.bannedUntil = bannedUntil; await dbStore(uKey, uData); 
+                    if(bannedUntil) alert(`Usuario baneado hasta ${new Date(bannedUntil).toLocaleString()}`); else alert("Usuario baneado de forma permanente.");
                     goHome(); 
                 }
             } catch(e){}
         }
-        async function adminDeleteUser() {
-            if (!viewedUser || !confirm(`⚠️ ELIMINAR A ${viewedUser} DE LA DB?`)) return;
-            try { await dbDelete(USER_PREFIX + viewedUser.toLowerCase()); alert("Erradicado."); goHome(); loadAllProjects(); } catch(e){}
-        }
+        async function adminDeleteUser() { if (!viewedUser || !confirm(`⚠️ ELIMINAR A ${viewedUser} DE LA DB?`)) return; try { await dbDelete(USER_PREFIX + viewedUser.toLowerCase()); alert("Erradicado."); goHome(); loadAllProjects(); } catch(e){} }
 
         // --- SISTEMA DE SEGUIDORES Y NOTIFICACIONES ---
         async function toggleFollow() {
             if (!currentUser || !viewedUser || currentUser.username === viewedUser) return;
-            
-            const myKey = USER_PREFIX + currentUser.username.toLowerCase();
-            const targetKey = USER_PREFIX + viewedUser.toLowerCase();
-            
-            const targetData = await dbGet(targetKey);
-            if(!targetData) return;
-
-            currentUser.following = currentUser.following || [];
-            targetData.followers = targetData.followers || [];
-
+            const myKey = USER_PREFIX + currentUser.username.toLowerCase(), targetKey = USER_PREFIX + viewedUser.toLowerCase();
+            const targetData = await dbGet(targetKey); if(!targetData) return;
+            currentUser.following = currentUser.following || []; targetData.followers = targetData.followers || [];
             const isFollowing = currentUser.following.includes(viewedUser);
-            
-            if (isFollowing) {
-                currentUser.following = currentUser.following.filter(x => x !== viewedUser);
-                targetData.followers = targetData.followers.filter(x => x !== currentUser.username);
-            } else {
-                currentUser.following.push(viewedUser);
-                targetData.followers.push(currentUser.username);
-                pushNotification(targetData, `👤 ${currentUser.username} ha comenzado a seguirte.`);
-            }
-
-            await dbStore(myKey, currentUser);
-            await dbStore(targetKey, targetData);
-            
+            if (isFollowing) { currentUser.following = currentUser.following.filter(x => x !== viewedUser); targetData.followers = targetData.followers.filter(x => x !== currentUser.username); } else { currentUser.following.push(viewedUser); targetData.followers.push(currentUser.username); pushNotification(targetData, `👤 ${currentUser.username} ha comenzado a seguirte.`); }
+            await dbStore(myKey, currentUser); await dbStore(targetKey, targetData);
             localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
-            
-            document.getElementById('btn-follow').textContent = isFollowing ? 'Seguir' : 'Dejar de seguir';
-            document.getElementById('btn-follow').className = isFollowing ? 'btn-secondary btn-small' : 'btn-danger btn-small';
-            document.getElementById('prof-stats-txt').textContent = `${targetData.followers.length} Seguidores`;
+            document.getElementById('btn-follow').textContent = isFollowing ? 'Seguir' : 'Dejar de seguir'; document.getElementById('btn-follow').className = isFollowing ? 'btn-secondary btn-small' : 'btn-danger btn-small'; document.getElementById('prof-stats-txt').textContent = `${targetData.followers.length} Seguidores`;
         }
-
-        async function pushNotification(targetUserObj, text) {
-            targetUserObj.notifications = targetUserObj.notifications || [];
-            targetUserObj.notifications.unshift({ text: text, date: Date.now(), read: false });
-            if(targetUserObj.notifications.length > 20) targetUserObj.notifications.pop();
-        }
-
-        function toggleNotifications() {
-            const modal = document.getElementById('notif-modal');
-            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
-            if(modal.style.display === 'block') renderNotifications();
-        }
-
+        async function pushNotification(targetUserObj, text) { targetUserObj.notifications = targetUserObj.notifications || []; targetUserObj.notifications.unshift({ text: text, date: Date.now(), read: false }); if(targetUserObj.notifications.length > 20) targetUserObj.notifications.pop(); }
+        function toggleNotifications() { const modal = document.getElementById('notif-modal'); modal.style.display = modal.style.display === 'block' ? 'none' : 'block'; if(modal.style.display === 'block') renderNotifications(); }
         async function renderNotifications() {
-            const myData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
-            if(!myData) return;
+            const myData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase()); if(!myData) return;
             currentUser = myData; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
-
-            const list = document.getElementById('notif-list');
-            list.innerHTML = '';
-            const notifs = currentUser.notifications || [];
-            
+            const list = document.getElementById('notif-list'); list.innerHTML = ''; const notifs = currentUser.notifications || [];
             if(notifs.length === 0) list.innerHTML = '<p style="padding:10px; color:gray;">Nada nuevo por aquí.</p>';
-            
-            notifs.forEach(n => {
-                const d = new Date(n.date).toLocaleString();
-                list.innerHTML += `<div class="notif-item" style="${n.read ? 'opacity:0.6;' : 'font-weight:bold;'}">${n.text}<br><span style="font-size:0.7rem;color:gray;">${d}</span></div>`;
-                n.read = true;
-            });
-            
-            updateNotifBadge();
-            await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
+            notifs.forEach(n => { const d = new Date(n.date).toLocaleString(); list.innerHTML += `<div class="notif-item" style="${n.read ? 'opacity:0.6;' : 'font-weight:bold;'}">${n.text}<br><span style="font-size:0.7rem;color:gray;">${d}</span></div>`; n.read = true; });
+            updateNotifBadge(); await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
         }
-
         function updateNotifBadge() {
-            if(!currentUser) return;
-            const notifs = currentUser.notifications || [];
-            const unread = notifs.filter(n => !n.read).length;
-            const badge = document.getElementById('notif-badge');
-            if(unread > 0) { badge.style.display = 'block'; badge.textContent = unread; } 
-            else { badge.style.display = 'none'; }
+            if(!currentUser) return; const notifs = currentUser.notifications || []; const unread = notifs.filter(n => !n.read).length;
+            const badge = document.getElementById('notif-badge'); if(unread > 0) { badge.style.display = 'block'; badge.textContent = unread; } else { badge.style.display = 'none'; }
         }
-
-        async function clearNotifications() {
-            if(!currentUser) return;
-            currentUser.notifications = [];
-            await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
-            renderNotifications();
-        }
+        async function clearNotifications() { if(!currentUser) return; currentUser.notifications = []; await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser); renderNotifications(); }
 
         // --- SUBIDA DE PROYECTOS ---
         async function uploadFileToYYF(file) {
@@ -733,18 +610,15 @@
             if (!currentUser) return;
             const name = document.getElementById('proj-name').value.trim(), fileIn = document.getElementById('proj-file'), imgIn = document.getElementById('proj-image'), sts = document.getElementById('publish-status'), btn = document.getElementById('publish-btn');
             if(!name || fileIn.files.length === 0) { sts.style.color = '#ff4444'; sts.textContent = 'Falta info.'; return; }
-
             btn.disabled = true; sts.style.color = 'var(--text)';
             try {
                 sts.textContent = 'Subiendo juego...'; const url = await uploadFileToYYF(fileIn.files[0]);
                 let imgUrl = 'https://via.placeholder.com/400x200/1a1a24/00ff6b?text=Sin+Portada';
                 if (imgIn.files.length > 0) { sts.textContent = 'Subiendo portada...'; imgUrl = await uploadFileToYYF(imgIn.files[0]); }
-
                 sts.textContent = 'Guardando DB...';
                 const pData = { name: name, author: currentUser.username, url: url, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false };
                 await dbStore(PROJ_PREFIX + Date.now(), pData);
-                sts.style.color = '#00ff88'; sts.textContent = '¡Exito!'; document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = '';
-                loadAllProjects(); 
+                sts.style.color = '#00ff88'; sts.textContent = '¡Exito!'; document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; loadAllProjects(); 
             } catch (e) { sts.style.color = '#ff4444'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
@@ -754,49 +628,27 @@
             try {
                 const res = await fetch(SERVER_URL + 'listKeys.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY }) });
                 const listData = await res.json();
-                
                 const keys = listData.keys.filter(k => k.startsWith(PROJ_PREFIX)).reverse();
-                allProjects = [];
-                for (const k of keys) {
-                    const d = await dbGet(k); if(d) { d._key = k; allProjects.push(d); }
-                }
-
-                const userKeys = listData.keys.filter(k => k.startsWith(USER_PREFIX));
-                allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
-
+                allProjects = []; for (const k of keys) { const d = await dbGet(k); if(d) { d._key = k; allProjects.push(d); } }
+                const userKeys = listData.keys.filter(k => k.startsWith(USER_PREFIX)); allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
                 ld.style.display = 'none'; filterGallery();
             } catch (e) { ld.style.color = '#ff4444'; ld.textContent = e.message; }
         }
 
         function filterGallery() {
-            const f = document.getElementById('search-input').value.toLowerCase();
-            const gc = document.getElementById('gallery-container'), fc = document.getElementById('featured-container'), fs = document.getElementById('featured-section');
-            const uc = document.getElementById('users-container');
-            
-            gc.innerHTML = ''; fc.innerHTML = ''; uc.innerHTML = '';
-            let hf = false;
-
+            const f = document.getElementById('search-input').value.toLowerCase(), gc = document.getElementById('gallery-container'), fc = document.getElementById('featured-container'), fs = document.getElementById('featured-section'), uc = document.getElementById('users-container');
+            gc.innerHTML = ''; fc.innerHTML = ''; uc.innerHTML = ''; let hf = false;
             allProjects.forEach(p => {
                 const match = p.name.toLowerCase().includes(f) || p.author.toLowerCase().includes(f);
                 if (match) gc.appendChild(createCardHTML(p));
                 if (p.featured) { hf = true; if(match || f==='') fc.appendChild(createCardHTML(p)); }
             });
             fs.style.display = hf ? 'block' : 'none';
-
             if (f.trim() !== '') {
                 const matchedUsers = allUsernames.filter(u => u.toLowerCase().includes(f));
                 if (matchedUsers.length > 0) {
-                    const title = document.createElement('div');
-                    title.style.width = '100%'; title.style.color = 'var(--primary)'; title.style.fontSize = '0.9rem'; title.innerText = 'Usuarios encontrados:';
-                    uc.appendChild(title);
-
-                    matchedUsers.forEach(u => {
-                        const uBtn = document.createElement('button');
-                        uBtn.className = 'btn-secondary btn-small';
-                        uBtn.innerHTML = `👤 ${escapeHTML(u)}`;
-                        uBtn.onclick = () => viewProfile(u);
-                        uc.appendChild(uBtn);
-                    });
+                    const title = document.createElement('div'); title.style.width = '100%'; title.style.color = 'var(--primary)'; title.style.fontSize = '0.9rem'; title.innerText = 'Usuarios encontrados:'; uc.appendChild(title);
+                    matchedUsers.forEach(u => { const uBtn = document.createElement('button'); uBtn.className = 'btn-secondary btn-small'; uBtn.innerHTML = `👤 ${escapeHTML(u)}`; uBtn.onclick = () => viewProfile(u); uc.appendChild(uBtn); });
                 }
             }
         }
@@ -805,22 +657,19 @@
             const c = document.createElement('div'); c.className = 'project-card';
             const adm = (currentUser && currentUser.role === 'admin') ? `<button class="btn-secondary btn-small" onclick="toggleFeatured('${p._key}')">${p.featured?'Quitar Destacado':'⭐ Destacar'}</button><button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️</button>` : '';
             const own = (currentUser && p.author === currentUser.username && (!currentUser || currentUser.role !== 'admin')) ? `<button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️ Eliminar</button>` : '';
-            
-            c.innerHTML = `
-                ${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''}
-                <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy">
-                <div class="project-title">${escapeHTML(p.name)}</div>
-                <div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div>
-                <div class="project-stats"><div class="stat-item">👁️ ${p.views||0}</div><div class="stat-item">👍 ${p.likes?p.likes.length:0}</div></div>
-                <button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar</button>
-                <div style="display:flex; gap:5px; margin-top:5px;">${adm}${own}</div>
-            `;
+            c.innerHTML = `${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''}<img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item">👁️ ${p.views||0}</div><div class="stat-item">👍 ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar</button><div style="display:flex; gap:5px; margin-top:5px;">${adm}${own}</div>`;
             return c;
         }
 
+        // FUNCION PROYECTO ALEATORIO
+        function playRandomProject() {
+            if(allProjects.length === 0) return alert("Aún no hay proyectos publicados.");
+            const rnd = allProjects[Math.floor(Math.random() * allProjects.length)];
+            playProject(rnd._key);
+        }
+
         async function deleteProject(k) {
-            const p = allProjects.find(x => x._key === k); if(!p) return;
-            if((!currentUser || (currentUser.role!=='admin' && p.author!==currentUser.username))) return;
+            const p = allProjects.find(x => x._key === k); if(!p) return; if((!currentUser || (currentUser.role!=='admin' && p.author!==currentUser.username))) return;
             if(!confirm(`¿Borrar "${p.name}"?`)) return;
             try { await dbDelete(k); await dbDelete(k.replace(PROJ_PREFIX, CMT_PREFIX)); if(currentProjectKey===k) goHome(); else loadAllProjects(); } catch(e){}
         }
@@ -828,15 +677,12 @@
         async function toggleLike(t) {
             if(!currentUser) return alert("Loguéate."); const p=allProjects.find(x=>x._key===currentProjectKey); if(!p) return;
             p.likes=p.likes||[]; p.dislikes=p.dislikes||[]; const u=currentUser.username;
-            if(t==='like') { p.dislikes=p.dislikes.filter(x=>x!==u); if(p.likes.includes(u)) p.likes=p.likes.filter(x=>x!==u); else p.likes.push(u); }
-            else { p.likes=p.likes.filter(x=>x!==u); if(p.dislikes.includes(u)) p.dislikes=p.dislikes.filter(x=>x!==u); else p.dislikes.push(u); }
+            if(t==='like') { p.dislikes=p.dislikes.filter(x=>x!==u); if(p.likes.includes(u)) p.likes=p.likes.filter(x=>x!==u); else p.likes.push(u); } else { p.likes=p.likes.filter(x=>x!==u); if(p.dislikes.includes(u)) p.dislikes=p.dislikes.filter(x=>x!==u); else p.dislikes.push(u); }
             renderGameStats(p); await dbStore(currentProjectKey, p);
         }
 
         function renderGameStats(p) {
-            const b=document.getElementById('game-stats-bar');
-            const lStyle = (currentUser&&p.likes&&p.likes.includes(currentUser.username))?'color:var(--primary);':'';
-            const dStyle = (currentUser&&p.dislikes&&p.dislikes.includes(currentUser.username))?'color:var(--danger);':'';
+            const b=document.getElementById('game-stats-bar'), lStyle = (currentUser&&p.likes&&p.likes.includes(currentUser.username))?'color:var(--primary);':'', dStyle = (currentUser&&p.dislikes&&p.dislikes.includes(currentUser.username))?'color:var(--danger);':'';
             b.innerHTML = `<div class="stat-item" style="margin-right:15px;">👁️ ${p.views||0} vistas</div><div class="stat-item" style="cursor:pointer;${lStyle}" onclick="toggleLike('like')">👍 ${p.likes?p.likes.length:0}</div><div class="stat-item" style="cursor:pointer;margin-left:10px;${dStyle}" onclick="toggleLike('dislike')">👎 ${p.dislikes?p.dislikes.length:0}</div>`;
         }
 
@@ -845,11 +691,11 @@
         
         async function viewProfile(u) {
             switchView('profile-view'); viewedUser=u;
+            window.history.replaceState({}, document.title, "?u=" + u);
             const n=document.getElementById('prof-name'), b=document.getElementById('prof-bio'), r=document.getElementById('prof-role'), p=document.getElementById('prof-pfp'), fbtn=document.getElementById('btn-follow');
             n.textContent=u; b.textContent="Cargando..."; p.src='https://via.placeholder.com/110/1a1a24/00ff6b?text='+u[0].toUpperCase(); p.classList.remove('admin-profile-fx');
             document.getElementById('profile-admin-actions').style.display = (currentUser&&currentUser.role==='admin'&&currentUser.username!==u)?'flex':'none';
             fbtn.style.display = (currentUser && currentUser.username !== u) ? 'inline-block' : 'none';
-
             try {
                 const d = await dbGet(USER_PREFIX + u.toLowerCase());
                 if(d) {
@@ -863,28 +709,22 @@
             if(up.length===0) pg.innerHTML='<p>Nada publicado.</p>'; up.forEach(x=>pg.appendChild(createCardHTML(x)));
         }
 
+        // FUNCION COPIAR LINK DEL PERFIL
+        function copyProfileLink() {
+            const url = window.location.origin + window.location.pathname + '?u=' + viewedUser;
+            navigator.clipboard.writeText(url);
+            alert("¡Enlace del perfil copiado al portapapeles!\n" + url);
+        }
+
         async function playProject(k) {
             const p = allProjects.find(x=>x._key===k); if(!p) return; currentProjectKey=k; switchView('game-view');
             window.history.replaceState({}, document.title, "?p=" + k);
-            
-            document.getElementById('view-game-title').textContent = p.name;
-            document.getElementById('view-game-author').textContent = "@" + p.author;
-            document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
-
+            document.getElementById('view-game-title').textContent = p.name; document.getElementById('view-game-author').textContent = "@" + p.author; document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
             document.getElementById('game-iframe').src = 'https://warp.mistium.com/fullscreen.html?project_url=' + encodeURIComponent(p.url);
-            
-            p.views=(p.views||0)+1; 
-            renderGameStats(p); 
-            // CORRECCIÓN APLICADA AQUÍ: se reemplaza updateProjectDB por await dbStore
-            await dbStore(k, p); 
-            loadComments(k);
+            p.views=(p.views||0)+1; renderGameStats(p); await dbStore(k, p); loadComments(k);
         }
 
-        function copyProjectLink() {
-            const url = window.location.origin + window.location.pathname + '?p=' + currentProjectKey;
-            navigator.clipboard.writeText(url);
-            alert("¡Enlace copiado al portapapeles!\n" + url);
-        }
+        function copyProjectLink() { const url = window.location.origin + window.location.pathname + '?p=' + currentProjectKey; navigator.clipboard.writeText(url); alert("¡Enlace copiado al portapapeles!\n" + url); }
 
         // --- SISTEMA DE COMENTARIOS ---
         async function loadComments(k) {
@@ -896,13 +736,11 @@
                     d.forEach(c => {
                         const isCAdm=c.role==='admin', cCls=isCAdm?'comment-item admin-comment':'comment-item', bAdm=isCAdm?'<span class="admin-badge-sparkle">👑 ADMIN</span>':'';
                         let dBtn=''; if(isAdm||isOwn||(currentUser&&c.name===currentUser.username)) dBtn=`<button class="reply-btn" style="color:var(--danger);" onclick="deleteComment('${c.id}')">🗑️</button>`;
-                        
                         let rHtml=''; if(c.replies) { rHtml='<div class="replies-list">'; c.replies.forEach(r=>{
                             const isRAdm=r.role==='admin', rSty=isRAdm?'border:1px solid #00ff6b;background:rgba(0,255,107,0.05);':'', rBAdm=isRAdm?'<span class="admin-badge-sparkle" style="font-size:0.65rem;">👑</span>':'';
                             let rDBtn=''; if(isAdm||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.75rem;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
                             rHtml+=`<div class="reply-item" style="${rSty}"><img src="${escapeHTML(r.pfpUrl)}" class="reply-pfp"><div><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rDBtn}<div style="font-size:0.85rem;color:#ccc;">${escapeHTML(r.text)}</div></div></div>`;
                         }); rHtml+='</div>';}
-                        
                         const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative;"><input type="text" id="rt-${c.id}" placeholder="Respuesta..." style="padding:5px;"><button onclick="postReply('${c.id}')" style="padding:5px;">Enviar</button></div>`:'';
                         lst.innerHTML+=`<div class="${cCls}"><div class="comment-header-row"><img src="${escapeHTML(c.pfpUrl)}" class="comment-pfp" onclick="viewProfile('${escapeHTML(c.name)}')"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm}</div><div class="comment-text">${escapeHTML(c.text)}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
@@ -916,14 +754,10 @@
                 const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k)||[];
                 c.push({id:'cmt_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[]});
                 await dbStore(k, c); document.getElementById('cmt-text').value=''; loadComments(currentProjectKey);
-                
                 const proj = allProjects.find(x => x._key === currentProjectKey);
                 if(proj && proj.author !== currentUser.username) {
                     const targetData = await dbGet(USER_PREFIX + proj.author.toLowerCase());
-                    if(targetData) {
-                        await pushNotification(targetData, `💬 ${currentUser.username} comentó en tu proyecto "${proj.name}".`);
-                        await dbStore(USER_PREFIX + proj.author.toLowerCase(), targetData);
-                    }
+                    if(targetData) { await pushNotification(targetData, `💬 ${currentUser.username} comentó en tu proyecto "${proj.name}".`); await dbStore(USER_PREFIX + proj.author.toLowerCase(), targetData); }
                 }
             } catch(e) {}
         }
@@ -934,13 +768,9 @@
                 if(tg) {
                     tg.replies=tg.replies||[]; tg.replies.push({id:'rep_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role});
                     await dbStore(k,c); loadComments(currentProjectKey);
-                    
                     if(tg.name !== currentUser.username) {
                         const targetData = await dbGet(USER_PREFIX + tg.name.toLowerCase());
-                        if(targetData) {
-                            await pushNotification(targetData, `↩️ ${currentUser.username} respondió a tu comentario.`);
-                            await dbStore(USER_PREFIX + tg.name.toLowerCase(), targetData);
-                        }
+                        if(targetData) { await pushNotification(targetData, `↩️ ${currentUser.username} respondió a tu comentario.`); await dbStore(USER_PREFIX + tg.name.toLowerCase(), targetData); }
                     }
                 }
             } catch(e){}
@@ -948,49 +778,43 @@
         async function deleteComment(id) { if(!confirm("¿Borrar?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(c){ c=c.filter(x=>x.id!==id); await dbStore(k,c); loadComments(currentProjectKey); } }
         async function deleteReply(cid, rid) { if(!confirm("¿Borrar respuesta?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid); if(tg&&tg.replies){ tg.replies=tg.replies.filter(x=>x.id!==rid); await dbStore(k,c); loadComments(currentProjectKey); } }
 
-        // --- SISTEMA DE CHAT (CLOUDLINK + DB) ---
+        // --- SISTEMA DE CHAT AVANZADO (CLOUDLINK + DB) ---
         function initCloudLink() {
             if (cloudLinkSocket) cloudLinkSocket.close();
             try {
                 cloudLinkSocket = new WebSocket('wss://cl.mikedev101.cc/');
-                cloudLinkSocket.onopen = () => {
-                    cloudLinkSocket.send(JSON.stringify({ cmd: "handshake", val: { language: "Scratch32", version: "1.0" } }));
-                    cloudLinkSocket.send(JSON.stringify({ cmd: "setid", val: "s32_" + currentUser.username.toLowerCase() }));
-                };
+                cloudLinkSocket.onopen = () => { cloudLinkSocket.send(JSON.stringify({ cmd: "handshake", val: { language: "Scratch32", version: "1.0" } })); cloudLinkSocket.send(JSON.stringify({ cmd: "setid", val: "s32_" + currentUser.username.toLowerCase() })); };
                 cloudLinkSocket.onmessage = (e) => {
                     try {
                         const msg = JSON.parse(e.data);
                         if (msg.cmd === "gvar" && msg.name.startsWith(CHAT_PREFIX + currentUser.username.toLowerCase())) {
                             const sender = msg.name.split('_from_')[1];
-                            unreadNotifs++;
-                            document.getElementById('chat-badge').textContent = unreadNotifs;
-                            document.getElementById('chat-badge').style.display = 'block';
-                            
+                            unreadNotifs++; document.getElementById('chat-badge').textContent = unreadNotifs; document.getElementById('chat-badge').style.display = 'block';
                             if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
-                                loadChatMessages(activeChatUser);
-                                unreadNotifs--; document.getElementById('chat-badge').textContent = unreadNotifs;
-                                if(unreadNotifs<=0) document.getElementById('chat-badge').style.display = 'none';
+                                loadChatMessages(activeChatUser); unreadNotifs--; document.getElementById('chat-badge').textContent = unreadNotifs; if(unreadNotifs<=0) document.getElementById('chat-badge').style.display = 'none';
                             }
                         }
                     } catch(err){}
                 };
             } catch(e){}
         }
+        
+        function pingChat(targetUser) {
+            if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) {
+                const targetVar = CHAT_PREFIX + targetUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase();
+                cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: targetVar, val: "ping" }));
+            }
+        }
 
         async function openChat() {
             if(!currentUser) return;
-            switchView('chat-view');
-            unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none';
+            switchView('chat-view'); unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none';
             document.getElementById('chat-messages').innerHTML = '<p style="color:gray;">Selecciona un usuario a la izquierda para chatear.</p>';
-            document.getElementById('chat-input-area').style.display = 'none';
-            document.getElementById('chat-header').textContent = "Selecciona un chat";
+            document.getElementById('chat-input-area').style.display = 'none'; document.getElementById('chat-header').textContent = "Selecciona un chat";
             
-            const side = document.getElementById('chat-sidebar');
-            side.innerHTML = '';
-            
+            const side = document.getElementById('chat-sidebar'); side.innerHTML = '';
             const miData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
             let contacts = new Set([...(miData.following||[]), ...(miData.followers||[])]);
-            
             if(contacts.size === 0) { side.innerHTML = '<p style="padding:10px; color:gray;">Sigue a alguien para poder chatear.</p>'; return; }
             
             contacts.forEach(async c => {
@@ -998,44 +822,91 @@
                 if(u) {
                     const d = document.createElement('div'); d.className = 'contact-item';
                     d.innerHTML = `<img src="${u.pfp}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;"> <b>${u.username}</b>`;
-                    d.onclick = () => {
-                        document.querySelectorAll('.contact-item').forEach(x=>x.classList.remove('active'));
-                        d.classList.add('active');
-                        startChatWith(u.username);
-                    };
+                    d.onclick = () => { document.querySelectorAll('.contact-item').forEach(x=>x.classList.remove('active')); d.classList.add('active'); startChatWith(u.username); };
                     side.appendChild(d);
                 }
             });
         }
 
-        function getChatDBKey(u1, u2) {
-            const arr = [u1.toLowerCase(), u2.toLowerCase()].sort();
-            return CHAT_PREFIX + arr[0] + "_" + arr[1];
-        }
+        function getChatDBKey(u1, u2) { const arr = [u1.toLowerCase(), u2.toLowerCase()].sort(); return CHAT_PREFIX + arr[0] + "_" + arr[1]; }
 
         async function startChatWith(username) {
             activeChatUser = username;
-            document.getElementById('chat-header').textContent = "💬 Chateando con " + username;
-            document.getElementById('chat-input-area').style.display = 'flex';
+            
+            currentUser.blocked = currentUser.blocked || [];
+            const isBlocked = currentUser.blocked.includes(username);
+            const blockText = isBlocked ? "Desbloquear" : "Bloquear";
+            const blockColor = isBlocked ? "var(--warning)" : "var(--secondary)";
+
+            document.getElementById('chat-header').innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>💬 Chateando con ${username}</span>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-small" style="background:${blockColor};color:white;border:none;border-radius:4px;" onclick="toggleBlockContact()">${blockText}</button>
+                        <button class="btn-danger btn-small" onclick="wipeChatContact()">🗑️ Borrar Chat</button>
+                    </div>
+                </div>
+            `;
+            
             loadChatMessages(username);
         }
 
+        async function toggleBlockContact() {
+            currentUser.blocked = currentUser.blocked || [];
+            if(currentUser.blocked.includes(activeChatUser)) currentUser.blocked = currentUser.blocked.filter(u => u !== activeChatUser);
+            else currentUser.blocked.push(activeChatUser);
+            await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
+            localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
+            startChatWith(activeChatUser); // Recargar UI
+        }
+
+        async function wipeChatContact() {
+            if(!confirm("¿Borrar todo el historial con este usuario? No se podrá recuperar.")) return;
+            const key = getChatDBKey(currentUser.username, activeChatUser);
+            await dbDelete(key);
+            loadChatMessages(activeChatUser);
+            pingChat(activeChatUser);
+        }
+
         async function loadChatMessages(username) {
-            const box = document.getElementById('chat-messages');
-            box.innerHTML = '<p>Cargando...</p>';
+            const box = document.getElementById('chat-messages'); box.innerHTML = '<p>Cargando...</p>';
+            
+            // Verificar estado de bloqueo del otro lado
+            const otherUser = await dbGet(USER_PREFIX + username.toLowerCase());
+            const amIBlocked = otherUser && otherUser.blocked && otherUser.blocked.includes(currentUser.username);
+            const didIBlock = currentUser.blocked && currentUser.blocked.includes(username);
+
+            if (amIBlocked || didIBlock) document.getElementById('chat-input-area').style.display = 'none';
+            else document.getElementById('chat-input-area').style.display = 'flex';
+
             const key = getChatDBKey(currentUser.username, username);
             const history = await dbGet(key) || [];
             
             box.innerHTML = '';
-            if(history.length===0) box.innerHTML = '<p style="color:gray;text-align:center;">No hay mensajes previos.</p>';
-            
+            if(history.length===0) box.innerHTML = '<p style="color:gray;text-align:center;">No hay mensajes.</p>';
+            if (amIBlocked) box.innerHTML = '<p style="color:var(--danger);text-align:center;">No puedes responder a esta conversación.</p>' + box.innerHTML;
+            if (didIBlock) box.innerHTML = '<p style="color:var(--warning);text-align:center;">Has bloqueado a este usuario.</p>' + box.innerHTML;
+
             history.forEach(m => {
                 const isMe = m.sender === currentUser.username;
                 const d = new Date(m.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const editedStr = m.edited ? ' <span style="font-size:0.6rem; opacity:0.7;">(editado)</span>' : '';
+                
+                let msgActions = '';
+                if(isMe) {
+                    msgActions = `
+                        <div style="font-size:0.7rem; text-align:right; margin-top:4px;">
+                            <span style="cursor:pointer; color:#aaeeff;" onclick="editChatMessage('${m.id}')">✏️ Editar</span>
+                            <span style="cursor:pointer; color:var(--danger); margin-left:8px;" onclick="deleteChatMessage('${m.id}')">🗑️ Borrar</span>
+                        </div>
+                    `;
+                }
+
                 box.innerHTML += `
                     <div class="msg-bubble ${isMe ? 'msg-mine' : 'msg-theirs'}">
-                        ${escapeHTML(m.text)}
+                        ${escapeHTML(m.text)}${editedStr}
                         <div style="font-size:0.6rem; margin-top:3px; opacity:0.6; text-align:${isMe?'right':'left'};">${d}</div>
+                        ${msgActions}
                     </div>
                 `;
             });
@@ -1043,23 +914,44 @@
         }
 
         async function sendChatMessage() {
-            const input = document.getElementById('chat-input-text');
-            const txt = input.value.trim();
-            if(!txt || !activeChatUser) return;
-            input.value = '';
+            const input = document.getElementById('chat-input-text'); const txt = input.value.trim();
+            if(!txt || !activeChatUser) return; input.value = '';
 
             const key = getChatDBKey(currentUser.username, activeChatUser);
             const history = await dbGet(key) || [];
-            history.push({ sender: currentUser.username, text: txt, date: Date.now() });
+            history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: txt, date: Date.now() });
             
             if(history.length > 50) history.shift();
             await dbStore(key, history);
 
-            if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) {
-                const targetVar = CHAT_PREFIX + activeChatUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase();
-                cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: targetVar, val: "ping" }));
-            }
+            pingChat(activeChatUser);
+            loadChatMessages(activeChatUser);
+        }
 
+        async function editChatMessage(msgId) {
+            const key = getChatDBKey(currentUser.username, activeChatUser);
+            let history = await dbGet(key); if(!history) return;
+            const msg = history.find(x => x.id === msgId); if(!msg) return;
+            
+            const nTxt = prompt("Editar mensaje:", msg.text);
+            if(nTxt === null || nTxt.trim() === '') return;
+            
+            msg.text = nTxt.trim(); msg.edited = true;
+            await dbStore(key, history);
+            
+            pingChat(activeChatUser);
+            loadChatMessages(activeChatUser);
+        }
+
+        async function deleteChatMessage(msgId) {
+            if(!confirm("¿Borrar mensaje?")) return;
+            const key = getChatDBKey(currentUser.username, activeChatUser);
+            let history = await dbGet(key); if(!history) return;
+            
+            history = history.filter(x => x.id !== msgId);
+            await dbStore(key, history);
+            
+            pingChat(activeChatUser);
             loadChatMessages(activeChatUser);
         }
     </script>
