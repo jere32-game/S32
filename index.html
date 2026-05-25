@@ -689,13 +689,24 @@
             const viewsCount = proj.views || 0;
             const badgeHtml = proj.featured ? `<div class="featured-badge">⭐ Destacado</div>` : '';
 
-            let adminHtml = '';
-            if (currentUser && currentUser.role === 'admin') {
-                const featText = proj.featured ? 'Quitar Destacado' : '⭐ Destacar';
-                adminHtml = `
-                    <button class="btn-secondary" style="margin-top: 5px;" onclick="toggleFeatured('${proj._key}')">${featText}</button>
-                    <button class="btn-danger" onclick="deleteProject('${proj._key}')">🗑️ Eliminar</button>
-                `;
+            // COMPROBACIÓN DE PERMISOS CRUZADA PARA BORRAR O DESTACAR PROYECTOS
+            let actionsHtml = '';
+            if (currentUser) {
+                const isAdmin = currentUser.role === 'admin';
+                const isProjectCreator = proj.author === currentUser.username;
+
+                if (isAdmin) {
+                    const featText = proj.featured ? 'Quitar Destacado' : '⭐ Destacar';
+                    actionsHtml = `
+                        <button class="btn-secondary" style="margin-top: 5px;" onclick="toggleFeatured('${proj._key}')">${featText}</button>
+                        <button class="btn-danger" onclick="deleteProject('${proj._key}')">🗑️ Eliminar</button>
+                    `;
+                } else if (isProjectCreator) {
+                    // Si el usuario logueado es el dueño legítimo, le damos solo la papelera
+                    actionsHtml = `
+                        <button class="btn-danger" onclick="deleteProject('${proj._key}')">🗑️ Eliminar</button>
+                    `;
+                }
             }
 
             card.innerHTML = `
@@ -710,12 +721,12 @@
                 </div>
 
                 <button class="play-btn" onclick="playProject('${proj._key}')">⚡ Jugar</button>
-                ${adminHtml}
+                ${actionsHtml}
             `;
             return card;
         }
 
-        // --- ACCIONES DE PROYECTOS (Vistas, Likes, Admin) ---
+        // --- ACCIONES DE PROYECTOS (Vistas, Likes, Admin, Creadores) ---
 
         async function updateProjectDB(key, newObj) {
             await fetch(SERVER_URL + 'store.php', {
@@ -725,16 +736,38 @@
         }
 
         async function deleteProject(key) {
-            if (!confirm("¿Borrar permanentemente?")) return;
+            const proj = allProjects.find(p => p._key === key);
+            if (!proj) return;
+
+            // Validar de nuevo en la función por seguridad extrema
+            const isAdmin = currentUser && currentUser.role === 'admin';
+            const isProjectCreator = currentUser && proj.author === currentUser.username;
+
+            if (!isAdmin && !isProjectCreator) {
+                alert("No tienes permisos para eliminar este proyecto.");
+                return;
+            }
+
+            if (!confirm(`¿Estás completamente seguro de eliminar "${proj.name}"? Esta acción borrará el juego y sus comentarios para siempre.`)) return;
+            
             try {
+                // Borrar datos del proyecto
                 await fetch(SERVER_URL + 'delete.php', {
                     method: 'DELETE', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ apiKey: API_KEY, key: key })
                 });
+
+                // Borrar base de datos de comentarios asociada
                 const cmtKey = key.replace(PROJ_PREFIX, CMT_PREFIX);
                 fetch(SERVER_URL + 'delete.php', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
-                loadAllProjects();
-            } catch(e) { alert("Error: " + e.message); }
+                
+                // Si borramos el proyecto mientras lo teníamos abierto, volvemos al home
+                if (currentProjectKey === key) {
+                    goHome();
+                } else {
+                    loadAllProjects();
+                }
+            } catch(e) { alert("Error al eliminar: " + e.message); }
         }
 
         async function toggleFeatured(key) {
@@ -853,7 +886,7 @@
             currentProjectKey = key;
             switchView('game-view');
             
-            // LA URL MÁGICA DE PANTALLA COMPLETA DE TURBOWARP/MISTIUM
+            // LA URL MÁGICA DE PANTALLA COMPLETA DE TURBOWARP
             const warpUrl = 'https://warp.mistium.com/fullscreen.html?project_url=' + encodeURIComponent(proj.url);
             document.getElementById('game-iframe').src = warpUrl;
 
@@ -864,12 +897,16 @@
             loadComments(key);
         }
 
-        // --- SISTEMA DE COMENTARIOS CON PARTÍCULAS ADMIN ---
+        // --- SISTEMA DE COMENTARIOS MODERABLE ---
 
         async function loadComments(projectKey) {
             const listDiv = document.getElementById('comments-list');
             listDiv.innerHTML = '<p style="color: var(--text-muted);">Cargando comentarios...</p>';
             const cmtKey = projectKey.replace(PROJ_PREFIX, CMT_PREFIX);
+
+            const proj = allProjects.find(p => p._key === projectKey);
+            const isProjectCreator = proj && currentUser && (proj.author === currentUser.username);
+            const isAdmin = currentUser && (currentUser.role === 'admin');
 
             try {
                 const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
@@ -883,11 +920,16 @@
                     comments.forEach(cmt => {
                         const dateObj = new Date(cmt.date);
                         
-                        // Evaluar si es admin para inyectar partículas increíbles
                         const isCmtAdmin = cmt.role === 'admin';
                         const cmtClass = isCmtAdmin ? 'comment-item admin-comment' : 'comment-item';
                         const adminBadge = isCmtAdmin ? `<span class="admin-badge-sparkle">👑 ADMIN</span>` : '';
                         const safePfp = escapeHTML(cmt.pfpUrl) || 'https://via.placeholder.com/40/1a1a24/00ff6b?text=' + cmt.name[0].toUpperCase();
+
+                        const isCmtAuthor = currentUser && (cmt.name === currentUser.username);
+                        let deleteCmtBtnHtml = '';
+                        if (isAdmin || isProjectCreator || isCmtAuthor) {
+                            deleteCmtBtnHtml = `<button class="reply-btn" style="color: var(--danger); font-size: 0.8rem; margin-left: 10px;" onclick="deleteComment('${cmt.id}')">🗑️ Eliminar</button>`;
+                        }
 
                         let repliesHtml = '';
                         if(cmt.replies && cmt.replies.length > 0) {
@@ -900,14 +942,21 @@
                                 const repStyle = isRepAdmin ? 'border: 1px solid #00ff6b; background: rgba(0,255,107,0.05); box-shadow: 0 0 10px rgba(0,255,107,0.3);' : '';
                                 const repAdminBadge = isRepAdmin ? `<span class="admin-badge-sparkle" style="font-size: 0.65rem; padding: 1px 4px;">👑 ADMIN</span>` : '';
 
+                                const isRepAuthor = currentUser && (rep.name === currentUser.username);
+                                let deleteRepBtnHtml = '';
+                                if (isAdmin || isProjectCreator || isRepAuthor) {
+                                    deleteRepBtnHtml = `<button class="reply-btn" style="color: var(--danger); font-size: 0.75rem; margin-left: 8px; display: inline-block;" onclick="deleteReply('${cmt.id}', '${rep.id}')">🗑️</button>`;
+                                }
+
                                 repliesHtml += `
                                     <div class="reply-item" style="${repStyle}">
                                         <img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://via.placeholder.com/25/1a1a24/00ff6b?text=?'">
-                                        <div>
+                                        <div style="flex: 1;">
                                             <b style="color:var(--primary); font-size:0.85rem; cursor:pointer;" onclick="viewProfile('${escapeHTML(rep.name)}')">${escapeHTML(rep.name)}</b> 
                                             ${repAdminBadge} 
                                             <span style="font-size:0.7rem; color:gray;">${repDate}</span>
-                                            <div style="font-size:0.85rem; color:#ccc;">${escapeHTML(rep.text)}</div>
+                                            ${deleteRepBtnHtml}
+                                            <div style="font-size:0.85rem; color:#ccc; margin-top: 2px;">${escapeHTML(rep.text)}</div>
                                         </div>
                                     </div>
                                 `;
@@ -934,6 +983,7 @@
                                         </div>
                                         <div class="comment-text">${escapeHTML(cmt.text)}</div>
                                         ${currentUser ? `<button class="reply-btn" onclick="document.getElementById('reply-box-${cmt.id}').style.display='flex'">Responder</button>` : ''}
+                                        ${deleteCmtBtnHtml}
                                         ${replyInputHtml}
                                     </div>
                                 </div>
@@ -1001,6 +1051,7 @@
                 if (targetCmt) {
                     targetCmt.replies = targetCmt.replies || [];
                     targetCmt.replies.push({ 
+                        id: 'rep_' + Date.now() + Math.floor(Math.random()*1000),
                         name: currentUser.username, 
                         text: textInput, 
                         pfpUrl: currentUser.pfp, 
@@ -1015,6 +1066,56 @@
                     loadComments(currentProjectKey);
                 }
             } catch(e) { alert("Error al responder"); }
+        }
+
+        // --- SISTEMA DE ELIMINACIÓN DE COMENTARIOS ---
+
+        async function deleteComment(commentId) {
+            if (!confirm("¿Estás seguro de que deseas eliminar este comentario?")) return;
+            if (!currentProjectKey) return;
+
+            const cmtKey = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
+            try {
+                const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
+                const getData = await resGet.json();
+                
+                if (getData.success && getData.data) {
+                    let comments = JSON.parse(getData.data.value);
+                    comments = comments.filter(c => c.id !== commentId);
+
+                    await fetch(SERVER_URL + 'store.php', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ apiKey: API_KEY, key: cmtKey, value: JSON.stringify(comments), mimeType: 'application/json' })
+                    });
+                    loadComments(currentProjectKey);
+                }
+            } catch (e) { alert("Error al eliminar comentario: " + e.message); }
+        }
+
+        async function deleteReply(commentId, replyId) {
+            if (!confirm("¿Deseas eliminar esta respuesta?")) return;
+            if (!currentProjectKey) return;
+
+            const cmtKey = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
+            try {
+                const resGet = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: cmtKey }) });
+                const getData = await resGet.json();
+                
+                if (getData.success && getData.data) {
+                    let comments = JSON.parse(getData.data.value);
+                    const targetCmt = comments.find(c => c.id === commentId);
+                    
+                    if (targetCmt && targetCmt.replies) {
+                        targetCmt.replies = targetCmt.replies.filter(r => r.id !== replyId);
+
+                        await fetch(SERVER_URL + 'store.php', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ apiKey: API_KEY, key: cmtKey, value: JSON.stringify(comments), mimeType: 'application/json' })
+                        });
+                        loadComments(currentProjectKey);
+                    }
+                }
+            } catch (e) { alert("Error al eliminar respuesta: " + e.message); }
         }
 
         function escapeHTML(str) {
