@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -739,7 +739,7 @@
         }
         
         async function adminDeleteUser() { 
-            if (!viewedUser || !confirm(`⚠️ ELIMINAR A ${viewedUser} DE LA DB?`)) return; 
+            if (!viewedUser || !confirm(`⚠️ ELIMINAR A ${viewedUser} DE S32?`)) return; 
             if (viewedUser.toLowerCase() === currentUser.username.toLowerCase()) return alert("No puedes eliminarte a ti mismo desde aquí. Ve a tus ajustes de cuenta.");
             
             const uKey = USER_PREFIX + viewedUser.toLowerCase(); 
@@ -1004,8 +1004,8 @@
                         const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="Respuesta..." style="min-height:35px; padding:5px;"></div> <button class="btn-secondary" style="padding:5px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')">😀</button> <button onclick="postReply('${c.id}')" style="padding:5px 10px;">Enviar</button></div>`:'';
                         lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://via.placeholder.com/40/1a1a24/00ff6b?text=?'"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span class="comment-date">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
-                } else lst.innerHTML='<p>Sé el primero en comentar.</p>';
-            } catch(e) { lst.innerHTML='<p>Error.</p>'; }
+                } else lst.innerHTML='<p>Este lugar ta mas vasio que mis volsillos. escrivele algo wey.</p>';
+            } catch(e) { lst.innerHTML='<p>Error. ve si tiene wiffi l:l.</p>'; }
         }
 
         async function postComment() {
