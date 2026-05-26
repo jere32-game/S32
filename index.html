@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -409,12 +409,15 @@
                 <div class="chat-main">
                     <div id="chat-header" style="padding: 15px; background: #222; border-bottom: 1px solid #333; font-weight: bold;">Selecciona un chat</div>
                     <div class="chat-messages" id="chat-messages"></div>
+                    
+                    <div id="chat-typing-indicator" style="display:none; padding: 8px 15px; color: var(--primary); font-size: 0.85rem; font-style: italic; background: var(--bg); border-top: 1px solid #333;"></div>
+                    
                     <div class="chat-input" id="chat-input-area" style="display:none; align-items: flex-end;">
                         <input type="file" id="chat-img-upload" accept="image/*" style="display:none;" onchange="sendChatImage(this)">
                         <button class="btn-secondary" id="btn-chat-img" onclick="document.getElementById('chat-img-upload').click()">📷</button>
                         
                         <div style="flex:1;">
-                            <div contenteditable="true" id="chat-input-text" class="rich-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></div>
+                            <div contenteditable="true" id="chat-input-text" class="rich-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }" oninput="notifyTypingThrottled()"></div>
                         </div>
                         <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'chat-input-text')">😀</button>
                         <button onclick="sendChatMessage()">Enviar</button>
@@ -1050,27 +1053,97 @@
         async function deleteComment(id) { if(!confirm("¿Borrar?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(c){ c=c.filter(x=>x.id!==id); await dbStore(k,c); loadComments(currentProjectKey); } }
         async function deleteReply(cid, rid) { if(!confirm("¿Borrar respuesta?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid); if(tg&&tg.replies){ tg.replies=tg.replies.filter(x=>x.id!==rid); await dbStore(k,c); loadComments(currentProjectKey); } }
 
-        // --- SISTEMA DE CHAT AVANZADO ---
+        // --- SISTEMA DE CHAT AVANZADO Y WEBSOCKET (CORREGIDO) ---
+        let wsKeepAlive;
         function initCloudLink() {
-            if (cloudLinkSocket) cloudLinkSocket.close();
+            if (cloudLinkSocket) {
+                cloudLinkSocket.onclose = null; 
+                cloudLinkSocket.close();
+            }
             try {
                 cloudLinkSocket = new WebSocket('wss://cl.mikedev101.cc/');
-                cloudLinkSocket.onopen = () => { cloudLinkSocket.send(JSON.stringify({ cmd: "handshake", val: { language: "Scratch32", version: "1.0" } })); cloudLinkSocket.send(JSON.stringify({ cmd: "setid", val: "s32_" + currentUser.username.toLowerCase() })); };
+                cloudLinkSocket.onopen = () => { 
+                    cloudLinkSocket.send(JSON.stringify({ cmd: "handshake", val: { language: "Scratch32", version: "1.0" } })); 
+                    cloudLinkSocket.send(JSON.stringify({ cmd: "setid", val: "s32_" + currentUser.username.toLowerCase() })); 
+                    
+                    // Previene que el websocket se desconecte (lo que causaba el bug de tener que recargar)
+                    clearInterval(wsKeepAlive);
+                    wsKeepAlive = setInterval(() => {
+                        if(cloudLinkSocket.readyState === WebSocket.OPEN) cloudLinkSocket.send(JSON.stringify({cmd: "ping", val: ""}));
+                    }, 25000);
+                };
+                
+                cloudLinkSocket.onclose = () => {
+                    clearInterval(wsKeepAlive);
+                    setTimeout(initCloudLink, 3000); // Reconecta de forma oculta en 3 segundos
+                };
+
                 cloudLinkSocket.onmessage = (e) => {
                     try {
                         const msg = JSON.parse(e.data);
-                        if (msg.cmd === "gvar" && msg.name.startsWith(CHAT_PREFIX + currentUser.username.toLowerCase())) {
+                        if (msg.cmd === "gvar" && msg.name && msg.name.startsWith(CHAT_PREFIX + currentUser.username.toLowerCase())) {
                             const sender = msg.name.split('_from_')[1];
-                            unreadNotifs++; document.getElementById('chat-badge').textContent = unreadNotifs; document.getElementById('chat-badge').style.display = 'block';
-                            if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
-                                loadChatMessages(activeChatUser); unreadNotifs--; document.getElementById('chat-badge').textContent = unreadNotifs; if(unreadNotifs<=0) document.getElementById('chat-badge').style.display = 'none';
+                            
+                            // Detectar estado "escribiendo"
+                            if (msg.val === "typing") {
+                                if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
+                                    showTypingIndicator(sender);
+                                }
+                                return;
+                            }
+                            
+                            // Detectar mensajes entrantes (ping)
+                            if (msg.val === "ping") {
+                                if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
+                                    loadChatMessages(activeChatUser);
+                                    hideTypingIndicator(); 
+                                } else {
+                                    unreadNotifs++; 
+                                    document.getElementById('chat-badge').textContent = unreadNotifs; 
+                                    document.getElementById('chat-badge').style.display = 'block';
+                                }
                             }
                         }
                     } catch(err){}
                 };
             } catch(e){}
         }
-        function pingChat(targetUser) { if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) { const tv = CHAT_PREFIX + targetUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase(); cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: tv, val: "ping" })); } }
+
+        // --- FUNCIONES DE TIPEO ---
+        let typingTimeout = null;
+        let lastTypingTime = 0;
+
+        function notifyTypingThrottled() {
+            const now = Date.now();
+            if (now - lastTypingTime > 1500) {
+                if(!activeChatUser) return;
+                if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) {
+                    const tv = CHAT_PREFIX + activeChatUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase();
+                    cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: tv, val: "typing" }));
+                }
+                lastTypingTime = now;
+            }
+        }
+
+        function showTypingIndicator(username) {
+            const ind = document.getElementById('chat-typing-indicator');
+            ind.textContent = `✍️ ${username} está escribiendo...`;
+            ind.style.display = 'block';
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => { ind.style.display = 'none'; }, 3000);
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('chat-typing-indicator').style.display = 'none';
+            clearTimeout(typingTimeout);
+        }
+
+        function pingChat(targetUser) { 
+            if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) { 
+                const tv = CHAT_PREFIX + targetUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase(); 
+                cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: tv, val: "ping" })); 
+            } 
+        }
 
         async function openChat() {
             if(!currentUser) return; switchView('chat-view'); unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none';
