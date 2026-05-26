@@ -26,9 +26,9 @@
         .ss-icon { background-color: #2a2a35; color: var(--text-muted); padding: 5px 8px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.9rem; border: 1px solid #444; transition: all 0.2s; }
         .ss-icon:hover { color: var(--primary); border-color: var(--primary); }
 
-        .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; position: relative; color: var(--text); transition: transform 0.2s; }
+        .icon-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; position: relative; color: var(--text); transition: transform 0.2s; padding: 0 5px; }
         .icon-btn:hover { transform: scale(1.1); color: var(--primary); }
-        .badge-count { position: absolute; top: -5px; right: -8px; background: var(--danger); color: white; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; display: none; }
+        .badge-count { position: absolute; top: -5px; right: -5px; background: var(--danger); color: white; font-size: 0.6rem; padding: 2px 5px; border-radius: 10px; font-weight: bold; display: none; }
 
         main { flex: 1; padding: 2rem; max-width: 1200px; margin: 0 auto; width: 100%; }
 
@@ -43,6 +43,10 @@
         input[type="file"] { padding: 0.7rem; border: 1px dashed #333; cursor: pointer; }
         input:focus, textarea:focus, select:focus { border-color: var(--primary); }
         textarea { resize: vertical; min-height: 60px; }
+
+        .rich-input { width: 100%; padding: 0.8rem; background-color: var(--bg); border: 1px solid #333; color: var(--text); border-radius: 6px; outline: none; min-height: 45px; cursor: text; overflow-wrap: break-word; white-space: pre-wrap; }
+        .rich-input:empty:before { content: attr(placeholder); color: var(--text-muted); cursor: text; }
+        .rich-input:focus { border-color: var(--primary); }
 
         button { padding: 0.8rem 1.5rem; background-color: var(--primary); color: #000; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: transform 0.1s; white-space: nowrap; }
         button:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
@@ -65,6 +69,8 @@
         .project-image { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem; background-color: #000; border: 1px solid #333; }
         
         .featured-badge { position: absolute; top: -10px; right: -10px; background: gold; color: black; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 2; }
+        .hidden-badge { position: absolute; top: -10px; left: -10px; background: #555; color: white; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 2; }
+        .html-badge { position: absolute; top: 130px; left: 10px; background: #e34f26; color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2; }
 
         .project-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 0.5rem; }
         .project-author { color: var(--primary); font-size: 0.9rem; margin-bottom: 1rem; cursor: pointer; text-decoration: underline; }
@@ -81,6 +87,7 @@
         #game-iframe { width: 100%; height: 75vh; border: 2px solid var(--primary); border-radius: var(--radius); background-color: #000; box-shadow: 0 4px 20px rgba(0, 255, 107, 0.1); margin-bottom: 1rem; }
 
         .comments-section { background-color: var(--panel); border-radius: var(--radius); padding: 2rem; border: 1px solid #333; }
+        .comment-form { background-color: var(--bg); padding: 1rem; border-radius: 8px; border: 1px solid #222; }
         .comment-list { margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; }
         .comment-item { display: flex; gap: 1rem; background-color: var(--bg); padding: 1rem; border-radius: 8px; border: 1px solid #333; flex-direction: column; position: relative; }
         .comment-header-row { display: flex; gap: 1rem; z-index: 2; }
@@ -103,7 +110,7 @@
         .msg-bubble { max-width: 70%; padding: 10px 15px; border-radius: 15px; word-wrap: break-word; }
         .msg-mine { align-self: flex-end; background: var(--primary); color: #000; border-bottom-right-radius: 0; }
         .msg-theirs { align-self: flex-start; background: #333; border-bottom-left-radius: 0; }
-        .chat-input { padding: 1rem; border-top: 1px solid #333; display: flex; gap: 10px; background: var(--bg); }
+        .chat-input { padding: 1rem; border-top: 1px solid #333; display: flex; gap: 10px; background: var(--bg); align-items: flex-end;}
 
         #notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--panel); border: 1px solid var(--primary); border-radius: var(--radius); box-shadow: 0 5px 20px rgba(0,0,0,0.8); z-index: 200; display: none; max-height: 400px; overflow-y: auto; }
         .notif-item { padding: 15px; border-bottom: 1px solid #333; font-size: 0.9rem; cursor: pointer; }
@@ -143,6 +150,9 @@
 
         /* CUSTOM EMOJIS */
         .custom-emoji { height: 1.8em; vertical-align: middle; display: inline-block; margin: 0 2px; }
+        .emoji-picker-popup { position: absolute; background: var(--panel); border: 1px solid var(--primary); border-radius: 8px; padding: 10px; display: none; gap: 8px; flex-wrap: wrap; max-width: 250px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+        .emoji-picker-popup img { width: 28px; height: 28px; cursor: pointer; transition: transform 0.1s; }
+        .emoji-picker-popup img:hover { transform: scale(1.3); }
 
         .overlay-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; overflow-y: auto; padding: 20px; }
         .auth-box { background: var(--panel); padding: 2rem; border-radius: var(--radius); width: 100%; max-width: 500px; border: 1px solid var(--primary); position: relative; margin: auto; }
@@ -155,6 +165,8 @@
     </style>
 </head>
 <body>
+
+    <div id="emoji-picker-popup" class="emoji-picker-popup"></div>
 
     <header>
         <div class="header-logo" onclick="goHome()">
@@ -266,9 +278,13 @@
                 <h2>Publicar un Proyecto</h2>
                 <div class="form-group">
                     <div class="input-box"><label>Nombre del Juego</label><input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" autocomplete="off"></div>
-                    <div class="input-box"><label>Archivo (.sb3, .pmp)</label><input type="file" id="proj-file" accept=".sb3,.pmp"></div>
+                    <div class="input-box"><label>Archivo (.sb3, .html pesados)</label><input type="file" id="proj-file" accept=".sb3,.html"></div>
                     <div class="input-box"><label>Imagen de Portada (Opcional)</label><input type="file" id="proj-image" accept="image/*"></div>
                 </div>
+                <label style="display:flex; align-items:center; gap:5px; margin-bottom: 10px; cursor:pointer;">
+                    <input type="checkbox" id="proj-hidden" style="width:auto; height: 1.2rem;"> 👻 Proyecto Oculto (Solo accesible con el link directo)
+                </label>
+
                 <button id="publish-btn" onclick="publishProject()" style="width: 100%;">Subir y Publicar</button>
                 <p id="publish-status" style="font-size: 0.9rem; margin-top: 10px;"></p>
             </div>
@@ -331,9 +347,11 @@
             
             <div class="comments-section">
                 <h3>Comentarios del Proyecto</h3>
-                <div id="comment-input-area" class="comment-form form-group" style="display: none;">
-                    <div class="input-box" style="flex: 1;"><input type="text" id="cmt-text" placeholder="Escribe tu comentario... (Usa :emoji:)" autocomplete="off"></div>
-                    <button class="btn-secondary" onclick="showEmojiHelp()">😀</button>
+                <div id="comment-input-area" class="comment-form form-group" style="display: none; align-items: flex-end;">
+                    <div class="input-box" style="flex: 1;">
+                        <div contenteditable="true" id="cmt-text" class="rich-input" placeholder="Escribe tu comentario..."></div>
+                    </div>
+                    <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'cmt-text')">😀</button>
                     <button id="cmt-btn" onclick="postComment()" style="align-self: stretch;">Enviar</button>
                 </div>
                 <p id="cmt-login-req" style="color: var(--danger); font-size: 0.9rem;">Inicia sesión para comentar.</p>
@@ -348,9 +366,14 @@
                 <div class="chat-main">
                     <div id="chat-header" style="padding: 15px; background: #222; border-bottom: 1px solid #333; font-weight: bold;">Selecciona un chat</div>
                     <div class="chat-messages" id="chat-messages"></div>
-                    <div class="chat-input" id="chat-input-area" style="display:none;">
-                        <input type="text" id="chat-input-text" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter') sendChatMessage()">
-                        <button class="btn-secondary" onclick="showEmojiHelp()">😀</button>
+                    <div class="chat-input" id="chat-input-area" style="display:none; align-items: flex-end;">
+                        <input type="file" id="chat-img-upload" accept="image/*" style="display:none;" onchange="sendChatImage(this)">
+                        <button class="btn-secondary" id="btn-chat-img" onclick="document.getElementById('chat-img-upload').click()">📷</button>
+                        
+                        <div style="flex:1;">
+                            <div contenteditable="true" id="chat-input-text" class="rich-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></div>
+                        </div>
+                        <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'chat-input-text')">😀</button>
                         <button onclick="sendChatMessage()">Enviar</button>
                     </div>
                 </div>
@@ -379,7 +402,7 @@
         let cloudLinkSocket = null;
         let activeChatUser = '';
         let unreadNotifs = 0;
-        let globalEmojis = []; // Caché de Emojis
+        let globalEmojis = []; 
 
         document.addEventListener('DOMContentLoaded', () => {
             loadEmojisDB();
@@ -408,11 +431,58 @@
         function escapeHTML(str) { if (typeof str !== 'string') return ''; return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
         function linkify(text) { if(!text) return ''; const urlRegex = /(https?:\/\/[^\s]+)/g; return text.replace(urlRegex, function(url) { return `<a href="${url}" target="_blank" style="color: var(--primary); text-decoration: underline;">${url}</a>`; }); }
 
-        // --- SISTEMA DE EMOJIS ---
-        async function loadEmojisDB() {
-            const data = await dbGet(CONFIG_PREFIX + 'emojis');
-            if (data) globalEmojis = data;
+        // --- LÓGICA DE TEXTO ENRIQUECIDO (EMOJIS) ---
+        function extractRichText(elementId) {
+            const el = document.getElementById(elementId);
+            if(!el) return '';
+            let text = '';
+            for(const node of el.childNodes) {
+                if(node.nodeType === Node.TEXT_NODE) text += node.textContent;
+                else if(node.nodeName === 'IMG' && node.classList.contains('custom-emoji')) text += node.getAttribute('alt');
+                else if(node.nodeName === 'DIV' || node.nodeName === 'BR') text += '\n' + (node.textContent || '');
+                else text += node.textContent;
+            }
+            return text.trim();
         }
+
+        let activeEmojiTarget = '';
+        function toggleEmojiPicker(e, targetId) {
+            e.stopPropagation();
+            const popup = document.getElementById('emoji-picker-popup');
+            if(popup.style.display === 'flex' && activeEmojiTarget === targetId) { popup.style.display = 'none'; return; }
+            activeEmojiTarget = targetId; popup.innerHTML = '';
+            globalEmojis.forEach(emj => {
+                if(emj.adminOnly && (!currentUser || currentUser.role !== 'admin')) return;
+                const img = document.createElement('img'); img.src = emj.url; img.title = `:${emj.name}:`;
+                img.onclick = () => insertEmoji(emj.name, emj.url);
+                popup.appendChild(img);
+            });
+            if(popup.innerHTML === '') popup.innerHTML = '<span style="font-size:0.8rem;color:gray;">No hay emojis</span>';
+            popup.style.display = 'flex';
+            
+            const rect = e.target.getBoundingClientRect();
+            popup.style.left = rect.left + 'px';
+            popup.style.top = (rect.bottom + window.scrollY + 5) + 'px';
+        }
+        
+        function insertEmoji(name, url) {
+            if(!activeEmojiTarget) return; const target = document.getElementById(activeEmojiTarget);
+            if(target) {
+                const img = document.createElement('img'); img.src = url; img.className = 'custom-emoji'; img.alt = `:${name}:`;
+                target.appendChild(img); target.appendChild(document.createTextNode('\u00A0')); // espacio
+                const range = document.createRange(); const sel = window.getSelection();
+                range.selectNodeContents(target); range.collapse(false); sel.removeAllRanges(); sel.addRange(range);
+            }
+            document.getElementById('emoji-picker-popup').style.display = 'none';
+        }
+        
+        document.addEventListener('click', (e) => {
+            const popup = document.getElementById('emoji-picker-popup');
+            if(popup.style.display === 'flex' && !e.target.closest('.emoji-picker-popup') && e.target.tagName !== 'BUTTON') popup.style.display = 'none';
+        });
+
+        // --- SISTEMA DE EMOJIS Y PARTÍCULAS ---
+        async function loadEmojisDB() { const data = await dbGet(CONFIG_PREFIX + 'emojis'); if (data) globalEmojis = data; }
 
         function parseEmojis(text, authorRole) {
             let res = text;
@@ -423,20 +493,8 @@
             });
             return res;
         }
-
         function processText(txt, role) { return parseEmojis(linkify(escapeHTML(txt)), role); }
 
-        function showEmojiHelp() {
-            if(globalEmojis.length === 0) { alert("No hay emojis personalizados disponibles."); return; }
-            let msg = "Lista de Emojis disponibles (Escribe el código en tu mensaje):\n\n";
-            globalEmojis.forEach(e => {
-                if(e.adminOnly && (!currentUser || currentUser.role !== 'admin')) return;
-                msg += `:${e.name}: ${e.adminOnly ? '(Solo Admins)' : ''}\n`;
-            });
-            alert(msg);
-        }
-
-        // --- ESTILOS DE PARTICULAS ADMIN ---
         function getParticleStyle(particleConf) {
             if(!particleConf || particleConf === 'default') return '';
             if(particleConf.startsWith('url:')) return `--bg-img: url('${escapeHTML(particleConf.replace('url:',''))}');`;
@@ -446,8 +504,7 @@
                 'yellow': '--ac-border: #ffff00; --ac-glow: rgba(255,255,0,0.4); --ac-inner: rgba(255,200,0,0.2); --ac-aura: rgba(255,200,0,0.15);',
                 'purple': '--ac-border: #8800ff; --ac-glow: rgba(136,0,255,0.4); --ac-inner: rgba(200,0,255,0.2); --ac-aura: rgba(200,0,255,0.15);',
                 'turq': '--ac-border: #00ffcc; --ac-glow: rgba(0,255,204,0.4); --ac-inner: rgba(0,200,255,0.2); --ac-aura: rgba(0,200,255,0.15);'
-            };
-            return colors[particleConf] || '';
+            }; return colors[particleConf] || '';
         }
         function getParticleClass(particleConf) { return (particleConf && particleConf.startsWith('url:')) ? 'custom-img-particle' : ''; }
 
@@ -495,8 +552,7 @@
             document.getElementById('set-user').value = currentUser.username; document.getElementById('set-pass').value = currentUser.password || ''; document.getElementById('set-bio').value = currentUser.bio || ''; document.getElementById('set-status').textContent = '';
             
             if (currentUser.role === 'admin') {
-                document.getElementById('admin-settings-section').style.display = 'block';
-                document.getElementById('admin-particle-section').style.display = 'block';
+                document.getElementById('admin-settings-section').style.display = 'block'; document.getElementById('admin-particle-section').style.display = 'block';
                 if(currentUser.adminParticle && currentUser.adminParticle.startsWith('url:')) document.getElementById('set-admin-particle').value = 'custom';
                 else document.getElementById('set-admin-particle').value = currentUser.adminParticle || 'default';
                 toggleCustomParticleInput();
@@ -624,17 +680,32 @@
         function updateNotifBadge() { if(!currentUser) return; const notifs = currentUser.notifications || []; const unread = notifs.filter(n => !n.read).length; const badge = document.getElementById('notif-badge'); if(unread > 0) { badge.style.display = 'block'; badge.textContent = unread; } else badge.style.display = 'none'; }
         async function clearNotifications() { if(!currentUser) return; currentUser.notifications = []; await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser); renderNotifications(); }
 
-        // --- SUBIDA DE PROYECTOS ---
+        // --- SUBIDA DE PROYECTOS Y OCULTOS ---
         async function uploadFileToYYF(file) { const formData = new FormData(); formData.append('file', file, file.name); const res = await fetch(`${YYF_URL}/api/upload`, { method: 'POST', body: formData }); if (!res.ok) throw new Error(`Error YYF`); return YYF_URL + (await res.json()).fileUrl; }
+        
         async function publishProject() {
-            if (!currentUser) return; const name = document.getElementById('proj-name').value.trim(), fileIn = document.getElementById('proj-file'), imgIn = document.getElementById('proj-image'), sts = document.getElementById('publish-status'), btn = document.getElementById('publish-btn');
+            if (!currentUser) return; 
+            const name = document.getElementById('proj-name').value.trim();
+            const fileIn = document.getElementById('proj-file');
+            const imgIn = document.getElementById('proj-image');
+            const isHidden = document.getElementById('proj-hidden').checked;
+            const sts = document.getElementById('publish-status');
+            const btn = document.getElementById('publish-btn');
+
             if(!name || fileIn.files.length === 0) { sts.style.color = '#ff4444'; sts.textContent = 'Falta info.'; return; }
+            
+            // MODIFICACIÓN: Detectar si es HTML o SB3
+            const file = fileIn.files[0];
+            const isHtml = file.name.toLowerCase().endsWith('.html');
+
             btn.disabled = true; sts.style.color = 'var(--text)';
             try {
-                sts.textContent = 'Subiendo juego...'; const url = await uploadFileToYYF(fileIn.files[0]);
+                sts.textContent = 'Subiendo juego...'; const url = await uploadFileToYYF(file);
                 let imgUrl = 'https://via.placeholder.com/400x200/1a1a24/00ff6b?text=Sin+Portada'; if (imgIn.files.length > 0) { sts.textContent = 'Subiendo portada...'; imgUrl = await uploadFileToYYF(imgIn.files[0]); }
-                sts.textContent = 'Guardando DB...'; const pData = { name: name, author: currentUser.username, url: url, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false };
-                await dbStore(PROJ_PREFIX + Date.now(), pData); sts.style.color = '#00ff88'; sts.textContent = '¡Exito!'; document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; loadAllProjects(); 
+                sts.textContent = 'Guardando DB...'; 
+                // Añadir bandera isHtml
+                const pData = { name: name, author: currentUser.username, url: url, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false, hidden: isHidden, isHtml: isHtml };
+                await dbStore(PROJ_PREFIX + Date.now(), pData); sts.style.color = '#00ff88'; sts.textContent = '¡Exito!'; document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; document.getElementById('proj-hidden').checked = false; loadAllProjects(); 
             } catch (e) { sts.style.color = '#ff4444'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
@@ -655,6 +726,7 @@
             const f = document.getElementById('search-input').value.toLowerCase(), gc = document.getElementById('gallery-container'), fc = document.getElementById('featured-container'), fs = document.getElementById('featured-section'), uc = document.getElementById('users-container');
             gc.innerHTML = ''; fc.innerHTML = ''; uc.innerHTML = ''; let hf = false;
             allProjects.forEach(p => {
+                if(p.hidden && (!currentUser || (currentUser.username !== p.author && currentUser.role !== 'admin'))) return;
                 const match = p.name.toLowerCase().includes(f) || p.author.toLowerCase().includes(f);
                 if (match) gc.appendChild(createCardHTML(p));
                 if (p.featured) { hf = true; if(match || f==='') fc.appendChild(createCardHTML(p)); }
@@ -673,11 +745,15 @@
             const c = document.createElement('div'); c.className = 'project-card';
             const adm = (currentUser && currentUser.role === 'admin') ? `<button class="btn-secondary btn-small" onclick="toggleFeatured('${p._key}')">${p.featured?'Quitar Destacado':'⭐ Destacar'}</button><button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️</button>` : '';
             const own = (currentUser && p.author === currentUser.username && (!currentUser || currentUser.role !== 'admin')) ? `<button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️ Eliminar</button>` : '';
-            c.innerHTML = `${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''}<img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item">👁️ ${p.views||0}</div><div class="stat-item">👍 ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar</button><div style="display:flex; gap:5px; margin-top:5px;">${adm}${own}</div>`;
+            c.innerHTML = `${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''} ${p.hidden ? '<div class="hidden-badge">👻 Oculto</div>' : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''}
+            <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item">👁️ ${p.views||0}</div><div class="stat-item">👍 ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar</button><div style="display:flex; gap:5px; margin-top:5px; flex-wrap:wrap;">${adm}${own}</div>`;
             return c;
         }
 
-        function playRandomProject() { if(allProjects.length === 0) return alert("No hay proyectos."); playProject(allProjects[Math.floor(Math.random() * allProjects.length)]._key); }
+        function playRandomProject() { 
+            const publicProjs = allProjects.filter(p => !p.hidden || (currentUser && (currentUser.username === p.author || currentUser.role === 'admin')));
+            if(publicProjs.length === 0) return alert("No hay proyectos."); playProject(publicProjs[Math.floor(Math.random() * publicProjs.length)]._key); 
+        }
 
         async function deleteProject(k) { const p = allProjects.find(x => x._key === k); if(!p || (!currentUser || (currentUser.role!=='admin' && p.author!==currentUser.username))) return; if(!confirm(`¿Borrar "${p.name}"?`)) return; try { await dbDelete(k); await dbDelete(k.replace(PROJ_PREFIX, CMT_PREFIX)); if(currentProjectKey===k) goHome(); else loadAllProjects(); } catch(e){} }
         async function toggleFeatured(k) { const p=allProjects.find(x=>x._key===k); if(p){ p.featured=!p.featured; await dbStore(k,p); filterGallery(); } }
@@ -708,18 +784,26 @@
                     if(currentUser && d.followers && d.followers.includes(currentUser.username)) { fbtn.textContent='Dejar de seguir'; fbtn.className='btn-danger btn-small'; } else { fbtn.textContent='Seguir'; fbtn.className='btn-secondary btn-small'; }
                 } else b.textContent='Anónimo o Baneado.';
             } catch(e){} p.onerror = function() { this.src = 'https://via.placeholder.com/110/1a1a24/00ff6b?text='+u[0].toUpperCase(); };
-            const pg=document.getElementById('profile-gallery'); pg.innerHTML=''; const up=allProjects.filter(x=>x.author===u); if(up.length===0) pg.innerHTML='<p>Nada publicado.</p>'; up.forEach(x=>pg.appendChild(createCardHTML(x)));
+            const pg=document.getElementById('profile-gallery'); pg.innerHTML=''; 
+            const up=allProjects.filter(x=>x.author===u && (!x.hidden || (currentUser && (currentUser.username === u || currentUser.role === 'admin')))); 
+            if(up.length===0) pg.innerHTML='<p>Nada publicado.</p>'; up.forEach(x=>pg.appendChild(createCardHTML(x)));
         }
 
         function copyProfileLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + '?u=' + viewedUser); alert("¡Enlace copiado!"); }
+        
         async function playProject(k) {
             const p = allProjects.find(x=>x._key===k); if(!p) return; currentProjectKey=k; switchView('game-view'); window.history.replaceState({}, document.title, "?p=" + k);
             document.getElementById('view-game-title').textContent = p.name; document.getElementById('view-game-author').textContent = "@" + p.author; document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
-            document.getElementById('game-iframe').src = 'https://warp.mistium.com/fullscreen.html?project_url=' + encodeURIComponent(p.url); p.views=(p.views||0)+1; renderGameStats(p); await dbStore(k, p); loadComments(k);
+            
+            // MODIFICACIÓN: Cargar HTML puro directo, SB3 por Warp
+            const targetUrl = p.isHtml ? p.url : 'https://warp.mistium.com/fullscreen.html?project_url=' + encodeURIComponent(p.url);
+            document.getElementById('game-iframe').src = targetUrl;
+            
+            p.views=(p.views||0)+1; renderGameStats(p); await dbStore(k, p); loadComments(k);
         }
         function copyProjectLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + '?p=' + currentProjectKey); alert("¡Enlace copiado!"); }
 
-        // --- SISTEMA DE COMENTARIOS (ACTUALIZADO CON FETCH VIVO Y EDICIÓN) ---
+        // --- SISTEMA DE COMENTARIOS ---
         async function loadComments(k) {
             const lst=document.getElementById('comments-list'); lst.innerHTML='<p>Cargando...</p>'; const cK=k.replace(PROJ_PREFIX,CMT_PREFIX);
             const p=allProjects.find(x=>x._key===k); const isOwn=p&&currentUser&&p.author===currentUser.username; const isAdm=currentUser&&currentUser.role==='admin';
@@ -727,13 +811,9 @@
                 const d=await dbGet(cK); if(d) {
                     if(d.length===0) { lst.innerHTML='<p>Sé el primero en comentar.</p>'; return; } lst.innerHTML='';
                     
-                    // PASO 1: Recolectar todos los usuarios únicos para hacer Fetch en Vivo
-                    const uniqueUsers = new Set();
-                    d.forEach(c => { uniqueUsers.add(c.name.toLowerCase()); if(c.replies) c.replies.forEach(r => uniqueUsers.add(r.name.toLowerCase())); });
-                    const liveUsers = {};
-                    for (let un of uniqueUsers) { const prof = await dbGet(USER_PREFIX + un); if(prof) liveUsers[un] = prof; }
+                    const uniqueUsers = new Set(); d.forEach(c => { uniqueUsers.add(c.name.toLowerCase()); if(c.replies) c.replies.forEach(r => uniqueUsers.add(r.name.toLowerCase())); });
+                    const liveUsers = {}; for (let un of uniqueUsers) { const prof = await dbGet(USER_PREFIX + un); if(prof) liveUsers[un] = prof; }
 
-                    // PASO 2: Renderizar
                     d.forEach(c => {
                         const authorProf = liveUsers[c.name.toLowerCase()] || { role: c.role, pfp: c.pfpUrl, adminParticle: 'default' };
                         const isCAdm=authorProf.role==='admin', bAdm=isCAdm?'<span class="admin-badge-sparkle">👑 ADMIN</span>':'';
@@ -742,7 +822,7 @@
                         let cCls = 'comment-item'; let cSty = '';
                         if(isCAdm) { cCls += ' admin-comment ' + getParticleClass(authorProf.adminParticle); cSty = getParticleStyle(authorProf.adminParticle); }
 
-                        let dBtn=''; if(isAdm||isOwn||(currentUser&&c.name===currentUser.username)) dBtn=`<button class="reply-btn" style="color:var(--danger);" onclick="deleteComment('${c.id}')">🗑️</button>`;
+                        let dBtn=''; if(isAdm||isOwn||(currentUser&&c.name===currentUser.username)) dBtn=`<button class="reply-btn" style="color:var(--danger);margin-left:8px;" onclick="deleteComment('${c.id}')">🗑️</button>`;
                         let eBtn=''; if(currentUser&&c.name===currentUser.username) eBtn=`<button class="reply-btn" style="color:#aaeeff; margin-left:8px;" onclick="editComment('${c.id}')">✏️ Editar</button>`;
                         const editedCmt = c.edited ? '<span style="font-size:0.65rem; opacity:0.6;">(editado)</span>' : '';
 
@@ -751,14 +831,14 @@
                             const isRAdm=rProf.role==='admin', rSty=isRAdm?'border:1px solid #00ff6b;background:rgba(0,255,107,0.05);':'', rBAdm=isRAdm?'<span class="admin-badge-sparkle" style="font-size:0.65rem;">👑</span>':'';
                             const safeRepPfp = escapeHTML(rProf.pfp) || 'https://via.placeholder.com/25/1a1a24/00ff6b?text=' + r.name[0].toUpperCase();
                             
-                            let rDBtn=''; if(isAdm||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.75rem;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
+                            let rDBtn=''; if(isAdm||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.75rem;margin-left:8px;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
                             let rEBtn=''; if(currentUser&&r.name===currentUser.username) rEBtn=`<button class="reply-btn" style="color:#aaeeff;font-size:0.75rem;margin-left:8px;" onclick="editReply('${c.id}','${r.id}')">✏️ Editar</button>`;
                             const editedRep = r.edited ? '<span style="font-size:0.6rem; opacity:0.6;">(editado)</span>' : '';
 
-                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp"><div><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rDBtn}${rEBtn}<div style="font-size:0.85rem;color:#ccc;">${processText(r.text, rProf.role)}${editedRep}</div></div></div>`;
+                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://via.placeholder.com/25/1a1a24/00ff6b?text=?'"><div style="flex: 1;"><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rEBtn}${rDBtn}<div style="font-size:0.85rem;color:#ccc;">${processText(r.text, rProf.role)}${editedRep}</div></div></div>`;
                         }); rHtml+='</div>';}
                         
-                        const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative;"><input type="text" id="rt-${c.id}" placeholder="Respuesta..." style="padding:5px;"><button onclick="postReply('${c.id}')" style="padding:5px;">Enviar</button></div>`:'';
+                        const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="Respuesta..." style="min-height:35px; padding:5px;"></div> <button class="btn-secondary" style="padding:5px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')">😀</button> <button onclick="postReply('${c.id}')" style="padding:5px 10px;">Enviar</button></div>`:'';
                         lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://via.placeholder.com/40/1a1a24/00ff6b?text=?'"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span class="comment-date">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
                 } else lst.innerHTML='<p>Sé el primero en comentar.</p>';
@@ -766,11 +846,11 @@
         }
 
         async function postComment() {
-            if(!currentUser||!currentProjectKey) return; const t=document.getElementById('cmt-text').value.trim(); if(!t) return;
+            if(!currentUser||!currentProjectKey) return; const t=extractRichText('cmt-text'); if(!t) return;
             try {
                 const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k)||[];
-                c.push({id:'cmt_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[]});
-                await dbStore(k, c); document.getElementById('cmt-text').value=''; loadComments(currentProjectKey);
+                c.push({id:'cmt_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[]});
+                await dbStore(k, c); document.getElementById('cmt-text').innerHTML=''; loadComments(currentProjectKey);
                 const proj = allProjects.find(x => x._key === currentProjectKey);
                 if(proj && proj.author !== currentUser.username) {
                     const tD = await dbGet(USER_PREFIX + proj.author.toLowerCase());
@@ -780,11 +860,11 @@
         }
 
         async function postReply(cid) {
-            if(!currentUser||!currentProjectKey) return; const t=document.getElementById(`rt-${cid}`).value.trim(); if(!t) return;
+            if(!currentUser||!currentProjectKey) return; const t=extractRichText(`rt-${cid}`); if(!t) return;
             try {
                 const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid);
                 if(tg) {
-                    tg.replies=tg.replies||[]; tg.replies.push({id:'rep_'+Date.now(), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role});
+                    tg.replies=tg.replies||[]; tg.replies.push({id:'rep_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role});
                     await dbStore(k,c); loadComments(currentProjectKey);
                     if(tg.name !== currentUser.username) {
                         const tD = await dbGet(USER_PREFIX + tg.name.toLowerCase());
@@ -797,7 +877,7 @@
         async function editComment(id) {
             const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(!c) return;
             const tg = c.find(x=>x.id===id); if(!tg) return;
-            const nt = prompt("Editar comentario:", tg.text); if(nt===null || !nt.trim()) return;
+            const nt = prompt("Editar comentario (Escribe el texto con o sin emojis :nombre:):", tg.text); if(nt===null || !nt.trim()) return;
             tg.text = nt.trim(); tg.edited = true; await dbStore(k, c); loadComments(currentProjectKey);
         }
         async function editReply(cid, rid) {
@@ -863,6 +943,21 @@
 
         async function wipeChatContact() { if(!confirm("¿Borrar todo el historial?")) return; await dbDelete(getChatDBKey(currentUser.username, activeChatUser)); loadChatMessages(activeChatUser); pingChat(activeChatUser); }
 
+        async function sendChatImage(input) {
+            if(!input.files || input.files.length === 0 || !activeChatUser) return;
+            const file = input.files[0]; const btn = document.getElementById('btn-chat-img');
+            btn.disabled = true; btn.textContent = '⏳';
+            try {
+                const url = await uploadFileToYYF(file);
+                const key = getChatDBKey(currentUser.username, activeChatUser);
+                const history = await dbGet(key) || [];
+                history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: '', imageUrl: url, date: Date.now() });
+                if(history.length > 50) history.shift();
+                await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
+            } catch(e) { alert("Error subiendo imagen"); }
+            btn.disabled = false; btn.textContent = '📷'; input.value = '';
+        }
+
         async function loadChatMessages(username) {
             const box = document.getElementById('chat-messages'); box.innerHTML = '<p>Cargando...</p>';
             const oU = await dbGet(USER_PREFIX + username.toLowerCase()); const amIB = oU && oU.blocked && oU.blocked.includes(currentUser.username); const didIB = currentUser.blocked && currentUser.blocked.includes(username);
@@ -876,20 +971,27 @@
                 const isMe = m.sender === currentUser.username, d = new Date(m.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 const editedStr = m.edited ? ' <span style="font-size:0.6rem; opacity:0.7;">(editado)</span>' : '';
                 let act = isMe ? `<div style="font-size:0.7rem; text-align:right; margin-top:4px;"><span style="cursor:pointer; color:#aaeeff;" onclick="editChatMessage('${m.id}')">✏️ Editar</span><span style="cursor:pointer; color:var(--danger); margin-left:8px;" onclick="deleteChatMessage('${m.id}')">🗑️</span></div>` : '';
-                box.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-mine' : 'msg-theirs'}">${processText(m.text, isMe ? currentUser.role : 'user')}${editedStr}<div style="font-size:0.6rem; margin-top:3px; opacity:0.6; text-align:${isMe?'right':'left'};">${d}</div>${act}</div>`;
+                
+                let contentHtml = '';
+                if(m.text) contentHtml += processText(m.text, isMe ? currentUser.role : 'user');
+                if(m.imageUrl) contentHtml += `<br><img src="${escapeHTML(m.imageUrl)}" style="max-width:200px; border-radius:8px; margin-top:5px; cursor:pointer;" onclick="window.open('${escapeHTML(m.imageUrl)}')">`;
+
+                box.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-mine' : 'msg-theirs'}">${contentHtml}${editedStr}<div style="font-size:0.6rem; margin-top:3px; opacity:0.6; text-align:${isMe?'right':'left'};">${d}</div>${act}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         }
 
         async function sendChatMessage() {
-            const input = document.getElementById('chat-input-text'); const txt = input.value.trim(); if(!txt || !activeChatUser) return; input.value = '';
+            const txt = extractRichText('chat-input-text'); if(!txt || !activeChatUser) return;
+            document.getElementById('chat-input-text').innerHTML = '';
+
             const key = getChatDBKey(currentUser.username, activeChatUser); const history = await dbGet(key) || [];
             history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: txt, date: Date.now() });
             if(history.length > 50) history.shift(); await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
         }
         async function editChatMessage(msgId) {
             const key = getChatDBKey(currentUser.username, activeChatUser); let history = await dbGet(key); if(!history) return;
-            const msg = history.find(x => x.id === msgId); if(!msg) return; const nTxt = prompt("Editar mensaje:", msg.text); if(nTxt === null || !nTxt.trim()) return;
+            const msg = history.find(x => x.id === msgId); if(!msg || msg.imageUrl) return; const nTxt = prompt("Editar mensaje:", msg.text); if(nTxt === null || !nTxt.trim()) return;
             msg.text = nTxt.trim(); msg.edited = true; await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
         }
         async function deleteChatMessage(msgId) {
