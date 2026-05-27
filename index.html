@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -209,12 +209,11 @@
     <div id="emoji-picker-popup" class="emoji-picker-popup"></div>
 
     <div id="editor-overlay">
-        <div class="editor-header">
-            <button onclick="closeEditor()">← Volver</button>
-            <span style="margin-left: 15px; font-weight: bold; color: var(--primary);">Entorno de Creación (Warp)</span>
-        </div>
-        <iframe id="editor-iframe" class="editor-iframe" src=""></iframe>
+    <div class="editor-header">
+        <button onclick="closeEditor()">← Volver</button> <span style="margin-left: 15px; font-weight: bold; color: var(--primary);">Entorno de Creación (Warp)</span>
     </div>
+    <iframe id="editor-iframe" class="editor-iframe" src=""></iframe>
+</div>
 
     <header>
         <div class="header-logo" onclick="goHome()">
@@ -509,12 +508,13 @@
             const overlay = document.getElementById('editor-overlay');
             const iframe = document.getElementById('editor-iframe');
             overlay.style.display = 'flex';
-            if (!iframe.src || iframe.src === window.location.href) {
-                iframe.src = 'https://warp.mistium.com/editor.html?project_url=https://yyf.mubilop.com/file/517441e7/Projecto+por+defecto.sb3';
-            }
+            // Siempre cargamos el editor al abrirlo
+            iframe.src = 'https://warp.mistium.com/editor.html?project_url=https://yyf.mubilop.com/file/517441e7/Projecto+por+defecto.sb3';
         }
         function closeEditor() {
             document.getElementById('editor-overlay').style.display = 'none';
+            // MATAMOS EL PROCESO para no consumir recursos en segundo plano
+            document.getElementById('editor-iframe').src = 'about:blank';
         }
 
         // --- FUNCIONES UTILIDAD DB Y PARSEO ---
