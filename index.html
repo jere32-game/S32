@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -650,7 +650,7 @@
         function renderAuthBar() {
             const bar = document.getElementById('auth-bar');
             if (currentUser) {
-                const fallbackPfp = 'https://via.placeholder.com/100/1a1a24/00ff6b?text=' + currentUser.username[0].toUpperCase();
+                const fallbackPfp = 'https://ui-avatars.com/api/?name=' + currentUser.username[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=100';
                 bar.innerHTML = `<span style="font-size: 0.9rem;">Hola, <b style="color: var(--primary);">${currentUser.username}</b></span><img src="${currentUser.pfp || fallbackPfp}" class="user-pfp-small" onclick="viewProfile('${currentUser.username}')" title="Mi Perfil" onerror="this.src='${fallbackPfp}'"><button class="btn-secondary btn-small" onclick="openSettingsModal()">⚙️</button><button class="btn-danger btn-small" onclick="logout()">Salir</button>`;
             } else bar.innerHTML = `<button onclick="openAuthModal()">Ingresar</button>`;
         }
@@ -691,7 +691,7 @@
             btn.disabled = true;
             try {
                 const userKey = USER_PREFIX + user.toLowerCase(); if (await dbGet(userKey)) throw new Error("Usuario ya existe");
-                status.textContent = "Subiendo imagen..."; let pfpUrl = 'https://via.placeholder.com/100/1a1a24/00ff6b?text=' + user[0].toUpperCase(); if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
+                status.textContent = "Subiendo imagen..."; let pfpUrl = 'https://ui-avatars.com/api/?name=' + user[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=100'; if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
                 status.textContent = "Creando cuenta...";
                 const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '', followers: [], following: [], notifications: [], blocked: [], banned: false };
                 await dbStore(userKey, userData); localStorage.setItem('scratch32_session', JSON.stringify(userData));
@@ -870,7 +870,7 @@
             btn.disabled = true; sts.style.color = 'var(--text)';
             try {
                 sts.textContent = 'Subiendo juego...'; const url = await uploadFileToYYF(fileToUpload);
-                let imgUrl = 'https://via.placeholder.com/400x200/1a1a24/00ff6b?text=Sin+Portada'; if (imgIn.files.length > 0) { sts.textContent = 'Subiendo portada...'; imgUrl = await uploadFileToYYF(imgIn.files[0]); }
+                let imgUrl = 'https://ui-avatars.com/api/?name=Sin+Portada&background=1a1a24&color=00ff6b&size=400'; if (imgIn.files.length > 0) { sts.textContent = 'Subiendo portada...'; imgUrl = await uploadFileToYYF(imgIn.files[0]); }
                 sts.textContent = 'Guardando DB...'; 
                 const pData = { name: name, author: currentUser.username, url: url, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false, hidden: isHidden, isHtml: isHtml, updated: null, sticker: null };
                 await dbStore(PROJ_PREFIX + Date.now(), pData); sts.style.color = '#00ff88'; sts.textContent = '¡Exito!'; document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; document.getElementById('proj-hidden').checked = false; loadAllProjects(); 
@@ -1009,7 +1009,7 @@
         async function viewProfile(u) {
             switchView('profile-view'); viewedUser=u; window.history.replaceState({}, document.title, "?u=" + u);
             const n=document.getElementById('prof-name'), b=document.getElementById('prof-bio'), r=document.getElementById('prof-role'), p=document.getElementById('prof-pfp'), fbtn=document.getElementById('btn-follow');
-            n.textContent=u; b.innerHTML="Cargando..."; p.src='https://via.placeholder.com/110/1a1a24/00ff6b?text='+u[0].toUpperCase(); p.className = ''; document.getElementById('profile-admin-actions').style.display = (currentUser&&(currentUser.role==='admin' || currentUser.role==='creator')&&currentUser.username.toLowerCase()!==u.toLowerCase())?'flex':'none'; fbtn.style.display = (currentUser && currentUser.username.toLowerCase() !== u.toLowerCase()) ? 'inline-block' : 'none';
+            n.textContent=u; b.innerHTML="Cargando..."; p.src='https://ui-avatars.com/api/?name='+u[0].toUpperCase()+'&background=1a1a24&color=00ff6b&size=110'; p.className = ''; document.getElementById('profile-admin-actions').style.display = (currentUser&&(currentUser.role==='admin' || currentUser.role==='creator')&&currentUser.username.toLowerCase()!==u.toLowerCase())?'flex':'none'; fbtn.style.display = (currentUser && currentUser.username.toLowerCase() !== u.toLowerCase()) ? 'inline-block' : 'none';
             try {
                 const d = await dbGet(USER_PREFIX + u.toLowerCase());
                 if(d) {
@@ -1021,7 +1021,7 @@
                     
                     if(currentUser && d.followers && d.followers.includes(currentUser.username)) { fbtn.textContent='Dejar de seguir'; fbtn.className='btn-danger btn-small'; } else { fbtn.textContent='Seguir'; fbtn.className='btn-secondary btn-small'; }
                 } else b.textContent='Anónimo o Baneado.';
-            } catch(e){} p.onerror = function() { this.src = 'https://via.placeholder.com/110/1a1a24/00ff6b?text='+u[0].toUpperCase(); };
+            } catch(e){} p.onerror = function() { this.src = 'https://ui-avatars.com/api/?name='+u[0].toUpperCase()+'&background=1a1a24&color=00ff6b&size=110'; };
             const pg=document.getElementById('profile-gallery'); pg.innerHTML=''; 
             const up=allProjects.filter(x=>x.author===u && (!x.hidden || (currentUser && (currentUser.username === u || currentUser.role === 'admin' || currentUser.role === 'creator')))); 
             if(up.length===0) pg.innerHTML='<p>Nada publicado.</p>'; up.forEach(x=>pg.appendChild(createCardHTML(x)));
@@ -1070,7 +1070,7 @@
                         const authorProf = liveUsers[c.name.toLowerCase()] || { role: c.role, pfp: c.pfpUrl, adminParticle: 'default' };
                         const isCAdm=authorProf.role==='admin' || authorProf.role==='creator';
                         let bAdm = ''; if(authorProf.role==='creator') bAdm = '<span class="creator-badge-sparkle">🌌 CREADOR</span>'; else if(authorProf.role==='admin') bAdm = '<span class="admin-badge-sparkle">👑 ADMIN</span>';
-                        const safePfp = escapeHTML(authorProf.pfp) || 'https://via.placeholder.com/40/1a1a24/00ff6b?text=' + c.name[0].toUpperCase();
+                        const safePfp = escapeHTML(authorProf.pfp) || 'https://ui-avatars.com/api/?name=' + c.name[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=40';
                         
                         let cCls = 'comment-item'; let cSty = '';
                         if(isCAdm) { cCls += ' admin-comment ' + getParticleClass(authorProf.adminParticle); cSty = getParticleStyle(authorProf.adminParticle); }
@@ -1083,17 +1083,17 @@
                             const rProf = liveUsers[r.name.toLowerCase()] || { role: r.role, pfp: r.pfpUrl };
                             const isRAdm=rProf.role==='admin' || rProf.role==='creator', rSty=isRAdm?'border:1px solid #00ff6b;background:rgba(0,255,107,0.05);':'';
                             let rBAdm = ''; if(rProf.role==='creator') rBAdm = '<span class="creator-badge-sparkle" style="font-size:0.65rem;">🌌</span>'; else if(rProf.role==='admin') rBAdm = '<span class="admin-badge-sparkle" style="font-size:0.65rem;">👑</span>';
-                            const safeRepPfp = escapeHTML(rProf.pfp) || 'https://via.placeholder.com/25/1a1a24/00ff6b?text=' + r.name[0].toUpperCase();
+                            const safeRepPfp = escapeHTML(rProf.pfp) || 'https://ui-avatars.com/api/?name=' + r.name[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=25';
                             
                             let rDBtn=''; if(isAdmOrCrea||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.75rem;margin-left:8px;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
                             let rEBtn=''; if(currentUser&&r.name===currentUser.username) rEBtn=`<button class="reply-btn" style="color:#aaeeff;font-size:0.75rem;margin-left:8px;" onclick="editReply('${c.id}','${r.id}')">✏️ Editar</button>`;
                             const editedRep = r.edited ? '<span style="font-size:0.6rem; opacity:0.6;">(editado)</span>' : '';
 
-                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://via.placeholder.com/25/1a1a24/00ff6b?text=?'"><div style="flex: 1;"><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rEBtn}${rDBtn}<div style="font-size:0.85rem;color:#ccc;">${processText(r.text, rProf.role)}${editedRep}</div></div></div>`;
+                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=25'"><div style="flex: 1;"><b style="color:var(--primary);cursor:pointer;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.7rem;color:gray;">${new Date(r.date).toLocaleDateString()}</span> ${rEBtn}${rDBtn}<div style="font-size:0.85rem;color:#ccc;">${processText(r.text, rProf.role)}${editedRep}</div></div></div>`;
                         }); rHtml+='</div>';}
                         
                         const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="Respuesta..." style="min-height:35px; padding:5px;"></div> <button class="btn-secondary" style="padding:5px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')">😀</button> <button onclick="postReply('${c.id}')" style="padding:5px 10px;">Enviar</button></div>`:'';
-                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://via.placeholder.com/40/1a1a24/00ff6b?text=?'"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span class="comment-date">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
+                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=40'"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span class="comment-date">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
                 } else lst.innerHTML='<p>Sé el primero en comentar.</p>';
             } catch(e) { lst.innerHTML='<p>Error.</p>'; }
