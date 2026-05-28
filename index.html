@@ -72,7 +72,7 @@
         .featured-badge { position: absolute; top: -10px; right: -10px; background: gold; color: black; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 2; }
         .hidden-badge { position: absolute; top: -10px; left: -10px; background: #555; color: white; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 2; }
         .updated-badge { position: absolute; top: 130px; left: 10px; background: var(--primary); color: #000; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2; }
-        .html-badge { position: absolute; top: 130px; left: 10px; background: #e34f26; color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2; }
+        .html-badge { position: absolute; top: 105px; left: 10px; background: #e34f26; color: white; padding: 2px 8px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 2; }
 
         .sticker-badge { position: absolute; bottom: 80px; right: 10px; background: rgba(0,0,0,0.7); padding: 6px; border-radius: 50%; border: 2px solid #8800ff; box-shadow: 0 0 15px #8800ff; z-index: 2; display: flex; align-items: center; justify-content: center; }
         .sticker-badge img { width: 35px; height: 35px; object-fit: contain; }
@@ -522,12 +522,10 @@
             const overlay = document.getElementById('editor-overlay');
             const iframe = document.getElementById('editor-iframe');
             overlay.style.display = 'flex';
-            // Siempre cargamos el editor al abrirlo
             iframe.src = 'https://warp.mistium.com/editor.html?project_url=https://yyf.mubilop.com/file/517441e7/Projecto+por+defecto.sb3';
         }
         function closeEditor() {
             document.getElementById('editor-overlay').style.display = 'none';
-            // MATAMOS EL PROCESO para no consumir recursos en segundo plano
             document.getElementById('editor-iframe').src = 'about:blank';
         }
 
@@ -654,6 +652,14 @@
                 bar.innerHTML = `<span style="font-size: 0.9rem;">Hola, <b style="color: var(--primary);">${currentUser.username}</b></span><img src="${currentUser.pfp || fallbackPfp}" class="user-pfp-small" onclick="viewProfile('${currentUser.username}')" title="Mi Perfil" onerror="this.src='${fallbackPfp}'"><button class="btn-secondary btn-small" onclick="openSettingsModal()">⚙️</button><button class="btn-danger btn-small" onclick="logout()">Salir</button>`;
             } else bar.innerHTML = `<button onclick="openAuthModal()">Ingresar</button>`;
         }
+
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('notif-modal');
+            const btn = document.getElementById('btn-notif');
+            if (modal.style.display === 'block' && !modal.contains(e.target) && !btn.contains(e.target)) {
+                modal.style.display = 'none';
+            }
+        });
 
         function openAuthModal() { document.getElementById('auth-modal').style.display = 'flex'; }
         function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
@@ -966,7 +972,19 @@
 
             let stickerHtml = p.sticker ? `<div class="sticker-badge" title="Sticker del Creador"><img src="${escapeHTML(p.sticker)}"></div>` : '';
 
-            c.innerHTML = `${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''} ${p.hidden ? '<div class="hidden-badge">👻 Oculto</div>' : ''} ${p.updated ? '<div class="updated-badge">🔄 Actualizado</div>' : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''} ${stickerHtml}
+            // --- NUEVA LÓGICA: Comprobar si mostrar badge de actualizado ---
+            let showUpdated = false;
+            if(p.updated) {
+                if(currentUser) {
+                    const seen = (currentUser.seenUpdates || {})[p._key] || 0;
+                    if(p.updated > seen) showUpdated = true;
+                } else {
+                    showUpdated = true;
+                }
+            }
+            // ---------------------------------------------------------------
+
+            c.innerHTML = `${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''} ${p.hidden ? '<div class="hidden-badge">👻 Oculto</div>' : ''} ${showUpdated ? '<div class="updated-badge">🔄 Actualizado</div>' : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''} ${stickerHtml}
             <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item">👁️ ${p.views||0}</div><div class="stat-item">👍 ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar</button><div style="display:flex; gap:5px; margin-top:5px; flex-wrap:wrap;">${adm}${own}${creatorAction}</div>`;
             return c;
         }
@@ -1031,6 +1049,16 @@
         
         async function playProject(k) {
             const p = allProjects.find(x=>x._key===k); if(!p) return; currentProjectKey=k; switchView('game-view'); window.history.replaceState({}, document.title, "?p=" + k);
+            
+            // --- NUEVO LOGICA: Guardar que ya se vio la actualización ---
+            if(currentUser && p.updated) {
+                currentUser.seenUpdates = currentUser.seenUpdates || {};
+                currentUser.seenUpdates[k] = p.updated;
+                await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
+                localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
+            }
+            // -------------------------------------------------------------
+
             document.getElementById('view-game-title').textContent = p.name;
             document.getElementById('view-game-updated').textContent = p.updated ? " (🔄 Actualizado)" : ""; 
             document.getElementById('view-game-author').textContent = "@" + p.author; document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
@@ -1063,6 +1091,14 @@
                 const d=await dbGet(cK); if(d) {
                     if(d.length===0) { lst.innerHTML='<p>Sé el primero en comentar.</p>'; return; } lst.innerHTML='';
                     
+                    // --- NUEVA LOGICA: Ordenar comentarios (Fijados primero) ---
+                    d.sort((a, b) => {
+                        if (a.pinned && !b.pinned) return -1;
+                        if (!a.pinned && b.pinned) return 1;
+                        return 0; 
+                    });
+                    // -----------------------------------------------------------
+
                     const uniqueUsers = new Set(); d.forEach(c => { uniqueUsers.add(c.name.toLowerCase()); if(c.replies) c.replies.forEach(r => uniqueUsers.add(r.name.toLowerCase())); });
                     const liveUsers = {}; for (let un of uniqueUsers) { const prof = await dbGet(USER_PREFIX + un); if(prof) liveUsers[un] = prof; }
 
@@ -1074,6 +1110,15 @@
                         
                         let cCls = 'comment-item'; let cSty = '';
                         if(isCAdm) { cCls += ' admin-comment ' + getParticleClass(authorProf.adminParticle); cSty = getParticleStyle(authorProf.adminParticle); }
+                        
+                        // --- NUEVA LÓGICA: Botón de fijar y visual del fijado ---
+                        let pinBtn='';
+                        if(isOwn) {
+                            pinBtn = `<button class="reply-btn" style="color:var(--warning); margin-left:8px;" onclick="togglePinComment('${c.id}')">${c.pinned ? '📌 Desfijar' : '📌 Fijar'}</button>`;
+                        }
+                        const pinnedVisual = c.pinned ? `<div style="font-size:0.75rem; color:var(--warning); font-weight:bold; margin-bottom:8px;">📌 Fijado por el creador</div>` : '';
+                        if(c.pinned) cSty += ' border-color: var(--warning); background: rgba(255, 170, 0, 0.05);';
+                        // --------------------------------------------------------
 
                         let dBtn=''; if(isAdmOrCrea||isOwn||(currentUser&&c.name===currentUser.username)) dBtn=`<button class="reply-btn" style="color:var(--danger);margin-left:8px;" onclick="deleteComment('${c.id}')">🗑️</button>`;
                         let eBtn=''; if(currentUser&&c.name===currentUser.username) eBtn=`<button class="reply-btn" style="color:#aaeeff; margin-left:8px;" onclick="editComment('${c.id}')">✏️ Editar</button>`;
@@ -1093,17 +1138,25 @@
                         }); rHtml+='</div>';}
                         
                         const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:5px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="Respuesta..." style="min-height:35px; padding:5px;"></div> <button class="btn-secondary" style="padding:5px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')">😀</button> <button onclick="postReply('${c.id}')" style="padding:5px 10px;">Enviar</button></div>`:'';
-                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=40'"><div class="comment-content"><div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span class="comment-date">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
+                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=40'"><div class="comment-content">${pinnedVisual}<div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span class="comment-date">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${pinBtn}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
                 } else lst.innerHTML='<p>Sé el primero en comentar.</p>';
             } catch(e) { lst.innerHTML='<p>Error.</p>'; }
+        }
+
+        async function togglePinComment(cid) {
+            const k = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
+            let c = await dbGet(k); if(!c) return;
+            c.forEach(x => { if (x.id === cid) x.pinned = !x.pinned; else x.pinned = false; });
+            await dbStore(k, c);
+            loadComments(currentProjectKey);
         }
 
         async function postComment() {
             if(!currentUser||!currentProjectKey) return; const t=extractRichText('cmt-text'); if(!t) return;
             try {
                 const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k)||[];
-                c.push({id:'cmt_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[]});
+                c.push({id:'cmt_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[], pinned: false});
                 await dbStore(k, c); document.getElementById('cmt-text').innerHTML=''; loadComments(currentProjectKey);
                 const proj = allProjects.find(x => x._key === currentProjectKey);
                 if(proj && proj.author !== currentUser.username) {
