@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -419,6 +419,19 @@
                         <button class="btn-warning btn-small" onclick="adminBanUser()">🔨 Banear Usuario</button>
                         <button class="btn-danger btn-small" onclick="adminDeleteUser()">🗑️ Eliminar Base de Datos</button>
                     </div>
+
+                    <div id="profile-creator-actions" style="display: none; margin-top: 15px; border-top: 1px solid var(--primary); padding-top: 10px;">
+                        <h4 style="color: #00ffff; margin-bottom: 10px;">🌌 Acciones de Creador</h4>
+                        <button id="btn-toggle-admin" class="btn-warning btn-small">👑 Hacer Admin</button>
+                        
+                        <div id="admin-perms-panel" style="display: none; background: #111; padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid #444;">
+                            <h5 style="color: gold; margin-bottom: 5px;">Permisos del Administrador</h5>
+                            <label style="display:block; margin-bottom:5px; font-size: 0.85rem;"><input type="checkbox" id="perm-ban"> Puede banear/eliminar usuarios</label>
+                            <label style="display:block; margin-bottom:5px; font-size: 0.85rem;"><input type="checkbox" id="perm-feature"> Puede destacar proyectos</label>
+                            <label style="display:block; margin-bottom:10px; font-size: 0.85rem;"><input type="checkbox" id="perm-delproj"> Puede borrar proyectos globales</label>
+                            <button class="btn-secondary btn-small" onclick="saveAdminPerms()">💾 Guardar Permisos</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <h2 style="margin-bottom: 1rem; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">Proyectos Publicados</h2>
@@ -788,6 +801,7 @@
         async function updateAdminSecret() { const n = document.getElementById('set-admin-pass').value.trim(); if (n) { await dbStore(CONFIG_PREFIX + 'admin', { secret: n }); alert("Cambiado a: " + n); document.getElementById('set-admin-pass').value=''; } }
 
         async function adminBanUser() {
+            if(currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canBan === false) return alert("No tienes permiso para banear usuarios.");
             if (!viewedUser || !confirm(`¿Banear a ${viewedUser}?`)) return; 
             if (viewedUser.toLowerCase() === currentUser.username.toLowerCase()) return alert("No puedes banearte a ti mismo, xd.");
             
@@ -808,6 +822,7 @@
         }
         
         async function adminDeleteUser() { 
+            if(currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canBan === false) return alert("No tienes permiso para borrar la base de datos de usuarios.");
             if (!viewedUser || !confirm(`⚠️ ELIMINAR A ${viewedUser} DE LA DB?`)) return; 
             if (viewedUser.toLowerCase() === currentUser.username.toLowerCase()) return alert("No puedes eliminarte a ti mismo desde aquí. Ve a tus ajustes de cuenta.");
             
@@ -1008,8 +1023,19 @@
             if(publicProjs.length === 0) return alert("No hay proyectos."); playProject(publicProjs[Math.floor(Math.random() * publicProjs.length)]._key); 
         }
 
-        async function deleteProject(k) { const p = allProjects.find(x => x._key === k); if(!p || (!currentUser || ((currentUser.role!=='admin' && currentUser.role!=='creator') && p.author!==currentUser.username))) return; if(!confirm(`¿Borrar "${p.name}"?`)) return; try { await dbDelete(k); await dbDelete(k.replace(PROJ_PREFIX, CMT_PREFIX)); if(currentProjectKey===k) goHome(); else loadAllProjects(); } catch(e){} }
-        async function toggleFeatured(k) { const p=allProjects.find(x=>x._key===k); if(p){ p.featured=!p.featured; await dbStore(k,p); filterGallery(); } }
+        async function deleteProject(k) { 
+            const p = allProjects.find(x => x._key === k); 
+            if(!p || (!currentUser || ((currentUser.role!=='admin' && currentUser.role!=='creator') && p.author!==currentUser.username))) return; 
+            if(currentUser.role === 'admin' && p.author !== currentUser.username && currentUser.adminPerms && currentUser.adminPerms.canDeleteProjects === false) return alert("No tienes permiso para borrar proyectos globales.");
+            if(!confirm(`¿Borrar "${p.name}"?`)) return; 
+            try { await dbDelete(k); await dbDelete(k.replace(PROJ_PREFIX, CMT_PREFIX)); if(currentProjectKey===k) goHome(); else loadAllProjects(); } catch(e){} 
+        }
+        
+        async function toggleFeatured(k) { 
+            if(currentUser && currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canFeature === false) return alert("No tienes permiso para destacar proyectos.");
+            const p=allProjects.find(x=>x._key===k); if(p){ p.featured=!p.featured; await dbStore(k,p); filterGallery(); } 
+        }
+        
         async function toggleLike(t) {
             if(!currentUser) return alert("Loguéate."); const p=allProjects.find(x=>x._key===currentProjectKey); if(!p) return; p.likes=p.likes||[]; p.dislikes=p.dislikes||[]; const u=currentUser.username;
             if(t==='like') { p.dislikes=p.dislikes.filter(x=>x!==u); if(p.likes.includes(u)) p.likes=p.likes.filter(x=>x!==u); else p.likes.push(u); } else { p.likes=p.likes.filter(x=>x!==u); if(p.dislikes.includes(u)) p.dislikes=p.dislikes.filter(x=>x!==u); else p.dislikes.push(u); }
@@ -1028,6 +1054,10 @@
             switchView('profile-view'); viewedUser=u; window.history.replaceState({}, document.title, "?u=" + u);
             const n=document.getElementById('prof-name'), b=document.getElementById('prof-bio'), r=document.getElementById('prof-role'), p=document.getElementById('prof-pfp'), fbtn=document.getElementById('btn-follow');
             n.textContent=u; b.innerHTML="Cargando..."; p.src='https://ui-avatars.com/api/?name='+u[0].toUpperCase()+'&background=1a1a24&color=00ff6b&size=110'; p.className = ''; document.getElementById('profile-admin-actions').style.display = (currentUser&&(currentUser.role==='admin' || currentUser.role==='creator')&&currentUser.username.toLowerCase()!==u.toLowerCase())?'flex':'none'; fbtn.style.display = (currentUser && currentUser.username.toLowerCase() !== u.toLowerCase()) ? 'inline-block' : 'none';
+            
+            const creatorActDiv = document.getElementById('profile-creator-actions');
+            if (creatorActDiv) creatorActDiv.style.display = 'none';
+
             try {
                 const d = await dbGet(USER_PREFIX + u.toLowerCase());
                 if(d) {
@@ -1038,6 +1068,26 @@
                     else { r.innerHTML='Jugador'; p.style="width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover;"; }
                     
                     if(currentUser && d.followers && d.followers.includes(currentUser.username)) { fbtn.textContent='Dejar de seguir'; fbtn.className='btn-danger btn-small'; } else { fbtn.textContent='Seguir'; fbtn.className='btn-secondary btn-small'; }
+
+                    if (currentUser && currentUser.role === 'creator' && currentUser.username.toLowerCase() !== u.toLowerCase() && d.role !== 'creator') {
+                        creatorActDiv.style.display = 'block';
+                        const btnToggleAdmin = document.getElementById('btn-toggle-admin');
+                        const permsPanel = document.getElementById('admin-perms-panel');
+                        if(d.role === 'admin') {
+                            btnToggleAdmin.textContent = '❌ Quitar Admin';
+                            btnToggleAdmin.className = 'btn-danger btn-small';
+                            btnToggleAdmin.onclick = () => setRoleForUser(u, 'user');
+                            permsPanel.style.display = 'block';
+                            document.getElementById('perm-ban').checked = d.adminPerms ? d.adminPerms.canBan !== false : true;
+                            document.getElementById('perm-feature').checked = d.adminPerms ? d.adminPerms.canFeature !== false : true;
+                            document.getElementById('perm-delproj').checked = d.adminPerms ? d.adminPerms.canDeleteProjects !== false : true;
+                        } else {
+                            btnToggleAdmin.textContent = '👑 Hacer Admin';
+                            btnToggleAdmin.className = 'btn-warning btn-small';
+                            btnToggleAdmin.onclick = () => setRoleForUser(u, 'admin');
+                            permsPanel.style.display = 'none';
+                        }
+                    }
                 } else b.textContent='Anónimo o Baneado.';
             } catch(e){} p.onerror = function() { this.src = 'https://ui-avatars.com/api/?name='+u[0].toUpperCase()+'&background=1a1a24&color=00ff6b&size=110'; };
             const pg=document.getElementById('profile-gallery'); pg.innerHTML=''; 
@@ -1311,6 +1361,37 @@
         async function deleteChatMessage(msgId) {
             if(!confirm("¿Borrar mensaje?")) return; const key = getChatDBKey(currentUser.username, activeChatUser); let history = await dbGet(key); if(!history) return;
             history = history.filter(x => x.id !== msgId); await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
+        }
+
+        // --- ACCIONES ESPECÍFICAS DE CREADOR (PERMISOS DE ADMIN) ---
+        async function setRoleForUser(u, newRole) {
+            if(!confirm(`¿Cambiar el rol de ${u} a ${newRole}?`)) return;
+            const key = USER_PREFIX + u.toLowerCase();
+            const data = await dbGet(key);
+            if(data) {
+                data.role = newRole;
+                if(newRole === 'admin') {
+                    data.adminPerms = { canBan: true, canFeature: true, canDeleteProjects: true };
+                }
+                await dbStore(key, data);
+                alert(`Rol de ${u} actualizado a ${newRole.toUpperCase()}`);
+                viewProfile(u); 
+            }
+        }
+
+        async function saveAdminPerms() {
+            if (!viewedUser) return;
+            const key = USER_PREFIX + viewedUser.toLowerCase();
+            const data = await dbGet(key);
+            if(data && data.role === 'admin') {
+                data.adminPerms = {
+                    canBan: document.getElementById('perm-ban').checked,
+                    canFeature: document.getElementById('perm-feature').checked,
+                    canDeleteProjects: document.getElementById('perm-delproj').checked
+                };
+                await dbStore(key, data);
+                alert("Permisos guardados correctamente.");
+            }
         }
     </script>
 </body>
