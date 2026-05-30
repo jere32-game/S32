@@ -37,6 +37,14 @@
             flex-direction: column; 
         }
 
+        /* CLASE PARA LOS SVG PERSONALIZADOS */
+        .svg-icon {
+            height: 1.3em;
+            vertical-align: middle;
+            display: inline-block;
+            margin: 0 2px;
+        }
+
         header { background-color: var(--panel); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--border-au); box-shadow: 0 6px 0px rgba(0, 0, 0, 0.4); position: sticky; top: 0; z-index: 100; }
         .header-logo { cursor: pointer; display: flex; align-items: center; transition: transform 0.2s; }
         .header-logo:hover { transform: scale(1.05); }
@@ -71,7 +79,7 @@
         .rich-input:empty:before { content: attr(placeholder); color: var(--text-muted); cursor: text; }
         .rich-input:focus { border-color: var(--primary); }
 
-        button { padding: 0.8rem 1.5rem; background-color: var(--primary); color: #000; border: var(--border-au); border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.1s; white-space: nowrap; box-shadow: 0 4px 0 #000; text-transform: uppercase; letter-spacing: 1px; }
+        button { padding: 0.8rem 1.5rem; background-color: var(--primary); color: #000; border: var(--border-au); border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.1s; white-space: nowrap; box-shadow: 0 4px 0 #000; text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         button:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(2px); box-shadow: 0 2px 0 #000; }
         button:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 #000; }
         button:disabled { background-color: #555; cursor: not-allowed; color: #888; box-shadow: 0 4px 0 #222; transform: none; }
@@ -259,7 +267,7 @@
 
     <div id="editor-overlay">
         <div class="editor-header">
-            <button onclick="closeEditor()">← Volver</button> <span style="margin-left: 15px; font-weight: bold; color: var(--primary); text-transform: uppercase;">Entorno de Creación (Warp)</span>
+            <button onclick="closeEditor()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Back.svg" class="svg-icon"> Volver</button> <span style="margin-left: 15px; font-weight: bold; color: var(--primary); text-transform: uppercase;">Entorno de Creación (Warp)</span>
         </div>
         <iframe id="editor-iframe" class="editor-iframe" src=""></iframe>
     </div>
@@ -353,7 +361,7 @@
                 <div id="admin-settings-section" style="display:none; margin-top: 20px; border-top: 3px solid #000; padding-top: 15px;">
                     <h4 style="color: gold; text-align: center; margin-bottom: 15px; text-transform: uppercase;">👑 Panel de Control</h4>
                     
-                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="toggleEmojiManager()">🎭 Gestionar Amojis</button>
+                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="toggleEmojiManager()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"> Gestionar Amojis</button>
                     <div id="emoji-manager" style="display:none; background:#15181c; padding:15px; border:var(--border-au); border-radius:8px; margin-bottom:15px;">
                         <input type="text" id="emj-name" placeholder="Nombre (ej: gato)" style="margin-bottom:10px;">
                         <input type="file" id="emj-file" accept="image/*" style="margin-bottom:10px;">
@@ -362,14 +370,14 @@
                         <div id="emoji-list-admin" style="max-height: 150px; overflow-y:auto; font-size:0.8rem;"></div>
                     </div>
 
-                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewAdminSecret()">👁️ Ver Comando Admin</button>
+                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewAdminSecret()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> Ver Comando Admin</button>
                     <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Comando Admin</label>
                     <input type="text" id="set-admin-pass" placeholder="Nuevo comando (Ej: /seguro123)">
                     <button onclick="updateAdminSecret()" class="btn-warning" style="margin-top:10px; margin-bottom:10px; width:100%;">Actualizar Comando Admin</button>
                     
                     <div id="creator-settings-section" style="display:none; border-top: 3px solid #000; padding-top: 15px; margin-top: 15px;">
-                        <h4 style="color: #00ffff; text-align: center; margin-bottom: 15px; text-transform: uppercase;">🌌 Controles del Creador</h4>
-                        <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewCreatorSecret()">👁️ Ver Comando Creador</button>
+                        <h4 style="color: #00ffff; text-align: center; margin-bottom: 15px; text-transform: uppercase;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> Controles del Creador</h4>
+                        <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewCreatorSecret()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> Ver Comando Creador</button>
                         <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Comando Creador</label>
                         <input type="text" id="set-creator-pass" placeholder="Nuevo comando supremo">
                         <button onclick="updateCreatorSecret()" style="background:#00ffff; color:black; margin-top:10px; width:100%; font-weight:bold;">Actualizar Comando Creador</button>
@@ -477,7 +485,7 @@
                     </div>
 
                     <div id="profile-creator-actions" style="display: none; margin-top: 20px; border-top: 2px solid var(--primary); padding-top: 15px;">
-                        <h4 style="color: #00ffff; margin-bottom: 10px; text-transform: uppercase;">🌌 Acciones de Creador</h4>
+                        <h4 style="color: #00ffff; margin-bottom: 10px; text-transform: uppercase;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> Acciones de Creador</h4>
                         <button id="btn-toggle-admin" class="btn-warning btn-small">👑 Hacer Admin</button>
                         
                         <div id="admin-perms-panel" style="display: none; background: #15181c; padding: 15px; border-radius: 8px; margin-top: 15px; border: var(--border-au);">
@@ -504,7 +512,7 @@
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
                     <div class="project-stats" id="game-stats-bar" style="margin: 0; font-size: 1.1rem;"></div>
                     <button class="btn-secondary" onclick="copyProjectLink()">🔗 Compartir</button>
-                    <button onclick="goHome()" class="btn-danger">❌ Cerrar</button>
+                    <button onclick="goHome()" class="btn-danger"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Back.svg" class="svg-icon"> Cerrar</button>
                 </div>
             </div>
             
@@ -516,8 +524,8 @@
                     <div class="input-box" style="flex: 1;">
                         <div contenteditable="true" id="cmt-text" class="rich-input" placeholder="Escribe tu reporte..."></div>
                     </div>
-                    <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'cmt-text')">😀</button>
-                    <button id="cmt-btn" onclick="postComment()" style="align-self: stretch;">Enviar</button>
+                    <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'cmt-text')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button>
+                    <button id="cmt-btn" onclick="postComment()" style="align-self: stretch;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> Enviar</button>
                 </div>
                 <p id="cmt-login-req" style="color: var(--danger); font-size: 1rem; font-weight: bold;">Inicia sesión para comentar.</p>
                 <div id="comments-list" class="comment-list"></div>
@@ -538,8 +546,8 @@
                         <div style="flex:1;">
                             <div contenteditable="true" id="chat-input-text" class="rich-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></div>
                         </div>
-                        <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'chat-input-text')">😀</button>
-                        <button onclick="sendChatMessage()">Enviar</button>
+                        <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'chat-input-text')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button>
+                        <button onclick="sendChatMessage()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> Enviar</button>
                     </div>
                 </div>
             </div>
@@ -1034,7 +1042,7 @@
                         if(index === 0) rankT = '🥇'; else if(index === 1) rankT = '🥈'; else if(index === 2) rankT = '🥉';
                         lbList.innerHTML += `<div class="lb-item">
                             <div><span class="lb-rank">${rankT}</span> <b style="color:var(--primary);cursor:pointer; text-transform:uppercase;" onclick="viewProfile('${escapeHTML(u.username)}')">@${escapeHTML(u.username)}</b></div>
-                            <div style="color:var(--text-muted); font-size:0.9rem; font-weight:bold;">👁️ ${u.views} vistas en ${u.projects} tareas</div>
+                            <div style="color:var(--text-muted); font-size:0.9rem; font-weight:bold;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${u.views} vistas en ${u.projects} tareas</div>
                         </div>`;
                     });
                 }
@@ -1086,7 +1094,7 @@
             }
 
             c.innerHTML = `${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''} ${p.hidden ? '<div class="hidden-badge">👻 Oculto</div>' : ''} ${showUpdated ? '<div class="updated-badge">🔄 Actualizado</div>' : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''} ${stickerHtml}
-            <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item">👁️ ${p.views||0}</div><div class="stat-item">👍 ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar Tarea</button><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">${adm}${own}${creatorAction}</div>`;
+            <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0}</div><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar Tarea</button><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">${adm}${own}${creatorAction}</div>`;
             return c;
         }
 
@@ -1130,7 +1138,7 @@
 
         function renderGameStats(p) {
             const b=document.getElementById('game-stats-bar'), lStyle = (currentUser&&p.likes&&p.likes.includes(currentUser.username))?'color:var(--primary);':'', dStyle = (currentUser&&p.dislikes&&p.dislikes.includes(currentUser.username))?'color:var(--danger);':'';
-            b.innerHTML = `<div class="stat-item" style="margin-right:15px; border:2px solid #000;">👁️ ${p.views||0} vistas</div><div class="stat-item" style="cursor:pointer; border:2px solid #000; ${lStyle}" onclick="toggleLike('like')">👍 ${p.likes?p.likes.length:0}</div><div class="stat-item" style="cursor:pointer;margin-left:10px; border:2px solid #000; ${dStyle}" onclick="toggleLike('dislike')">👎 ${p.dislikes?p.dislikes.length:0}</div>`;
+            b.innerHTML = `<div class="stat-item" style="margin-right:15px; border:2px solid #000;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0} vistas</div><div class="stat-item" style="cursor:pointer; border:2px solid #000; ${lStyle}" onclick="toggleLike('like')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div><div class="stat-item" style="cursor:pointer;margin-left:10px; border:2px solid #000; ${dStyle}" onclick="toggleLike('dislike')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Dislike.svg" class="svg-icon"> ${p.dislikes?p.dislikes.length:0}</div>`;
         }
 
         function switchView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
@@ -1149,7 +1157,7 @@
                 if(d) {
                     p.src=d.pfp||p.src; b.innerHTML=processText(d.bio||'Sin biografía.', d.role); document.getElementById('prof-stats-txt').textContent = `${d.followers?d.followers.length:0} Seguidores`;
                     
-                    if(d.role==='creator') { r.innerHTML='🌌 EL CREADOR'; p.className = 'admin-profile-fx ' + getParticleClass(d.adminParticle); p.style = `width: 120px; height: 120px; border-radius: 50%; object-fit: cover; ${getParticleStyle(d.adminParticle)}`; n.innerHTML=escapeHTML(u)+' <span class="creator-badge-sparkle">🌌 CREADOR</span>'; }
+                    if(d.role==='creator') { r.innerHTML='<img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> EL CREADOR'; p.className = 'admin-profile-fx ' + getParticleClass(d.adminParticle); p.style = `width: 120px; height: 120px; border-radius: 50%; object-fit: cover; ${getParticleStyle(d.adminParticle)}`; n.innerHTML=escapeHTML(u)+' <span class="creator-badge-sparkle"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> CREADOR</span>'; }
                     else if(d.role==='admin') { r.innerHTML='👑 Administrador'; p.className = 'admin-profile-fx ' + getParticleClass(d.adminParticle); p.style = `width: 120px; height: 120px; border-radius: 50%; object-fit: cover; ${getParticleStyle(d.adminParticle)}`; n.innerHTML=escapeHTML(u)+' <span class="admin-badge-sparkle">👑 ADMIN</span>'; } 
                     else { r.innerHTML='Tripulante'; p.style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #000; object-fit: cover;"; }
                     
@@ -1237,7 +1245,7 @@
                     d.forEach(c => {
                         const authorProf = liveUsers[c.name.toLowerCase()] || { role: c.role, pfp: c.pfpUrl, adminParticle: 'default' };
                         const isCAdm=authorProf.role==='admin' || authorProf.role==='creator';
-                        let bAdm = ''; if(authorProf.role==='creator') bAdm = '<span class="creator-badge-sparkle">🌌 CREADOR</span>'; else if(authorProf.role==='admin') bAdm = '<span class="admin-badge-sparkle">👑 ADMIN</span>';
+                        let bAdm = ''; if(authorProf.role==='creator') bAdm = '<span class="creator-badge-sparkle"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> CREADOR</span>'; else if(authorProf.role==='admin') bAdm = '<span class="admin-badge-sparkle">👑 ADMIN</span>';
                         const safePfp = escapeHTML(authorProf.pfp) || 'https://ui-avatars.com/api/?name=' + c.name[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=45';
                         
                         let cCls = 'comment-item'; let cSty = '';
@@ -1257,7 +1265,7 @@
                         let rHtml=''; if(c.replies) { rHtml='<div class="replies-list">'; c.replies.forEach(r=>{
                             const rProf = liveUsers[r.name.toLowerCase()] || { role: r.role, pfp: r.pfpUrl };
                             const isRAdm=rProf.role==='admin' || rProf.role==='creator', rSty=isRAdm?'border:2px solid #000;background:rgba(0,255,107,0.05);':'';
-                            let rBAdm = ''; if(rProf.role==='creator') rBAdm = '<span class="creator-badge-sparkle" style="font-size:0.65rem;">🌌</span>'; else if(rProf.role==='admin') rBAdm = '<span class="admin-badge-sparkle" style="font-size:0.65rem;">👑</span>';
+                            let rBAdm = ''; if(rProf.role==='creator') rBAdm = '<span class="creator-badge-sparkle" style="font-size:0.65rem;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon" style="height:1em;"></span>'; else if(rProf.role==='admin') rBAdm = '<span class="admin-badge-sparkle" style="font-size:0.65rem;">👑</span>';
                             const safeRepPfp = escapeHTML(rProf.pfp) || 'https://ui-avatars.com/api/?name=' + r.name[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=30';
                             
                             let rDBtn=''; if(isAdmOrCrea||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.8rem;margin-left:8px;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
@@ -1267,7 +1275,7 @@
                             rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=30'"><div style="flex: 1;"><b style="color:var(--primary);cursor:pointer; text-transform:uppercase;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.75rem;color:gray; font-weight:bold;">${new Date(r.date).toLocaleDateString()}</span> ${rEBtn}${rDBtn}<div style="font-size:0.9rem;color:#ccc; font-weight:bold; margin-top:4px;">${processText(r.text, rProf.role)} ${editedRep}</div></div></div>`;
                         }); rHtml+='</div>';}
                         
-                        const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:10px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="Respuesta..." style="min-height:35px; padding:8px;"></div> <button class="btn-secondary" style="padding:8px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')">😀</button> <button onclick="postReply('${c.id}')" style="padding:8px 15px;">Enviar</button></div>`:'';
+                        const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:10px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="Respuesta..." style="min-height:35px; padding:8px;"></div> <button class="btn-secondary" style="padding:8px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button> <button onclick="postReply('${c.id}')" style="padding:8px 15px;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> Enviar</button></div>`:'';
                         lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=45'"><div class="comment-content">${pinnedVisual}<div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span style="font-size:0.8rem; color:gray; font-weight:bold;">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${pinBtn}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
                 } else lst.innerHTML='<p style="font-weight:bold; color:gray;">Sé el primero en reportar.</p>';
