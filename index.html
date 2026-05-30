@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -22,8 +22,8 @@
         }
 
         /* --- SISTEMA DE IDIOMAS (CSS) --- */
-        :root:lang(en) .en-text { display: none !important; }
-        :root:lang(es) .es-text { display: none !important; }
+        :root:lang(es) .en-text { display: none !important; }
+        :root:lang(en) .es-text { display: none !important; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Varela Round', 'Segoe UI', sans-serif; }
         
@@ -286,7 +286,8 @@
             
             <div class="warp-badge"><span class="es-text">Gracias Por cagarla jere l:l</span><span class="en-text">Thanks for messing it up jere l:l</span></div>
             <div class="ss-icon" onclick="promptAdmin()" title="Activar Modo Admin / Creador" data-es-title="Activar Modo Admin / Creador" data-en-title="Activate Admin / Creator Mode">SS</div>
-            <div class="ss-icon" onclick="toggleLanguage()" id="lang-btn" title="Cambiar Idioma / Change Language">EN</div>
+            
+            <div class="ss-icon" onclick="toggleLanguage()" id="lang-btn" title="Cambiar Idioma / Change Language">🌍 ES</div>
             
             <button class="icon-btn" onclick="toggleNotifications()" id="btn-notif" style="display:none;" title="Notificaciones" data-es-title="Notificaciones" data-en-title="Notifications">
                 🔔<span class="badge-count" id="notif-badge">0</span>
@@ -348,13 +349,13 @@
                 <div id="admin-particle-section" style="display:none; background:#15181c; padding:15px; border-radius:8px; border: var(--border-au); margin-top:10px;">
                     <label style="font-size: 0.8rem; color: gold; font-weight: bold;"><span class="es-text">✨ Aura Especial</span><span class="en-text">✨ Special Aura</span></label>
                     <select id="set-admin-particle" onchange="toggleCustomParticleInput()">
-                        <option value="default" class="es-text">Verde / Rosa (Clásico)</option><option value="default" class="en-text">Green / Pink (Classic)</option>
-                        <option value="blue" class="es-text">Azul / Celeste</option><option value="blue" class="en-text">Blue / Light Blue</option>
-                        <option value="red" class="es-text">Rojo / Naranja</option><option value="red" class="en-text">Red / Orange</option>
-                        <option value="yellow" class="es-text">Amarillo / Dorado</option><option value="yellow" class="en-text">Yellow / Gold</option>
-                        <option value="purple" class="es-text">Morado Oscuro</option><option value="purple" class="en-text">Dark Purple</option>
-                        <option value="turq" class="es-text">Turquesa Brillante</option><option value="turq" class="en-text">Bright Turquoise</option>
-                        <option value="custom" class="es-text">🖼️ Imagen Personalizada...</option><option value="custom" class="en-text">🖼️ Custom Image...</option>
+                        <option value="default" data-es="Verde / Rosa (Clásico)" data-en="Green / Pink (Classic)">Verde / Rosa (Clásico)</option>
+                        <option value="blue" data-es="Azul / Celeste" data-en="Blue / Light Blue">Azul / Celeste</option>
+                        <option value="red" data-es="Rojo / Naranja" data-en="Red / Orange">Rojo / Naranja</option>
+                        <option value="yellow" data-es="Amarillo / Dorado" data-en="Yellow / Gold">Amarillo / Dorado</option>
+                        <option value="purple" data-es="Morado Oscuro" data-en="Dark Purple">Morado Oscuro</option>
+                        <option value="turq" data-es="Turquesa Brillante" data-en="Bright Turquoise">Turquesa Brillante</option>
+                        <option value="custom" data-es="🖼️ Imagen Personalizada..." data-en="🖼️ Custom Image...">🖼️ Imagen Personalizada...</option>
                     </select>
                     <input type="file" id="set-admin-particle-img" accept="image/*" style="display:none; margin-top:10px;">
                 </div>
@@ -574,6 +575,7 @@
         // --- ESTADO GLOBAL & TRADUCCIONES JS ---
         let currentLang = localStorage.getItem('s32_lang') || 'es';
         document.documentElement.lang = currentLang;
+        document.title = currentLang === 'es' ? 'Scratch32 - Sube y Juega' : 'Scratch32 - Upload & Play';
 
         function t(es_text, en_text) {
             return currentLang === 'es' ? es_text : en_text;
@@ -581,7 +583,10 @@
 
         function updateLanguageUI() {
             document.documentElement.lang = currentLang;
-            document.getElementById('lang-btn').textContent = currentLang === 'es' ? 'EN' : 'ES';
+            document.title = currentLang === 'es' ? 'Scratch32 - Sube y Juega' : 'Scratch32 - Upload & Play';
+            
+            // HACE QUE EL BOTON MUESTRE EL IDIOMA ACTUAL CLARAMENTE
+            document.getElementById('lang-btn').textContent = currentLang === 'es' ? '🌍 ES' : '🌍 EN';
             
             document.querySelectorAll('input[data-es-placeholder], textarea[data-es-placeholder]').forEach(el => {
                 el.placeholder = currentLang === 'es' ? el.getAttribute('data-es-placeholder') : el.getAttribute('data-en-placeholder');
@@ -592,6 +597,10 @@
             document.querySelectorAll('[data-es-title]').forEach(el => {
                 el.title = currentLang === 'es' ? el.getAttribute('data-es-title') : el.getAttribute('data-en-title');
             });
+            // REPARA LOS OPTION DEL SELECTOR
+            document.querySelectorAll('option[data-es]').forEach(el => {
+                el.textContent = currentLang === 'es' ? el.getAttribute('data-es') : el.getAttribute('data-en');
+            });
         }
 
         function toggleLanguage() {
@@ -599,7 +608,7 @@
             localStorage.setItem('s32_lang', currentLang);
             updateLanguageUI();
             
-            // Forzar actualización de elementos generados por JS
+            // Forzar actualización de elementos generados por JS en vivo
             renderAuthBar();
             if(document.getElementById('home-view').classList.contains('active')) filterGallery();
             if(document.getElementById('ranking-view').classList.contains('active')) loadAllProjects();
@@ -609,7 +618,10 @@
                 if(p) renderGameStats(p);
                 loadComments(currentProjectKey);
             }
-            if(document.getElementById('chat-view').classList.contains('active')) openChat();
+            if(document.getElementById('chat-view').classList.contains('active') && activeChatUser) loadChatMessages(activeChatUser);
+            if(document.getElementById('chat-view').classList.contains('active') && !activeChatUser) openChat();
+            if(document.getElementById('emoji-manager').style.display === 'block') renderAdminEmojis();
+            if(document.getElementById('notif-modal').style.display === 'block') renderNotifications();
         }
 
         let currentUser = null; 
@@ -973,7 +985,7 @@
             const myData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase()); if(!myData) return; currentUser = myData; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
             const list = document.getElementById('notif-list'); list.innerHTML = ''; const notifs = currentUser.notifications || [];
             if(notifs.length === 0) list.innerHTML = `<p style="padding:15px; color:gray; font-weight:bold;">${t('Ninguna alerta nueva.', 'No new alerts.')}</p>`;
-            notifs.forEach(n => { const d = new Date(n.date).toLocaleString(); list.innerHTML += `<div class="notif-item" style="${n.read ? 'opacity:0.6;' : 'font-weight:bold;'}">${processText(n.text, 'user')}<br><span style="font-size:0.75rem;color:gray;">${d}</span></div>`; n.read = true; });
+            notifs.forEach(n => { const d = new Date(n.date).toLocaleString(currentLang === 'es' ? 'es-ES' : 'en-US'); list.innerHTML += `<div class="notif-item" style="${n.read ? 'opacity:0.6;' : 'font-weight:bold;'}">${processText(n.text, 'user')}<br><span style="font-size:0.75rem;color:gray;">${d}</span></div>`; n.read = true; });
             updateNotifBadge(); await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
         }
         function updateNotifBadge() { if(!currentUser) return; const notifs = currentUser.notifications || []; const unread = notifs.filter(n => !n.read).length; const badge = document.getElementById('notif-badge'); if(unread > 0) { badge.style.display = 'block'; badge.textContent = unread; } else badge.style.display = 'none'; }
@@ -1318,11 +1330,11 @@
                             let rEBtn=''; if(currentUser&&r.name===currentUser.username) rEBtn=`<button class="reply-btn" style="color:var(--primary);font-size:0.8rem;margin-left:8px;" onclick="editReply('${c.id}','${r.id}')">✏️ ${t('Editar', 'Edit')}</button>`;
                             const editedRep = r.edited ? `<span style="font-size:0.7rem; opacity:0.6; font-weight:bold;">(${t('editado', 'edited')})</span>` : '';
 
-                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=30'"><div style="flex: 1;"><b style="color:var(--primary);cursor:pointer; text-transform:uppercase;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.75rem;color:gray; font-weight:bold;">${new Date(r.date).toLocaleDateString()}</span> ${rEBtn}${rDBtn}<div style="font-size:0.9rem;color:#ccc; font-weight:bold; margin-top:4px;">${processText(r.text, rProf.role)} ${editedRep}</div></div></div>`;
+                            rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=30'"><div style="flex: 1;"><b style="color:var(--primary);cursor:pointer; text-transform:uppercase;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.75rem;color:gray; font-weight:bold;">${new Date(r.date).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US')}</span> ${rEBtn}${rDBtn}<div style="font-size:0.9rem;color:#ccc; font-weight:bold; margin-top:4px;">${processText(r.text, rProf.role)} ${editedRep}</div></div></div>`;
                         }); rHtml+='</div>';}
                         
                         const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:10px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="${t('Respuesta...', 'Reply...')}" style="min-height:35px; padding:8px;"></div> <button class="btn-secondary" style="padding:8px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button> <button onclick="postReply('${c.id}')" style="padding:8px 15px;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> ${t('Enviar', 'Send')}</button></div>`:'';
-                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=45'"><div class="comment-content">${pinnedVisual}<div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span style="font-size:0.8rem; color:gray; font-weight:bold;">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">${t('Responder', 'Reply')}</button>`:''}${pinBtn}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
+                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=45'"><div class="comment-content">${pinnedVisual}<div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span style="font-size:0.8rem; color:gray; font-weight:bold;">${new Date(c.date).toLocaleDateString(currentLang === 'es' ? 'es-ES' : 'en-US')}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">${t('Responder', 'Reply')}</button>`:''}${pinBtn}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
                 } else lst.innerHTML=`<p style="font-weight:bold; color:gray;">${t('Sé el primero en reportar.', 'Be the first to report.')}</p>`;
             } catch(e) { lst.innerHTML=`<p style="color:var(--danger); font-weight:bold;">${t('Error en las comunicaciones.', 'Error in communications.')}</p>`; }
@@ -1466,7 +1478,7 @@
             if (didIB) box.innerHTML = `<p style="color:var(--warning);text-align:center; font-weight:bold;">${t('Has bloqueado las comunicaciones con este tripulante.', 'You have blocked communications with this crewmate.')}</p>` + box.innerHTML;
 
             history.forEach(m => {
-                const isMe = m.sender === currentUser.username, d = new Date(m.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const isMe = m.sender === currentUser.username, d = new Date(m.date).toLocaleTimeString(currentLang === 'es' ? 'es-ES' : 'en-US', {hour: '2-digit', minute:'2-digit'});
                 const editedStr = m.edited ? ` <span style="font-size:0.65rem; opacity:0.8; font-weight:bold;">(${t('editado', 'edited')})</span>` : '';
                 let act = isMe ? `<div style="font-size:0.75rem; text-align:right; margin-top:5px; font-weight:bold;"><span style="cursor:pointer; color:#000;" onclick="editChatMessage('${m.id}')">✏️ ${t('Editar', 'Edit')}</span><span style="cursor:pointer; color:#550000; margin-left:10px;" onclick="deleteChatMessage('${m.id}')">🗑️</span></div>` : '';
                 
