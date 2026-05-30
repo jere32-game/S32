@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -20,6 +20,10 @@
             --radius: 16px;
             --border-au: 3px solid #000000; /* Borde grueso estilo Among Us */
         }
+
+        /* --- SISTEMA DE IDIOMAS (CSS) --- */
+        :root:lang(en) .en-text { display: none !important; }
+        :root:lang(es) .es-text { display: none !important; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Varela Round', 'Segoe UI', sans-serif; }
         
@@ -267,7 +271,7 @@
 
     <div id="editor-overlay">
         <div class="editor-header">
-            <button onclick="closeEditor()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Back.svg" class="svg-icon"> Volver</button> <span style="margin-left: 15px; font-weight: bold; color: var(--primary); text-transform: uppercase;">Entorno de Creación (Warp)</span>
+            <button onclick="closeEditor()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Back.svg" class="svg-icon"> <span class="es-text">Volver</span><span class="en-text">Back</span></button> <span style="margin-left: 15px; font-weight: bold; color: var(--primary); text-transform: uppercase;"><span class="es-text">Entorno de Creación (Warp)</span><span class="en-text">Creation Environment (Warp)</span></span>
         </div>
         <iframe id="editor-iframe" class="editor-iframe" src=""></iframe>
     </div>
@@ -277,16 +281,17 @@
             <img src="https://raw.githubusercontent.com/jere32-game/Scratch32/refs/heads/main/Logo.svg" alt="Scratch32 Logo" style="height: 45px;">
         </div>
         <div class="header-actions">
-            <button class="btn-secondary btn-small" style="background-color: var(--primary); color: #000; border: var(--border-au);" onclick="openEditor()">Crear Tarea</button>
-            <button class="btn-secondary btn-small" onclick="switchView('ranking-view')" title="Ver Ranking y Estadísticas Globales">🏆 Ranking</button>
+            <button class="btn-secondary btn-small" style="background-color: var(--primary); color: #000; border: var(--border-au);" onclick="openEditor()"><span class="es-text">Crear Tarea</span><span class="en-text">Create Task</span></button>
+            <button class="btn-secondary btn-small" onclick="switchView('ranking-view')" title="Ver Ranking y Estadísticas Globales" data-es-title="Ver Ranking y Estadísticas Globales" data-en-title="View Ranking and Global Stats"><span class="es-text">🏆 Ranking</span><span class="en-text">🏆 Ranking</span></button>
             
-            <div class="warp-badge">Gracias Por cagarla jere l:l</div>
-            <div class="ss-icon" onclick="promptAdmin()" title="Activar Modo Admin / Creador">SS</div>
+            <div class="warp-badge"><span class="es-text">Gracias Por cagarla jere l:l</span><span class="en-text">Thanks for messing it up jere l:l</span></div>
+            <div class="ss-icon" onclick="promptAdmin()" title="Activar Modo Admin / Creador" data-es-title="Activar Modo Admin / Creador" data-en-title="Activate Admin / Creator Mode">SS</div>
+            <div class="ss-icon" onclick="toggleLanguage()" id="lang-btn" title="Cambiar Idioma / Change Language">EN</div>
             
-            <button class="icon-btn" onclick="toggleNotifications()" id="btn-notif" style="display:none;" title="Notificaciones">
+            <button class="icon-btn" onclick="toggleNotifications()" id="btn-notif" style="display:none;" title="Notificaciones" data-es-title="Notificaciones" data-en-title="Notifications">
                 🔔<span class="badge-count" id="notif-badge">0</span>
             </button>
-            <button class="icon-btn" onclick="openChat()" id="btn-chat" style="display:none;" title="Mensajes">
+            <button class="icon-btn" onclick="openChat()" id="btn-chat" style="display:none;" title="Mensajes" data-es-title="Mensajes" data-en-title="Messages">
                 💬<span class="badge-count" id="chat-badge">0</span>
             </button>
 
@@ -295,8 +300,8 @@
 
         <div id="notif-modal">
             <div style="padding: 10px; border-bottom: 2px solid #000; display: flex; justify-content: space-between;">
-                <h4 style="color:var(--primary); text-transform: uppercase;">Notificaciones</h4>
-                <button class="btn-secondary btn-small" onclick="clearNotifications()">Limpiar</button>
+                <h4 style="color:var(--primary); text-transform: uppercase;"><span class="es-text">Notificaciones</span><span class="en-text">Notifications</span></h4>
+                <button class="btn-secondary btn-small" onclick="clearNotifications()"><span class="es-text">Limpiar</span><span class="en-text">Clear</span></button>
             </div>
             <div id="notif-list"></div>
         </div>
@@ -306,21 +311,21 @@
         <div class="auth-box">
             <span class="close-auth" onclick="closeAuthModal()">&times;</span>
             <div class="auth-tabs">
-                <div class="auth-tab active" onclick="switchAuthTab('login')">Tripulante</div>
-                <div class="auth-tab" onclick="switchAuthTab('register')">Nuevo Bordo</div>
+                <div class="auth-tab active" onclick="switchAuthTab('login')"><span class="es-text">Tripulante</span><span class="en-text">Crewmate</span></div>
+                <div class="auth-tab" onclick="switchAuthTab('register')"><span class="es-text">Nuevo Bordo</span><span class="en-text">New Boarding</span></div>
             </div>
             <div id="login-form" class="auth-form active">
-                <input type="text" id="log-user" placeholder="Nombre">
-                <input type="password" id="log-pass" placeholder="Código (Contraseña)">
-                <button onclick="login()">Entrar</button>
+                <input type="text" id="log-user" placeholder="Nombre" data-es-placeholder="Nombre" data-en-placeholder="Name">
+                <input type="password" id="log-pass" placeholder="Código (Contraseña)" data-es-placeholder="Código (Contraseña)" data-en-placeholder="Code (Password)">
+                <button onclick="login()"><span class="es-text">Entrar</span><span class="en-text">Enter</span></button>
                 <p id="log-status" style="color: var(--danger); font-size: 0.9rem; font-weight: bold;"></p>
             </div>
             <div id="register-form" class="auth-form">
-                <input type="text" id="reg-user" placeholder="Nombre">
-                <input type="password" id="reg-pass" placeholder="Código (Contraseña)">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Foto de Perfil (Opcional)</label>
+                <input type="text" id="reg-user" placeholder="Nombre" data-es-placeholder="Nombre" data-en-placeholder="Name">
+                <input type="password" id="reg-pass" placeholder="Código (Contraseña)" data-es-placeholder="Código (Contraseña)" data-en-placeholder="Code (Password)">
+                <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Foto de Perfil (Opcional)</span><span class="en-text">Profile Picture (Optional)</span></label>
                 <input type="file" id="reg-pfp" accept="image/*">
-                <button id="reg-btn" onclick="register()">Crear Identificación</button>
+                <button id="reg-btn" onclick="register()"><span class="es-text">Crear Identificación</span><span class="en-text">Create ID</span></button>
                 <p id="reg-status" style="color: var(--primary); font-size: 0.9rem; font-weight: bold;"></p>
             </div>
         </div>
@@ -329,58 +334,58 @@
     <div id="settings-modal" class="overlay-modal">
         <div class="auth-box" style="border-color: var(--primary);">
             <span class="close-auth" onclick="closeSettingsModal()">&times;</span>
-            <h3 style="color: var(--primary); margin-bottom: 1rem; text-align: center; text-transform: uppercase;">⚙️ Ajustes de Cuenta</h3>
+            <h3 style="color: var(--primary); margin-bottom: 1rem; text-align: center; text-transform: uppercase;"><span class="es-text">⚙️ Ajustes de Cuenta</span><span class="en-text">⚙️ Account Settings</span></h3>
             <div class="auth-form active">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Nombre</label>
-                <input type="text" id="set-user" placeholder="Nuevo usuario">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Contraseña</label>
-                <input type="password" id="set-pass" placeholder="Nueva contraseña">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Biografía</label>
-                <textarea id="set-bio" placeholder="Escribe algo sobre ti..."></textarea>
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Foto de Perfil</label>
+                <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Cambiar Nombre</span><span class="en-text">Change Name</span></label>
+                <input type="text" id="set-user" placeholder="Nuevo usuario" data-es-placeholder="Nuevo usuario" data-en-placeholder="New username">
+                <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Cambiar Contraseña</span><span class="en-text">Change Password</span></label>
+                <input type="password" id="set-pass" placeholder="Nueva contraseña" data-es-placeholder="Nueva contraseña" data-en-placeholder="New password">
+                <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Biografía</span><span class="en-text">Biography</span></label>
+                <textarea id="set-bio" placeholder="Escribe algo sobre ti..." data-es-placeholder="Escribe algo sobre ti..." data-en-placeholder="Write something about yourself..."></textarea>
+                <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Cambiar Foto de Perfil</span><span class="en-text">Change Profile Picture</span></label>
                 <input type="file" id="set-pfp" accept="image/*">
                 
                 <div id="admin-particle-section" style="display:none; background:#15181c; padding:15px; border-radius:8px; border: var(--border-au); margin-top:10px;">
-                    <label style="font-size: 0.8rem; color: gold; font-weight: bold;">✨ Aura Especial</label>
+                    <label style="font-size: 0.8rem; color: gold; font-weight: bold;"><span class="es-text">✨ Aura Especial</span><span class="en-text">✨ Special Aura</span></label>
                     <select id="set-admin-particle" onchange="toggleCustomParticleInput()">
-                        <option value="default">Verde / Rosa (Clásico)</option>
-                        <option value="blue">Azul / Celeste</option>
-                        <option value="red">Rojo / Naranja</option>
-                        <option value="yellow">Amarillo / Dorado</option>
-                        <option value="purple">Morado Oscuro</option>
-                        <option value="turq">Turquesa Brillante</option>
-                        <option value="custom">🖼️ Imagen Personalizada...</option>
+                        <option value="default" class="es-text">Verde / Rosa (Clásico)</option><option value="default" class="en-text">Green / Pink (Classic)</option>
+                        <option value="blue" class="es-text">Azul / Celeste</option><option value="blue" class="en-text">Blue / Light Blue</option>
+                        <option value="red" class="es-text">Rojo / Naranja</option><option value="red" class="en-text">Red / Orange</option>
+                        <option value="yellow" class="es-text">Amarillo / Dorado</option><option value="yellow" class="en-text">Yellow / Gold</option>
+                        <option value="purple" class="es-text">Morado Oscuro</option><option value="purple" class="en-text">Dark Purple</option>
+                        <option value="turq" class="es-text">Turquesa Brillante</option><option value="turq" class="en-text">Bright Turquoise</option>
+                        <option value="custom" class="es-text">🖼️ Imagen Personalizada...</option><option value="custom" class="en-text">🖼️ Custom Image...</option>
                     </select>
                     <input type="file" id="set-admin-particle-img" accept="image/*" style="display:none; margin-top:10px;">
                 </div>
 
-                <button id="set-btn" onclick="updateAccount()">Guardar Cambios</button>
+                <button id="set-btn" onclick="updateAccount()"><span class="es-text">Guardar Cambios</span><span class="en-text">Save Changes</span></button>
                 <p id="set-status" style="font-size: 0.9rem; text-align: center; color: var(--primary); font-weight: bold;"></p>
-                <button class="btn-danger" style="margin-top: 5px;" onclick="deleteMyAccount()">🗑️ Expulsar de la Nave (Eliminar)</button>
+                <button class="btn-danger" style="margin-top: 5px;" onclick="deleteMyAccount()"><span class="es-text">🗑️ Expulsar de la Nave (Eliminar)</span><span class="en-text">🗑️ Eject from Ship (Delete)</span></button>
 
                 <div id="admin-settings-section" style="display:none; margin-top: 20px; border-top: 3px solid #000; padding-top: 15px;">
-                    <h4 style="color: gold; text-align: center; margin-bottom: 15px; text-transform: uppercase;">👑 Panel de Control</h4>
+                    <h4 style="color: gold; text-align: center; margin-bottom: 15px; text-transform: uppercase;"><span class="es-text">👑 Panel de Control</span><span class="en-text">👑 Control Panel</span></h4>
                     
-                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="toggleEmojiManager()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"> Gestionar Amojis</button>
+                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="toggleEmojiManager()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"> <span class="es-text">Gestionar Amojis</span><span class="en-text">Manage Amojis</span></button>
                     <div id="emoji-manager" style="display:none; background:#15181c; padding:15px; border:var(--border-au); border-radius:8px; margin-bottom:15px;">
-                        <input type="text" id="emj-name" placeholder="Nombre (ej: gato)" style="margin-bottom:10px;">
+                        <input type="text" id="emj-name" placeholder="Nombre (ej: gato)" data-es-placeholder="Nombre (ej: gato)" data-en-placeholder="Name (e.g. cat)" style="margin-bottom:10px;">
                         <input type="file" id="emj-file" accept="image/*" style="margin-bottom:10px;">
-                        <label style="display:block; margin-bottom:10px; font-weight:bold;"><input type="checkbox" id="emj-admin"> Solo Admins/Creador</label>
-                        <button class="btn-warning btn-small" style="width:100%; margin-bottom:10px;" onclick="addEmoji()">Añadir Emoji</button>
+                        <label style="display:block; margin-bottom:10px; font-weight:bold;"><input type="checkbox" id="emj-admin"> <span class="es-text">Solo Admins/Creador</span><span class="en-text">Admins/Creator Only</span></label>
+                        <button class="btn-warning btn-small" style="width:100%; margin-bottom:10px;" onclick="addEmoji()"><span class="es-text">Añadir Emoji</span><span class="en-text">Add Emoji</span></button>
                         <div id="emoji-list-admin" style="max-height: 150px; overflow-y:auto; font-size:0.8rem;"></div>
                     </div>
 
-                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewAdminSecret()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> Ver Comando Admin</button>
-                    <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Comando Admin</label>
-                    <input type="text" id="set-admin-pass" placeholder="Nuevo comando (Ej: /seguro123)">
-                    <button onclick="updateAdminSecret()" class="btn-warning" style="margin-top:10px; margin-bottom:10px; width:100%;">Actualizar Comando Admin</button>
+                    <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewAdminSecret()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> <span class="es-text">Ver Comando Admin</span><span class="en-text">View Admin Command</span></button>
+                    <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Cambiar Comando Admin</span><span class="en-text">Change Admin Command</span></label>
+                    <input type="text" id="set-admin-pass" placeholder="Nuevo comando (Ej: /seguro123)" data-es-placeholder="Nuevo comando (Ej: /seguro123)" data-en-placeholder="New command (Ex: /secure123)">
+                    <button onclick="updateAdminSecret()" class="btn-warning" style="margin-top:10px; margin-bottom:10px; width:100%;"><span class="es-text">Actualizar Comando Admin</span><span class="en-text">Update Admin Command</span></button>
                     
                     <div id="creator-settings-section" style="display:none; border-top: 3px solid #000; padding-top: 15px; margin-top: 15px;">
-                        <h4 style="color: #00ffff; text-align: center; margin-bottom: 15px; text-transform: uppercase;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> Controles del Creador</h4>
-                        <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewCreatorSecret()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> Ver Comando Creador</button>
-                        <label style="font-size: 0.8rem; color: var(--text-muted);">Cambiar Comando Creador</label>
-                        <input type="text" id="set-creator-pass" placeholder="Nuevo comando supremo">
-                        <button onclick="updateCreatorSecret()" style="background:#00ffff; color:black; margin-top:10px; width:100%; font-weight:bold;">Actualizar Comando Creador</button>
+                        <h4 style="color: #00ffff; text-align: center; margin-bottom: 15px; text-transform: uppercase;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> <span class="es-text">Controles del Creador</span><span class="en-text">Creator Controls</span></h4>
+                        <button class="btn-secondary" style="margin-bottom: 10px; width: 100%;" onclick="viewCreatorSecret()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> <span class="es-text">Ver Comando Creador</span><span class="en-text">View Creator Command</span></button>
+                        <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Cambiar Comando Creador</span><span class="en-text">Change Creator Command</span></label>
+                        <input type="text" id="set-creator-pass" placeholder="Nuevo comando supremo" data-es-placeholder="Nuevo comando supremo" data-en-placeholder="New supreme command">
+                        <button onclick="updateCreatorSecret()" style="background:#00ffff; color:black; margin-top:10px; width:100%; font-weight:bold;"><span class="es-text">Actualizar Comando Creador</span><span class="en-text">Update Creator Command</span></button>
                     </div>
                 </div>
             </div>
@@ -390,22 +395,22 @@
     <div id="update-modal" class="overlay-modal">
         <div class="auth-box" style="border-color: var(--primary);">
             <span class="close-auth" onclick="closeUpdateModal()">&times;</span>
-            <h3 style="color: var(--primary); margin-bottom: 1rem; text-align: center; text-transform: uppercase;">🔄 Actualizar Proyecto</h3>
+            <h3 style="color: var(--primary); margin-bottom: 1rem; text-align: center; text-transform: uppercase;"><span class="es-text">🔄 Actualizar Proyecto</span><span class="en-text">🔄 Update Project</span></h3>
             <div class="auth-form active" style="display: flex;">
-                <label style="font-size: 0.8rem; color: var(--text-muted);">Nombre de la Tarea/Juego</label>
-                <input type="text" id="upd-name" placeholder="Nuevo nombre">
+                <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Nombre de la Tarea/Juego</span><span class="en-text">Task/Game Name</span></label>
+                <input type="text" id="upd-name" placeholder="Nuevo nombre" data-es-placeholder="Nuevo nombre" data-en-placeholder="New name">
                 
-                <label style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">Nuevo Archivo (.sb3 o .html pesado - Opcional)</label>
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;"><span class="es-text">Nuevo Archivo (.sb3 o .html pesado - Opcional)</span><span class="en-text">New File (.sb3 or heavy .html - Optional)</span></label>
                 <input type="file" id="upd-file" accept=".sb3,.html">
                 
-                <label style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;">Nueva Portada (Opcional)</label>
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;"><span class="es-text">Nueva Portada (Opcional)</span><span class="en-text">New Cover (Optional)</span></label>
                 <input type="file" id="upd-image" accept="image/*">
                 
                 <label style="display:flex; align-items:center; gap:5px; margin-top: 10px; cursor:pointer; font-weight: bold;">
-                    <input type="checkbox" id="upd-hidden" style="width:auto; height: 1.5rem;"> 👻 Oculto en las alcantarillas
+                    <input type="checkbox" id="upd-hidden" style="width:auto; height: 1.5rem;"> <span class="es-text">👻 Oculto en las alcantarillas</span><span class="en-text">👻 Hidden in the sewers</span>
                 </label>
                 
-                <button id="upd-btn" onclick="submitProjectUpdate()" style="margin-top: 15px;">Guardar Cambios</button>
+                <button id="upd-btn" onclick="submitProjectUpdate()" style="margin-top: 15px;"><span class="es-text">Guardar Cambios</span><span class="en-text">Save Changes</span></button>
                 <p id="upd-status" style="font-size: 0.9rem; text-align: center; margin-top: 5px; font-weight: bold;"></p>
             </div>
         </div>
@@ -415,54 +420,54 @@
         <div id="home-view" class="view active">
 
             <div class="section-box" id="publish-box" style="display: none;">
-                <h2>Reportar una Tarea (Publicar)</h2>
+                <h2><span class="es-text">Reportar una Tarea (Publicar)</span><span class="en-text">Report a Task (Publish)</span></h2>
                 <div class="form-group">
-                    <div class="input-box"><label>Nombre del Juego</label><input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" autocomplete="off"></div>
-                    <div class="input-box"><label>Archivo (.sb3, .html pesados)</label><input type="file" id="proj-file" accept=".sb3,.html"></div>
-                    <div class="input-box"><label>Imagen de Portada (Opcional)</label><input type="file" id="proj-image" accept="image/*"></div>
+                    <div class="input-box"><label><span class="es-text">Nombre del Juego</span><span class="en-text">Game Name</span></label><input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" data-es-placeholder="Ej: Mi Super Mod" data-en-placeholder="Ex: My Super Mod" autocomplete="off"></div>
+                    <div class="input-box"><label><span class="es-text">Archivo (.sb3, .html pesados)</span><span class="en-text">File (.sb3, heavy .html)</span></label><input type="file" id="proj-file" accept=".sb3,.html"></div>
+                    <div class="input-box"><label><span class="es-text">Imagen de Portada (Opcional)</span><span class="en-text">Cover Image (Optional)</span></label><input type="file" id="proj-image" accept="image/*"></div>
                 </div>
                 <label style="display:flex; align-items:center; gap:5px; margin-bottom: 15px; cursor:pointer; font-weight:bold;">
-                    <input type="checkbox" id="proj-hidden" style="width:auto; height: 1.5rem;"> 👻 Proyecto Oculto (En la ventilación)
+                    <input type="checkbox" id="proj-hidden" style="width:auto; height: 1.5rem;"> <span class="es-text">👻 Proyecto Oculto (En la ventilación)</span><span class="en-text">👻 Hidden Project (In the vents)</span>
                 </label>
 
-                <button id="publish-btn" onclick="publishProject()" style="width: 100%;">Subir y Publicar</button>
+                <button id="publish-btn" onclick="publishProject()" style="width: 100%;"><span class="es-text">Subir y Publicar</span><span class="en-text">Upload and Publish</span></button>
                 <p id="publish-status" style="font-size: 1rem; margin-top: 10px; font-weight: bold;"></p>
             </div>
 
             <div id="featured-section" style="display: none;">
-                <h2 style="color: gold; margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;">⭐ Proyectos Destacados</h2>
+                <h2 style="color: gold; margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;"><span class="es-text">⭐ Proyectos Destacados</span><span class="en-text">⭐ Featured Projects</span></h2>
                 <div class="gallery" id="featured-container"></div>
             </div>
 
-            <h2 style="margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;">🌎 Galería Global</h2>
+            <h2 style="margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;"><span class="es-text">🌎 Galería Global</span><span class="en-text">🌎 Global Gallery</span></h2>
             
             <div style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                <input type="text" id="search-input" class="search-bar" style="margin-bottom: 0; flex: 1; min-width: 250px;" placeholder="🔍 Buscar tareas o tripulantes..." onkeyup="filterGallery()">
-                <button class="btn-warning" onclick="playRandomProject()">🎲 Proyecto Aleatorio</button>
+                <input type="text" id="search-input" class="search-bar" style="margin-bottom: 0; flex: 1; min-width: 250px;" placeholder="🔍 Buscar tareas o tripulantes..." data-es-placeholder="🔍 Buscar tareas o tripulantes..." data-en-placeholder="🔍 Search tasks or crewmates..." onkeyup="filterGallery()">
+                <button class="btn-warning" onclick="playRandomProject()"><span class="es-text">🎲 Proyecto Aleatorio</span><span class="en-text">🎲 Random Project</span></button>
             </div>
             
             <div id="users-container" style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;"></div>
 
-            <div id="loading-msg">Conectando a la central espacial ikelene.dev...</div>
+            <div id="loading-msg"><span class="es-text">Conectando a la central espacial ikelene.dev...</span><span class="en-text">Connecting to space central ikelene.dev...</span></div>
             <div class="gallery" id="gallery-container"></div>
         </div>
 
         <div id="ranking-view" class="view">
-            <h2 style="margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; color: var(--primary); text-transform: uppercase;">📊 Estadísticas Globales y Top Tripulantes</h2>
+            <h2 style="margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; color: var(--primary); text-transform: uppercase;"><span class="es-text">📊 Estadísticas Globales y Top Tripulantes</span><span class="en-text">📊 Global Stats and Top Crewmates</span></h2>
             
             <div class="stats-banner" id="global-stats-banner" style="display: none;">
                 <div class="stat-card">
                     <h3 id="stat-total-users">0</h3>
-                    <p>👥 Tripulantes Registrados</p>
+                    <p><span class="es-text">👥 Tripulantes Registrados</span><span class="en-text">👥 Registered Crewmates</span></p>
                 </div>
                 <div class="stat-card">
                     <h3 id="stat-total-projects">0</h3>
-                    <p>🎮 Tareas Publicadas</p>
+                    <p><span class="es-text">🎮 Tareas Publicadas</span><span class="en-text">🎮 Published Tasks</span></p>
                 </div>
             </div>
 
             <div class="leaderboard" id="leaderboard-section" style="display: none;">
-                <h2 style="color: gold; margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;">🏆 Top 10 Creadores (Por Vistas)</h2>
+                <h2 style="color: gold; margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;"><span class="es-text">🏆 Top 10 Creadores (Por Vistas)</span><span class="en-text">🏆 Top 10 Creators (By Views)</span></h2>
                 <div id="leaderboard-list"></div>
             </div>
         </div>
@@ -472,82 +477,82 @@
                 <div style="flex: 1; min-width: 250px;">
                     <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
                         <h2 id="prof-name" style="border: none; margin: 0; font-size: 2.2rem; padding-bottom: 0; text-transform: none;"></h2>
-                        <button id="btn-follow" class="btn-secondary btn-small" style="display:none;" onclick="toggleFollow()">Seguir</button>
-                        <button class="btn-secondary btn-small" onclick="copyProfileLink()">🔗 Copiar Link</button>
+                        <button id="btn-follow" class="btn-secondary btn-small" style="display:none;" onclick="toggleFollow()"><span class="es-text">Seguir</span><span class="en-text">Follow</span></button>
+                        <button class="btn-secondary btn-small" onclick="copyProfileLink()"><span class="es-text">🔗 Copiar Link</span><span class="en-text">🔗 Copy Link</span></button>
                     </div>
                     <p style="color: var(--primary); font-weight: bold; margin-top: 8px; font-size: 1.1rem; text-transform: uppercase;" id="prof-role"></p>
                     <p style="color: var(--text-muted); font-size: 0.95rem; font-weight: bold;" id="prof-stats-txt">0 Seguidores</p>
                     <p style="color: #ddd; margin-top: 15px; max-width: 600px; font-size: 1.05rem;" id="prof-bio"></p>
                     
                     <div id="profile-admin-actions" style="display: none; margin-top: 15px; gap: 10px;">
-                        <button class="btn-warning btn-small" onclick="adminBanUser()">🔨 Banear (Expulsar)</button>
-                        <button class="btn-danger btn-small" onclick="adminDeleteUser()">🗑️ Borrar de la BD</button>
+                        <button class="btn-warning btn-small" onclick="adminBanUser()"><span class="es-text">🔨 Banear (Expulsar)</span><span class="en-text">🔨 Ban (Eject)</span></button>
+                        <button class="btn-danger btn-small" onclick="adminDeleteUser()"><span class="es-text">🗑️ Borrar de la BD</span><span class="en-text">🗑️ Delete from DB</span></button>
                     </div>
 
                     <div id="profile-creator-actions" style="display: none; margin-top: 20px; border-top: 2px solid var(--primary); padding-top: 15px;">
-                        <h4 style="color: #00ffff; margin-bottom: 10px; text-transform: uppercase;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> Acciones de Creador</h4>
-                        <button id="btn-toggle-admin" class="btn-warning btn-small">👑 Hacer Admin</button>
+                        <h4 style="color: #00ffff; margin-bottom: 10px; text-transform: uppercase;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> <span class="es-text">Acciones de Creador</span><span class="en-text">Creator Actions</span></h4>
+                        <button id="btn-toggle-admin" class="btn-warning btn-small"><span class="es-text">👑 Hacer Admin</span><span class="en-text">👑 Make Admin</span></button>
                         
                         <div id="admin-perms-panel" style="display: none; background: #15181c; padding: 15px; border-radius: 8px; margin-top: 15px; border: var(--border-au);">
-                            <h5 style="color: gold; margin-bottom: 10px; text-transform: uppercase;">Permisos del Administrador</h5>
-                            <label style="display:block; margin-bottom:8px; font-size: 0.9rem; font-weight:bold;"><input type="checkbox" id="perm-ban"> Puede banear/eliminar usuarios</label>
-                            <label style="display:block; margin-bottom:8px; font-size: 0.9rem; font-weight:bold;"><input type="checkbox" id="perm-feature"> Puede destacar proyectos</label>
-                            <label style="display:block; margin-bottom:15px; font-size: 0.9rem; font-weight:bold;"><input type="checkbox" id="perm-delproj"> Puede borrar proyectos globales</label>
-                            <button class="btn-secondary btn-small" onclick="saveAdminPerms()">💾 Guardar Permisos</button>
+                            <h5 style="color: gold; margin-bottom: 10px; text-transform: uppercase;"><span class="es-text">Permisos del Administrador</span><span class="en-text">Administrator Permissions</span></h5>
+                            <label style="display:block; margin-bottom:8px; font-size: 0.9rem; font-weight:bold;"><input type="checkbox" id="perm-ban"> <span class="es-text">Puede banear/eliminar usuarios</span><span class="en-text">Can ban/delete users</span></label>
+                            <label style="display:block; margin-bottom:8px; font-size: 0.9rem; font-weight:bold;"><input type="checkbox" id="perm-feature"> <span class="es-text">Puede destacar proyectos</span><span class="en-text">Can feature projects</span></label>
+                            <label style="display:block; margin-bottom:15px; font-size: 0.9rem; font-weight:bold;"><input type="checkbox" id="perm-delproj"> <span class="es-text">Puede borrar proyectos globales</span><span class="en-text">Can delete global projects</span></label>
+                            <button class="btn-secondary btn-small" onclick="saveAdminPerms()"><span class="es-text">💾 Guardar Permisos</span><span class="en-text">💾 Save Permissions</span></button>
                         </div>
                     </div>
                 </div>
             </div>
-            <h2 style="margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;">Proyectos Publicados</h2>
+            <h2 style="margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;"><span class="es-text">Proyectos Publicados</span><span class="en-text">Published Projects</span></h2>
             <div class="gallery" id="profile-gallery"></div>
         </div>
 
         <div id="game-view" class="view">
             <div id="game-header">
                 <div>
-                    <h2 id="view-game-title" style="margin:0; color:var(--primary); display:inline-block; text-transform: uppercase; text-shadow: 1px 1px 0 #000;">Cargando...</h2>
+                    <h2 id="view-game-title" style="margin:0; color:var(--primary); display:inline-block; text-transform: uppercase; text-shadow: 1px 1px 0 #000;"><span class="es-text">Cargando...</span><span class="en-text">Loading...</span></h2>
                     <span id="view-game-updated" style="color:var(--primary); font-size:0.9rem; font-weight:bold; vertical-align:middle;"></span>
                     <p id="view-game-author" style="color:var(--text-muted); margin-top:5px; cursor:pointer; text-decoration:underline; font-weight: bold; font-size: 1.1rem;">...</p>
                 </div>
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
                     <div class="project-stats" id="game-stats-bar" style="margin: 0; font-size: 1.1rem;"></div>
-                    <button class="btn-secondary" onclick="copyProjectLink()">🔗 Compartir</button>
-                    <button onclick="goHome()" class="btn-danger"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Back.svg" class="svg-icon"> Cerrar</button>
+                    <button class="btn-secondary" onclick="copyProjectLink()"><span class="es-text">🔗 Compartir</span><span class="en-text">🔗 Share</span></button>
+                    <button onclick="goHome()" class="btn-danger"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Back.svg" class="svg-icon"> <span class="es-text">Cerrar</span><span class="en-text">Close</span></button>
                 </div>
             </div>
             
             <iframe id="game-iframe" src="" allow="autoplay; camera; microphone; clipboard-read; clipboard-write"></iframe>
             
             <div class="comments-section">
-                <h3>Reportes del Proyecto (Comentarios)</h3>
+                <h3><span class="es-text">Reportes del Proyecto (Comentarios)</span><span class="en-text">Project Reports (Comments)</span></h3>
                 <div id="comment-input-area" class="comment-form form-group" style="display: none; align-items: flex-end;">
                     <div class="input-box" style="flex: 1;">
-                        <div contenteditable="true" id="cmt-text" class="rich-input" placeholder="Escribe tu reporte..."></div>
+                        <div contenteditable="true" id="cmt-text" class="rich-input" placeholder="Escribe tu reporte..." data-es-placeholder="Escribe tu reporte..." data-en-placeholder="Write your report..."></div>
                     </div>
                     <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'cmt-text')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button>
-                    <button id="cmt-btn" onclick="postComment()" style="align-self: stretch;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> Enviar</button>
+                    <button id="cmt-btn" onclick="postComment()" style="align-self: stretch;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> <span class="es-text">Enviar</span><span class="en-text">Send</span></button>
                 </div>
-                <p id="cmt-login-req" style="color: var(--danger); font-size: 1rem; font-weight: bold;">Inicia sesión para comentar.</p>
+                <p id="cmt-login-req" style="color: var(--danger); font-size: 1rem; font-weight: bold;"><span class="es-text">Inicia sesión para comentar.</span><span class="en-text">Log in to comment.</span></p>
                 <div id="comments-list" class="comment-list"></div>
             </div>
         </div>
 
         <div id="chat-view" class="view">
-            <h2 style="margin-bottom: 1rem; color: var(--primary); text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 0.5rem;">💬 Comunicaciones (Mensajes)</h2>
+            <h2 style="margin-bottom: 1rem; color: var(--primary); text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 0.5rem;"><span class="es-text">💬 Comunicaciones (Mensajes)</span><span class="en-text">💬 Communications (Messages)</span></h2>
             <div class="chat-container">
                 <div class="chat-sidebar" id="chat-sidebar"></div>
                 <div class="chat-main">
-                    <div id="chat-header" style="padding: 15px; background: #22262d; border-bottom: var(--border-au); font-weight: bold; text-transform: uppercase;">Selecciona un chat</div>
+                    <div id="chat-header" style="padding: 15px; background: #22262d; border-bottom: var(--border-au); font-weight: bold; text-transform: uppercase;"><span class="es-text">Selecciona un chat</span><span class="en-text">Select a chat</span></div>
                     <div class="chat-messages" id="chat-messages"></div>
                     <div class="chat-input" id="chat-input-area" style="display:none; align-items: flex-end;">
                         <input type="file" id="chat-img-upload" accept="image/*" style="display:none;" onchange="sendChatImage(this)">
                         <button class="btn-secondary" id="btn-chat-img" onclick="document.getElementById('chat-img-upload').click()">📷</button>
                         
                         <div style="flex:1;">
-                            <div contenteditable="true" id="chat-input-text" class="rich-input" placeholder="Escribe un mensaje..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></div>
+                            <div contenteditable="true" id="chat-input-text" class="rich-input" placeholder="Escribe un mensaje..." data-es-placeholder="Escribe un mensaje..." data-en-placeholder="Write a message..." onkeypress="if(event.key==='Enter' && !event.shiftKey) { event.preventDefault(); sendChatMessage(); }"></div>
                         </div>
                         <button class="btn-secondary" onclick="toggleEmojiPicker(event, 'chat-input-text')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button>
-                        <button onclick="sendChatMessage()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> Enviar</button>
+                        <button onclick="sendChatMessage()"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> <span class="es-text">Enviar</span><span class="en-text">Send</span></button>
                     </div>
                 </div>
             </div>
@@ -566,7 +571,47 @@
         const CONFIG_PREFIX = 'scratch32_cfg_';
         const CHAT_PREFIX = 'scratch32_chat_';
         
-        // --- ESTADO GLOBAL ---
+        // --- ESTADO GLOBAL & TRADUCCIONES JS ---
+        let currentLang = localStorage.getItem('s32_lang') || 'es';
+        document.documentElement.lang = currentLang;
+
+        function t(es_text, en_text) {
+            return currentLang === 'es' ? es_text : en_text;
+        }
+
+        function updateLanguageUI() {
+            document.documentElement.lang = currentLang;
+            document.getElementById('lang-btn').textContent = currentLang === 'es' ? 'EN' : 'ES';
+            
+            document.querySelectorAll('input[data-es-placeholder], textarea[data-es-placeholder]').forEach(el => {
+                el.placeholder = currentLang === 'es' ? el.getAttribute('data-es-placeholder') : el.getAttribute('data-en-placeholder');
+            });
+            document.querySelectorAll('.rich-input[data-es-placeholder]').forEach(el => {
+                el.setAttribute('placeholder', currentLang === 'es' ? el.getAttribute('data-es-placeholder') : el.getAttribute('data-en-placeholder'));
+            });
+            document.querySelectorAll('[data-es-title]').forEach(el => {
+                el.title = currentLang === 'es' ? el.getAttribute('data-es-title') : el.getAttribute('data-en-title');
+            });
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'es' ? 'en' : 'es';
+            localStorage.setItem('s32_lang', currentLang);
+            updateLanguageUI();
+            
+            // Forzar actualización de elementos generados por JS
+            renderAuthBar();
+            if(document.getElementById('home-view').classList.contains('active')) filterGallery();
+            if(document.getElementById('ranking-view').classList.contains('active')) loadAllProjects();
+            if(document.getElementById('profile-view').classList.contains('active') && viewedUser) viewProfile(viewedUser);
+            if(document.getElementById('game-view').classList.contains('active') && currentProjectKey) {
+                const p = allProjects.find(x => x._key === currentProjectKey);
+                if(p) renderGameStats(p);
+                loadComments(currentProjectKey);
+            }
+            if(document.getElementById('chat-view').classList.contains('active')) openChat();
+        }
+
         let currentUser = null; 
         let currentProjectKey = ''; 
         let allProjects = [];
@@ -579,6 +624,7 @@
         let projectToUpdateKey = null; 
 
         document.addEventListener('DOMContentLoaded', () => {
+            updateLanguageUI();
             loadEmojisDB();
             checkSession().then(() => {
                 loadAllProjects().then(() => {
@@ -586,7 +632,7 @@
                     if(urlParams.has('p')) {
                         const targetProj = urlParams.get('p');
                         if (allProjects.find(x => x._key === targetProj)) playProject(targetProj);
-                        else { alert("El proyecto compartido ya no existe."); window.history.replaceState({}, document.title, window.location.pathname); }
+                        else { alert(t("El proyecto compartido ya no existe.", "The shared project no longer exists.")); window.history.replaceState({}, document.title, window.location.pathname); }
                     } else if (urlParams.has('u')) {
                         viewProfile(urlParams.get('u'));
                     }
@@ -643,7 +689,7 @@
                 img.onclick = () => insertEmoji(emj.name, emj.url);
                 popup.appendChild(img);
             });
-            if(popup.innerHTML === '') popup.innerHTML = '<span style="font-size:0.8rem;color:gray;">No hay emojis</span>';
+            if(popup.innerHTML === '') popup.innerHTML = `<span style="font-size:0.8rem;color:gray;">${t('No hay emojis', 'No emojis')}</span>`;
             popup.style.display = 'flex';
             
             const rect = e.target.getBoundingClientRect();
@@ -708,7 +754,7 @@
                 const tempUser = JSON.parse(saved); const userKey = USER_PREFIX + tempUser.username.toLowerCase(); const liveUser = await dbGet(userKey);
                 const isBanned = await verifyBanStatus(liveUser, userKey);
                 if (!liveUser || isBanned) {
-                    let msg = "Tu cuenta fue eliminada."; if (liveUser && liveUser.banned) msg = liveUser.bannedUntil ? `Baneado hasta: ${new Date(liveUser.bannedUntil).toLocaleString()}` : "Baneado permanentemente.";
+                    let msg = t("Tu cuenta fue eliminada.", "Your account was deleted."); if (liveUser && liveUser.banned) msg = liveUser.bannedUntil ? `${t('Baneado hasta', 'Banned until')}: ${new Date(liveUser.bannedUntil).toLocaleString()}` : t("Baneado permanentemente.", "Permanently banned.");
                     alert(msg); localStorage.removeItem('scratch32_session'); currentUser = null;
                 } else {
                     currentUser = liveUser; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
@@ -726,8 +772,8 @@
             const bar = document.getElementById('auth-bar');
             if (currentUser) {
                 const fallbackPfp = 'https://ui-avatars.com/api/?name=' + currentUser.username[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=100';
-                bar.innerHTML = `<span style="font-size: 0.9rem; font-weight: bold;">Hola, <b style="color: var(--primary); text-transform: uppercase;">${currentUser.username}</b></span><img src="${currentUser.pfp || fallbackPfp}" class="user-pfp-small" onclick="viewProfile('${currentUser.username}')" title="Mi Perfil" onerror="this.src='${fallbackPfp}'"><button class="btn-secondary btn-small" onclick="openSettingsModal()">⚙️</button><button class="btn-danger btn-small" onclick="logout()">Salir</button>`;
-            } else bar.innerHTML = `<button onclick="openAuthModal()">Ingresar</button>`;
+                bar.innerHTML = `<span style="font-size: 0.9rem; font-weight: bold;">${t('Hola', 'Hello')}, <b style="color: var(--primary); text-transform: uppercase;">${currentUser.username}</b></span><img src="${currentUser.pfp || fallbackPfp}" class="user-pfp-small" onclick="viewProfile('${currentUser.username}')" title="${t('Mi Perfil', 'My Profile')}" onerror="this.src='${fallbackPfp}'"><button class="btn-secondary btn-small" onclick="openSettingsModal()">⚙️</button><button class="btn-danger btn-small" onclick="logout()">${t('Salir', 'Logout')}</button>`;
+            } else bar.innerHTML = `<button onclick="openAuthModal()">${t('Ingresar', 'Login')}</button>`;
         }
 
         document.addEventListener('click', (e) => {
@@ -770,37 +816,37 @@
 
         async function register() {
             const user = document.getElementById('reg-user').value.trim(), pass = document.getElementById('reg-pass').value.trim(), pfpFile = document.getElementById('reg-pfp').files[0], status = document.getElementById('reg-status'), btn = document.getElementById('reg-btn');
-            if (!user || !pass) { status.textContent = "Falta usuario o contraseña"; return; } if (user.includes(" ") || user.includes(":")) { status.textContent = "Sin espacios ni caracteres raros"; return; }
+            if (!user || !pass) { status.textContent = t("Falta usuario o contraseña", "Missing username or password"); return; } if (user.includes(" ") || user.includes(":")) { status.textContent = t("Sin espacios ni caracteres raros", "No spaces or weird characters"); return; }
             btn.disabled = true;
             try {
-                const userKey = USER_PREFIX + user.toLowerCase(); if (await dbGet(userKey)) throw new Error("Usuario ya existe");
-                status.textContent = "Subiendo imagen..."; let pfpUrl = 'https://ui-avatars.com/api/?name=' + user[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=100'; if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
-                status.textContent = "Creando cuenta...";
+                const userKey = USER_PREFIX + user.toLowerCase(); if (await dbGet(userKey)) throw new Error(t("Usuario ya existe", "User already exists"));
+                status.textContent = t("Subiendo imagen...", "Uploading image..."); let pfpUrl = 'https://ui-avatars.com/api/?name=' + user[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=100'; if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
+                status.textContent = t("Creando cuenta...", "Creating account...");
                 const userData = { username: user, password: pass, pfp: pfpUrl, role: 'user', bio: '', followers: [], following: [], notifications: [], blocked: [], banned: false };
                 await dbStore(userKey, userData); localStorage.setItem('scratch32_session', JSON.stringify(userData));
-                await checkSession(); closeAuthModal(); alert("¡Bienvenido a bordo!"); loadAllProjects();
+                await checkSession(); closeAuthModal(); alert(t("¡Bienvenido a bordo!", "Welcome aboard!")); loadAllProjects();
             } catch (e) { status.style.color = 'var(--danger)'; status.textContent = e.message; } finally { btn.disabled = false; }
         }
 
         async function login() {
             const user = document.getElementById('log-user').value.trim(), pass = document.getElementById('log-pass').value.trim(), status = document.getElementById('log-status');
-            if (!user || !pass) { status.textContent = "Falta info"; return; } status.textContent = "Comprobando ID...";
+            if (!user || !pass) { status.textContent = t("Falta info", "Missing info"); return; } status.textContent = t("Comprobando ID...", "Checking ID...");
             try {
                 const userKey = USER_PREFIX + user.toLowerCase(); const dbUser = await dbGet(userKey);
                 if (dbUser) {
-                    if (await verifyBanStatus(dbUser, userKey)) throw new Error(dbUser.bannedUntil ? `Baneado hasta: ${new Date(dbUser.bannedUntil).toLocaleString()}` : "Cuenta BANEADA permanentemente (Expulsado).");
-                    if (dbUser.password === pass) { localStorage.setItem('scratch32_session', JSON.stringify(dbUser)); await checkSession(); closeAuthModal(); status.textContent = ""; loadAllProjects(); } else throw new Error("Código incorrecto");
-                } else throw new Error("Tripulante no encontrado");
+                    if (await verifyBanStatus(dbUser, userKey)) throw new Error(dbUser.bannedUntil ? `${t('Baneado hasta', 'Banned until')}: ${new Date(dbUser.bannedUntil).toLocaleString()}` : t("Cuenta BANEADA permanentemente (Expulsado).", "Permanently BANNED account (Ejected)."));
+                    if (dbUser.password === pass) { localStorage.setItem('scratch32_session', JSON.stringify(dbUser)); await checkSession(); closeAuthModal(); status.textContent = ""; loadAllProjects(); } else throw new Error(t("Código incorrecto", "Incorrect code"));
+                } else throw new Error(t("Tripulante no encontrado", "Crewmate not found"));
             } catch (e) { status.textContent = e.message; }
         }
 
         async function updateAccount() {
             const newUser = document.getElementById('set-user').value.trim(), newPass = document.getElementById('set-pass').value.trim(), newBio = document.getElementById('set-bio').value.trim(), pfpFile = document.getElementById('set-pfp').files[0], status = document.getElementById('set-status'), btn = document.getElementById('set-btn');
-            if (!newUser || !newPass || newUser.includes(" ")) { status.style.color = 'var(--danger)'; status.textContent = "Datos inválidos"; return; }
-            btn.disabled = true; status.style.color = 'var(--text)'; status.textContent = "Procesando...";
+            if (!newUser || !newPass || newUser.includes(" ")) { status.style.color = 'var(--danger)'; status.textContent = t("Datos inválidos", "Invalid data"); return; }
+            btn.disabled = true; status.style.color = 'var(--text)'; status.textContent = t("Procesando...", "Processing...");
             try {
                 const oldKey = USER_PREFIX + currentUser.username.toLowerCase(), newKey = USER_PREFIX + newUser.toLowerCase();
-                if (oldKey !== newKey) { if (await dbGet(newKey)) throw new Error("Nombre ya en uso"); }
+                if (oldKey !== newKey) { if (await dbGet(newKey)) throw new Error(t("Nombre ya en uso", "Name already in use")); }
                 let pfpUrl = currentUser.pfp; if (pfpFile) pfpUrl = await uploadFileToYYF(pfpFile);
 
                 currentUser.username = newUser; currentUser.password = newPass; currentUser.pfp = pfpUrl; currentUser.bio = newBio;
@@ -812,25 +858,25 @@
                 }
 
                 await dbStore(newKey, currentUser); if (oldKey !== newKey) await dbDelete(oldKey);
-                localStorage.setItem('scratch32_session', JSON.stringify(currentUser)); await checkSession(); closeSettingsModal(); alert("Datos guardados."); loadAllProjects();
+                localStorage.setItem('scratch32_session', JSON.stringify(currentUser)); await checkSession(); closeSettingsModal(); alert(t("Datos guardados.", "Data saved.")); loadAllProjects();
             } catch(e) { status.style.color = 'var(--danger)'; status.textContent = e.message; } finally { btn.disabled = false; }
         }
 
-        async function deleteMyAccount() { if (!confirm("⚠️ ¿BORRAR CUENTA PARA SIEMPRE (Saltar de la nave)?")) return; try { await dbDelete(USER_PREFIX + currentUser.username.toLowerCase()); logout(); } catch(e) {} }
+        async function deleteMyAccount() { if (!confirm(t("⚠️ ¿BORRAR CUENTA PARA SIEMPRE (Saltar de la nave)?", "⚠️ DELETE ACCOUNT FOREVER (Jump off the ship)?"))) return; try { await dbDelete(USER_PREFIX + currentUser.username.toLowerCase()); logout(); } catch(e) {} }
         function logout() { localStorage.removeItem('scratch32_session'); checkSession(); goHome(); }
 
         // --- GESTOR DE EMOJIS (ADMIN / CREADOR) ---
         function toggleEmojiManager() { const m = document.getElementById('emoji-manager'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; if(m.style.display==='block') renderAdminEmojis(); }
         async function renderAdminEmojis() {
             const list = document.getElementById('emoji-list-admin'); list.innerHTML = '';
-            if(globalEmojis.length === 0) list.innerHTML = '<p style="color:gray;">No hay emojis.</p>';
+            if(globalEmojis.length === 0) list.innerHTML = `<p style="color:gray;">${t('No hay emojis.', 'No emojis.')}</p>`;
             globalEmojis.forEach(e => {
-                list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:5px 0;"><div><img src="${e.url}" class="custom-emoji"> <b>:${e.name}:</b> ${e.adminOnly?'<span style="color:gold;font-size:0.7rem;">(Exclusivo)</span>':''}</div> <div><button class="btn-danger btn-small" onclick="deleteEmoji('${e.id}')">🗑️</button></div></div>`;
+                list.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding:5px 0;"><div><img src="${e.url}" class="custom-emoji"> <b>:${e.name}:</b> ${e.adminOnly?`<span style="color:gold;font-size:0.7rem;">(${t('Exclusivo','Exclusive')})</span>`:''}</div> <div><button class="btn-danger btn-small" onclick="deleteEmoji('${e.id}')">🗑️</button></div></div>`;
             });
         }
         async function addEmoji() {
             const name = document.getElementById('emj-name').value.trim().replace(/:/g, ''), file = document.getElementById('emj-file').files[0], ao = document.getElementById('emj-admin').checked;
-            if(!name || !file) return alert("Falta nombre o archivo");
+            if(!name || !file) return alert(t("Falta nombre o archivo", "Missing name or file"));
             try {
                 const url = await uploadFileToYYF(file);
                 globalEmojis.push({ id: 'emj_'+Date.now(), name: name, url: url, adminOnly: ao });
@@ -839,64 +885,64 @@
                 renderAdminEmojis();
             } catch(e) { alert("Error: " + e.message); }
         }
-        async function deleteEmoji(id) { if(!confirm("¿Borrar emoji?")) return; globalEmojis = globalEmojis.filter(x => x.id !== id); await dbStore(CONFIG_PREFIX + 'emojis', globalEmojis); renderAdminEmojis(); }
+        async function deleteEmoji(id) { if(!confirm(t("¿Borrar emoji?", "Delete emoji?"))) return; globalEmojis = globalEmojis.filter(x => x.id !== id); await dbStore(CONFIG_PREFIX + 'emojis', globalEmojis); renderAdminEmojis(); }
 
         // --- ADMIN SECRETS & BANS ---
         async function getAdminSecret() { const data = await dbGet(CONFIG_PREFIX + 'admin'); return data ? data.secret : '/sus32'; }
-        async function viewAdminSecret() { alert("El comando Admin actual es: " + await getAdminSecret()); }
+        async function viewAdminSecret() { alert(t("El comando Admin actual es: ", "The current Admin command is: ") + await getAdminSecret()); }
         
         async function getCreatorSecret() { const data = await dbGet(CONFIG_PREFIX + 'creator'); return data ? data.secret : 'jerejere123,.-'; }
-        async function viewCreatorSecret() { alert("El comando del Creador actual es: " + await getCreatorSecret()); }
-        async function updateCreatorSecret() { const n = document.getElementById('set-creator-pass').value.trim(); if (n) { await dbStore(CONFIG_PREFIX + 'creator', { secret: n }); alert("Comando del Creador cambiado a: " + n); document.getElementById('set-creator-pass').value=''; } }
+        async function viewCreatorSecret() { alert(t("El comando del Creador actual es: ", "The current Creator command is: ") + await getCreatorSecret()); }
+        async function updateCreatorSecret() { const n = document.getElementById('set-creator-pass').value.trim(); if (n) { await dbStore(CONFIG_PREFIX + 'creator', { secret: n }); alert(t("Comando del Creador cambiado a: ", "Creator command changed to: ") + n); document.getElementById('set-creator-pass').value=''; } }
 
         async function promptAdmin() {
-            if (!currentUser) { alert("Inicia sesión."); return; } 
-            if (currentUser.role === 'admin' || currentUser.role === 'creator') { alert("Ya eres admin o creador."); return; }
+            if (!currentUser) { alert(t("Inicia sesión.", "Log in.")); return; } 
+            if (currentUser.role === 'admin' || currentUser.role === 'creator') { alert(t("Ya eres admin o creador.", "You are already admin or creator.")); return; }
             
-            const cmd = prompt("Ingresa el comando secreto de la nave:");
+            const cmd = prompt(t("Ingresa el comando secreto de la nave:", "Enter the secret ship command:"));
             const creatorSecret = await getCreatorSecret();
             const adminSecret = await getAdminSecret();
 
             if (cmd === creatorSecret) {
-                currentUser.role = 'creator'; await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser); alert("🌌 Modo CREADOR Activado. Eres el Dios Supremo de la Nave."); checkSession(); loadAllProjects(); return;
+                currentUser.role = 'creator'; await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser); alert(t("🌌 Modo CREADOR Activado. Eres el Dios Supremo de la Nave.", "🌌 CREATOR Mode Activated. You are the Supreme God of the Ship.")); checkSession(); loadAllProjects(); return;
             }
-            if (cmd === adminSecret) { currentUser.role = 'admin'; await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser); alert("Modo Admin Activado. Eres el Capitán."); checkSession(); loadAllProjects(); } else alert("Ese no es el código.");
+            if (cmd === adminSecret) { currentUser.role = 'admin'; await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser); alert(t("Modo Admin Activado. Eres el Capitán.", "Admin Mode Activated. You are the Captain.")); checkSession(); loadAllProjects(); } else alert(t("Ese no es el código.", "That is not the code."));
         }
-        async function updateAdminSecret() { const n = document.getElementById('set-admin-pass').value.trim(); if (n) { await dbStore(CONFIG_PREFIX + 'admin', { secret: n }); alert("Cambiado a: " + n); document.getElementById('set-admin-pass').value=''; } }
+        async function updateAdminSecret() { const n = document.getElementById('set-admin-pass').value.trim(); if (n) { await dbStore(CONFIG_PREFIX + 'admin', { secret: n }); alert(t("Cambiado a: ", "Changed to: ") + n); document.getElementById('set-admin-pass').value=''; } }
 
         async function adminBanUser() {
-            if(currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canBan === false) return alert("No tienes permiso para expulsar tripulantes.");
-            if (!viewedUser || !confirm(`¿Expulsar a ${viewedUser} por la escotilla?`)) return; 
-            if (viewedUser.toLowerCase() === currentUser.username.toLowerCase()) return alert("No puedes expulsarte a ti mismo, xd.");
+            if(currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canBan === false) return alert(t("No tienes permiso para expulsar tripulantes.", "You do not have permission to eject crewmates."));
+            if (!viewedUser || !confirm(`${t('¿Expulsar a', 'Eject')} ${viewedUser} ${t('por la escotilla?', 'out the airlock?')}`)) return; 
+            if (viewedUser.toLowerCase() === currentUser.username.toLowerCase()) return alert(t("No puedes expulsarte a ti mismo, xd.", "You can't eject yourself, lol."));
             
             const uKey = USER_PREFIX + viewedUser.toLowerCase(); 
             const uData = await dbGet(uKey);
             if (uData) {
-                if (uData.role === 'creator' && currentUser.role !== 'creator') return alert("No puedes banear al Creador.");
-                if (uData.role === 'admin' && currentUser.role !== 'creator') return alert("Solo el Creador puede banear a un Admin.");
+                if (uData.role === 'creator' && currentUser.role !== 'creator') return alert(t("No puedes banear al Creador.", "You can't ban the Creator."));
+                if (uData.role === 'admin' && currentUser.role !== 'creator') return alert(t("Solo el Creador puede banear a un Admin.", "Only the Creator can ban an Admin."));
                 
-                const duracionStr = prompt("¿Tiempo de baneo? Ej: '30s', '15m', '2h', '1d'. Escribe '0' para siempre."); if (duracionStr === null) return;
+                const duracionStr = prompt(t("¿Tiempo de baneo? Ej: '30s', '15m', '2h', '1d'. Escribe '0' para siempre.", "Ban time? Ex: '30s', '15m', '2h', '1d'. Write '0' for forever.")); if (duracionStr === null) return;
                 let mult = 0, bannedUntil = null; if (duracionStr.endsWith('s')) mult = 1000; else if (duracionStr.endsWith('m')) mult = 60000; else if (duracionStr.endsWith('h')) mult = 3600000; else if (duracionStr.endsWith('d')) mult = 86400000;
-                if (mult > 0) { const val = parseInt(duracionStr); if (!isNaN(val)) bannedUntil = Date.now() + (val * mult); } else if (duracionStr !== '0') { alert("Formato inválido."); return; }
+                if (mult > 0) { const val = parseInt(duracionStr); if (!isNaN(val)) bannedUntil = Date.now() + (val * mult); } else if (duracionStr !== '0') { alert(t("Formato inválido.", "Invalid format.")); return; }
                 
                 uData.banned = true; uData.bannedUntil = bannedUntil; await dbStore(uKey, uData); 
-                if(bannedUntil) alert(`Tripulante baneado hasta ${new Date(bannedUntil).toLocaleString()}`); else alert("El tripulante era El Impostor (Baneado permanentemente).");
+                if(bannedUntil) alert(`${t('Tripulante baneado hasta', 'Crewmate banned until')} ${new Date(bannedUntil).toLocaleString()}`); else alert(t("El tripulante era El Impostor (Baneado permanentemente).", "The crewmate was The Impostor (Permanently banned)."));
                 goHome(); 
             }
         }
         
         async function adminDeleteUser() { 
-            if(currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canBan === false) return alert("No tienes permiso para borrar la base de datos.");
-            if (!viewedUser || !confirm(`⚠️ ¿ELIMINAR A ${viewedUser} DE LA NAVE POR COMPLETO?`)) return; 
-            if (viewedUser.toLowerCase() === currentUser.username.toLowerCase()) return alert("No puedes eliminarte a ti mismo desde aquí. Ve a tus ajustes de cuenta.");
+            if(currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canBan === false) return alert(t("No tienes permiso para borrar la base de datos.", "You don't have permission to wipe the database."));
+            if (!viewedUser || !confirm(`${t('⚠️ ¿ELIMINAR A', '⚠️ COMPLETELY DELETE')} ${viewedUser} ${t('DE LA NAVE POR COMPLETO?', 'FROM THE SHIP?')}`)) return; 
+            if (viewedUser.toLowerCase() === currentUser.username.toLowerCase()) return alert(t("No puedes eliminarte a ti mismo desde aquí. Ve a tus ajustes de cuenta.", "You can't delete yourself here. Go to your account settings."));
             
             const uKey = USER_PREFIX + viewedUser.toLowerCase(); 
             const uData = await dbGet(uKey);
             if (uData) {
-                if (uData.role === 'creator' && currentUser.role !== 'creator') return alert("No puedes borrar al Creador.");
-                if (uData.role === 'admin' && currentUser.role !== 'creator') return alert("Solo el Creador puede borrar la cuenta de un Admin.");
+                if (uData.role === 'creator' && currentUser.role !== 'creator') return alert(t("No puedes borrar al Creador.", "You can't delete the Creator."));
+                if (uData.role === 'admin' && currentUser.role !== 'creator') return alert(t("Solo el Creador puede borrar la cuenta de un Admin.", "Only the Creator can delete an Admin account."));
             }
-            try { await dbDelete(uKey); alert("Erradicado en el espacio."); goHome(); loadAllProjects(); } catch(e){} 
+            try { await dbDelete(uKey); alert(t("Erradicado en el espacio.", "Eradicated in space.")); goHome(); loadAllProjects(); } catch(e){} 
         }
 
         // --- SISTEMA DE SEGUIDORES Y NOTIFICACIONES ---
@@ -914,11 +960,11 @@
             } else { 
                 currentUser.following.push(viewedUser); 
                 targetData.followers.push(currentUser.username); 
-                pushNotification(targetData, `👤 ${currentUser.username} ha comenzado a seguirte en la nave.`); 
+                pushNotification(targetData, `👤 ${currentUser.username} ${t('ha comenzado a seguirte en la nave.', 'has started following you on the ship.')}`); 
             }
             
             await dbStore(myKey, currentUser); await dbStore(targetKey, targetData); localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
-            document.getElementById('btn-follow').textContent = isFollowing ? 'Seguir' : 'Dejar de seguir'; document.getElementById('btn-follow').className = isFollowing ? 'btn-secondary btn-small' : 'btn-danger btn-small'; document.getElementById('prof-stats-txt').textContent = `${targetData.followers.length} Seguidores`;
+            document.getElementById('btn-follow').textContent = isFollowing ? t('Seguir', 'Follow') : t('Dejar de seguir', 'Unfollow'); document.getElementById('btn-follow').className = isFollowing ? 'btn-secondary btn-small' : 'btn-danger btn-small'; document.getElementById('prof-stats-txt').textContent = `${targetData.followers.length} ${t('Seguidores', 'Followers')}`;
         }
         
         async function pushNotification(targetUserObj, text) { targetUserObj.notifications = targetUserObj.notifications || []; targetUserObj.notifications.unshift({ text: text, date: Date.now(), read: false }); if(targetUserObj.notifications.length > 20) targetUserObj.notifications.pop(); }
@@ -926,7 +972,7 @@
         async function renderNotifications() {
             const myData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase()); if(!myData) return; currentUser = myData; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
             const list = document.getElementById('notif-list'); list.innerHTML = ''; const notifs = currentUser.notifications || [];
-            if(notifs.length === 0) list.innerHTML = '<p style="padding:15px; color:gray; font-weight:bold;">Ninguna alerta nueva.</p>';
+            if(notifs.length === 0) list.innerHTML = `<p style="padding:15px; color:gray; font-weight:bold;">${t('Ninguna alerta nueva.', 'No new alerts.')}</p>`;
             notifs.forEach(n => { const d = new Date(n.date).toLocaleString(); list.innerHTML += `<div class="notif-item" style="${n.read ? 'opacity:0.6;' : 'font-weight:bold;'}">${processText(n.text, 'user')}<br><span style="font-size:0.75rem;color:gray;">${d}</span></div>`; n.read = true; });
             updateNotifBadge(); await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser);
         }
@@ -945,7 +991,7 @@
             const sts = document.getElementById('publish-status');
             const btn = document.getElementById('publish-btn');
 
-            if(!name || fileIn.files.length === 0) { sts.style.color = 'var(--danger)'; sts.textContent = 'Faltan datos de la tarea.'; return; }
+            if(!name || fileIn.files.length === 0) { sts.style.color = 'var(--danger)'; sts.textContent = t('Faltan datos de la tarea.', 'Missing task data.'); return; }
             
             let fileToUpload = fileIn.files[0];
             const isHtml = fileToUpload.name.toLowerCase().endsWith('.html');
@@ -954,11 +1000,11 @@
 
             btn.disabled = true; sts.style.color = 'var(--text)';
             try {
-                sts.textContent = 'Subiendo tarea...'; const url = await uploadFileToYYF(fileToUpload);
-                let imgUrl = 'https://ui-avatars.com/api/?name=Sin+Portada&background=1a1a24&color=00ff6b&size=400'; if (imgIn.files.length > 0) { sts.textContent = 'Subiendo portada...'; imgUrl = await uploadFileToYYF(imgIn.files[0]); }
-                sts.textContent = 'Guardando en la base...'; 
+                sts.textContent = t('Subiendo tarea...', 'Uploading task...'); const url = await uploadFileToYYF(fileToUpload);
+                let imgUrl = 'https://ui-avatars.com/api/?name=Sin+Portada&background=1a1a24&color=00ff6b&size=400'; if (imgIn.files.length > 0) { sts.textContent = t('Subiendo portada...', 'Uploading cover...'); imgUrl = await uploadFileToYYF(imgIn.files[0]); }
+                sts.textContent = t('Guardando en la base...', 'Saving to database...'); 
                 const pData = { name: name, author: currentUser.username, url: url, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false, hidden: isHidden, isHtml: isHtml, updated: null, sticker: null };
-                await dbStore(PROJ_PREFIX + Date.now(), pData); sts.style.color = 'var(--primary)'; sts.textContent = '¡Tarea Completada!'; document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; document.getElementById('proj-hidden').checked = false; loadAllProjects(); 
+                await dbStore(PROJ_PREFIX + Date.now(), pData); sts.style.color = 'var(--primary)'; sts.textContent = t('¡Tarea Completada!', 'Task Completed!'); document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; document.getElementById('proj-hidden').checked = false; loadAllProjects(); 
             } catch (e) { sts.style.color = 'var(--danger)'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
@@ -973,9 +1019,9 @@
             if(!projectToUpdateKey) return; const p = allProjects.find(x => x._key === projectToUpdateKey); if(!p) return;
             const newName = document.getElementById('upd-name').value.trim(), fileIn = document.getElementById('upd-file'), imgIn = document.getElementById('upd-image'), isHidden = document.getElementById('upd-hidden').checked, sts = document.getElementById('upd-status'), btn = document.getElementById('upd-btn');
             
-            if(!newName) { sts.style.color = 'var(--danger)'; sts.textContent = 'El nombre no puede estar vacío.'; return; }
+            if(!newName) { sts.style.color = 'var(--danger)'; sts.textContent = t('El nombre no puede estar vacío.', 'The name cannot be empty.'); return; }
             if(fileIn.files.length > 0 && !fileIn.files[0].name.toLowerCase().endsWith('.sb3') && !fileIn.files[0].name.toLowerCase().endsWith('.html')) {
-                sts.style.color = 'var(--danger)'; sts.textContent = 'El archivo debe ser .sb3 o .html'; return;
+                sts.style.color = 'var(--danger)'; sts.textContent = t('El archivo debe ser .sb3 o .html', 'The file must be .sb3 or .html'); return;
             }
             
             btn.disabled = true; sts.style.color = 'var(--text)';
@@ -985,7 +1031,7 @@
                 if (p.hidden !== isHidden) { p.hidden = isHidden; hasChanges = true; }
                 
                 if (fileIn.files.length > 0) {
-                    sts.textContent = 'Subiendo nuevo archivo...';
+                    sts.textContent = t('Subiendo nuevo archivo...', 'Uploading new file...');
                     let fileToUpload = fileIn.files[0];
                     p.isHtml = fileToUpload.name.toLowerCase().endsWith('.html');
                     if (p.isHtml) { fileToUpload = new File([fileToUpload], fileToUpload.name.replace(/\.html$/i, '.txt'), { type: 'text/plain' }); }
@@ -994,21 +1040,21 @@
                 }
                 
                 if (imgIn.files.length > 0) {
-                    sts.textContent = 'Subiendo nueva portada...';
+                    sts.textContent = t('Subiendo nueva portada...', 'Uploading new cover...');
                     p.imageUrl = await uploadFileToYYF(imgIn.files[0]);
                     hasChanges = true;
                 }
                 
                 if (hasChanges) {
-                    sts.textContent = 'Guardando cambios...'; p.updated = Date.now(); await dbStore(projectToUpdateKey, p); sts.style.color = 'var(--primary)'; sts.textContent = '¡Actualizado con éxito!';
+                    sts.textContent = t('Guardando cambios...', 'Saving changes...'); p.updated = Date.now(); await dbStore(projectToUpdateKey, p); sts.style.color = 'var(--primary)'; sts.textContent = t('¡Actualizado con éxito!', 'Successfully updated!');
                     setTimeout(() => { closeUpdateModal(); if (currentProjectKey === projectToUpdateKey) playProject(currentProjectKey); else loadAllProjects(); }, 1000);
-                } else { sts.style.color = 'var(--warning)'; sts.textContent = 'No se detectaron cambios.'; setTimeout(closeUpdateModal, 1500); }
+                } else { sts.style.color = 'var(--warning)'; sts.textContent = t('No se detectaron cambios.', 'No changes detected.'); setTimeout(closeUpdateModal, 1500); }
             } catch(e) { sts.style.color = 'var(--danger)'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
         // --- CARGA GALERÍA Y NAVEGACIÓN ---
         async function loadAllProjects() {
-            const ld = document.getElementById('loading-msg'); ld.style.display = 'block'; ld.textContent = "Escaneando la nave...";
+            const ld = document.getElementById('loading-msg'); ld.style.display = 'block'; ld.textContent = t("Escaneando la nave...", "Scanning the ship...");
             try {
                 const res = await fetch(SERVER_URL + 'listKeys.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY }) });
                 const listData = await res.json();
@@ -1042,7 +1088,7 @@
                         if(index === 0) rankT = '🥇'; else if(index === 1) rankT = '🥈'; else if(index === 2) rankT = '🥉';
                         lbList.innerHTML += `<div class="lb-item">
                             <div><span class="lb-rank">${rankT}</span> <b style="color:var(--primary);cursor:pointer; text-transform:uppercase;" onclick="viewProfile('${escapeHTML(u.username)}')">@${escapeHTML(u.username)}</b></div>
-                            <div style="color:var(--text-muted); font-size:0.9rem; font-weight:bold;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${u.views} vistas en ${u.projects} tareas</div>
+                            <div style="color:var(--text-muted); font-size:0.9rem; font-weight:bold;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${u.views} ${t('vistas en', 'views in')} ${u.projects} ${t('tareas', 'tasks')}</div>
                         </div>`;
                     });
                 }
@@ -1064,7 +1110,7 @@
             if (f.trim() !== '') {
                 const matchedUsers = allUsernames.filter(u => u.toLowerCase().includes(f));
                 if (matchedUsers.length > 0) {
-                    const title = document.createElement('div'); title.style.width = '100%'; title.style.color = 'var(--primary)'; title.style.fontSize = '0.9rem'; title.style.fontWeight = 'bold'; title.innerText = 'Tripulantes encontrados:'; uc.appendChild(title);
+                    const title = document.createElement('div'); title.style.width = '100%'; title.style.color = 'var(--primary)'; title.style.fontSize = '0.9rem'; title.style.fontWeight = 'bold'; title.innerText = t('Tripulantes encontrados:', 'Crewmates found:'); uc.appendChild(title);
                     matchedUsers.forEach(u => { const uBtn = document.createElement('button'); uBtn.className = 'btn-secondary btn-small'; uBtn.innerHTML = `👤 ${escapeHTML(u)}`; uBtn.onclick = () => viewProfile(u); uc.appendChild(uBtn); });
                 }
             }
@@ -1076,8 +1122,8 @@
             let adm = ''; let own = ''; let creatorAction = '';
             if (currentUser) {
                 const isAdminOrCreator = currentUser.role === 'admin' || currentUser.role === 'creator';
-                if (isAdminOrCreator) adm = `<button class="btn-secondary btn-small" onclick="toggleFeatured('${p._key}')">${p.featured?'Quitar Destacado':'⭐ Destacar'}</button><button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️</button>`;
-                if (p.author === currentUser.username) own = `<button class="btn-warning btn-small" onclick="triggerUpdate('${p._key}')">🔄 Actualizar</button> ` + ((!isAdminOrCreator) ? `<button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️ Eliminar</button>` : '');
+                if (isAdminOrCreator) adm = `<button class="btn-secondary btn-small" onclick="toggleFeatured('${p._key}')">${p.featured ? t('Quitar Destacado', 'Unfeature') : t('⭐ Destacar', '⭐ Feature')}</button><button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️</button>`;
+                if (p.author === currentUser.username) own = `<button class="btn-warning btn-small" onclick="triggerUpdate('${p._key}')">🔄 ${t('Actualizar', 'Update')}</button> ` + ((!isAdminOrCreator) ? `<button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️ ${t('Eliminar', 'Delete')}</button>` : '');
                 if (currentUser.role === 'creator') creatorAction = `<button class="btn-secondary btn-small" style="background:#8800ff; color:white; border:2px solid #000;" onclick="addCreatorSticker('${p._key}')">🎖️ Sticker</button>`;
             }
 
@@ -1093,20 +1139,20 @@
                 }
             }
 
-            c.innerHTML = `${p.featured ? '<div class="featured-badge">⭐ Destacado</div>' : ''} ${p.hidden ? '<div class="hidden-badge">👻 Oculto</div>' : ''} ${showUpdated ? '<div class="updated-badge">🔄 Actualizado</div>' : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''} ${stickerHtml}
-            <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">Por: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0}</div><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ Jugar Tarea</button><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">${adm}${own}${creatorAction}</div>`;
+            c.innerHTML = `${p.featured ? `<div class="featured-badge">⭐ ${t('Destacado', 'Featured')}</div>` : ''} ${p.hidden ? `<div class="hidden-badge">👻 ${t('Oculto', 'Hidden')}</div>` : ''} ${showUpdated ? `<div class="updated-badge">🔄 ${t('Actualizado', 'Updated')}</div>` : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''} ${stickerHtml}
+            <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">${t('Por', 'By')}: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0}</div><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ ${t('Jugar Tarea', 'Play Task')}</button><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">${adm}${own}${creatorAction}</div>`;
             return c;
         }
 
         async function addCreatorSticker(k) {
             if(!currentUser || currentUser.role !== 'creator') return;
             const p = allProjects.find(x => x._key === k); if(!p) return;
-            const eName = prompt("Ingresa el nombre del emoji custom para el sticker (ej: gato).\nDeja vacío para quitar el sticker actual:");
+            const eName = prompt(t("Ingresa el nombre del emoji custom para el sticker (ej: gato).\nDeja vacío para quitar el sticker actual:", "Enter the name of the custom emoji for the sticker (ex: cat).\nLeave empty to remove the current sticker:"));
             if(eName === null) return;
             if(eName.trim() === '') { p.sticker = null; } 
             else {
                 const emj = globalEmojis.find(e => e.name.toLowerCase() === eName.trim().toLowerCase().replace(/:/g, ''));
-                if(!emj) return alert("Emoji no encontrado. Revisa en la lista de emojis gestionados.");
+                if(!emj) return alert(t("Emoji no encontrado. Revisa en la lista de emojis gestionados.", "Emoji not found. Check the managed emojis list."));
                 p.sticker = emj.url;
             }
             await dbStore(k, p); filterGallery(); 
@@ -1114,31 +1160,31 @@
 
         function playRandomProject() { 
             const publicProjs = allProjects.filter(p => !p.hidden || (currentUser && (currentUser.username === p.author || currentUser.role === 'admin' || currentUser.role === 'creator')));
-            if(publicProjs.length === 0) return alert("No hay tareas."); playProject(publicProjs[Math.floor(Math.random() * publicProjs.length)]._key); 
+            if(publicProjs.length === 0) return alert(t("No hay tareas.", "No tasks available.")); playProject(publicProjs[Math.floor(Math.random() * publicProjs.length)]._key); 
         }
 
         async function deleteProject(k) { 
             const p = allProjects.find(x => x._key === k); 
             if(!p || (!currentUser || ((currentUser.role!=='admin' && currentUser.role!=='creator') && p.author!==currentUser.username))) return; 
-            if(currentUser.role === 'admin' && p.author !== currentUser.username && currentUser.adminPerms && currentUser.adminPerms.canDeleteProjects === false) return alert("No tienes permiso para borrar proyectos globales.");
-            if(!confirm(`¿Borrar "${p.name}" permanentemente?`)) return; 
+            if(currentUser.role === 'admin' && p.author !== currentUser.username && currentUser.adminPerms && currentUser.adminPerms.canDeleteProjects === false) return alert(t("No tienes permiso para borrar proyectos globales.", "You don't have permission to delete global projects."));
+            if(!confirm(`${t('¿Borrar', 'Delete')} "${p.name}" ${t('permanentemente?', 'permanently?')}`)) return; 
             try { await dbDelete(k); await dbDelete(k.replace(PROJ_PREFIX, CMT_PREFIX)); if(currentProjectKey===k) goHome(); else loadAllProjects(); } catch(e){} 
         }
         
         async function toggleFeatured(k) { 
-            if(currentUser && currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canFeature === false) return alert("No tienes permiso para destacar proyectos.");
+            if(currentUser && currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canFeature === false) return alert(t("No tienes permiso para destacar proyectos.", "You do not have permission to feature projects."));
             const p=allProjects.find(x=>x._key===k); if(p){ p.featured=!p.featured; await dbStore(k,p); filterGallery(); } 
         }
         
-        async function toggleLike(t) {
-            if(!currentUser) return alert("Loguéate primero tripulante."); const p=allProjects.find(x=>x._key===currentProjectKey); if(!p) return; p.likes=p.likes||[]; p.dislikes=p.dislikes||[]; const u=currentUser.username;
-            if(t==='like') { p.dislikes=p.dislikes.filter(x=>x!==u); if(p.likes.includes(u)) p.likes=p.likes.filter(x=>x!==u); else p.likes.push(u); } else { p.likes=p.likes.filter(x=>x!==u); if(p.dislikes.includes(u)) p.dislikes=p.dislikes.filter(x=>x!==u); else p.dislikes.push(u); }
+        async function toggleLike(tAction) {
+            if(!currentUser) return alert(t("Loguéate primero tripulante.", "Log in first crewmate.")); const p=allProjects.find(x=>x._key===currentProjectKey); if(!p) return; p.likes=p.likes||[]; p.dislikes=p.dislikes||[]; const u=currentUser.username;
+            if(tAction==='like') { p.dislikes=p.dislikes.filter(x=>x!==u); if(p.likes.includes(u)) p.likes=p.likes.filter(x=>x!==u); else p.likes.push(u); } else { p.likes=p.likes.filter(x=>x!==u); if(p.dislikes.includes(u)) p.dislikes=p.dislikes.filter(x=>x!==u); else p.dislikes.push(u); }
             renderGameStats(p); await dbStore(currentProjectKey, p);
         }
 
         function renderGameStats(p) {
             const b=document.getElementById('game-stats-bar'), lStyle = (currentUser&&p.likes&&p.likes.includes(currentUser.username))?'color:var(--primary);':'', dStyle = (currentUser&&p.dislikes&&p.dislikes.includes(currentUser.username))?'color:var(--danger);':'';
-            b.innerHTML = `<div class="stat-item" style="margin-right:15px; border:2px solid #000;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0} vistas</div><div class="stat-item" style="cursor:pointer; border:2px solid #000; ${lStyle}" onclick="toggleLike('like')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div><div class="stat-item" style="cursor:pointer;margin-left:10px; border:2px solid #000; ${dStyle}" onclick="toggleLike('dislike')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Dislike.svg" class="svg-icon"> ${p.dislikes?p.dislikes.length:0}</div>`;
+            b.innerHTML = `<div class="stat-item" style="margin-right:15px; border:2px solid #000;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0} ${t('vistas', 'views')}</div><div class="stat-item" style="cursor:pointer; border:2px solid #000; ${lStyle}" onclick="toggleLike('like')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div><div class="stat-item" style="cursor:pointer;margin-left:10px; border:2px solid #000; ${dStyle}" onclick="toggleLike('dislike')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Dislike.svg" class="svg-icon"> ${p.dislikes?p.dislikes.length:0}</div>`;
         }
 
         function switchView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
@@ -1147,7 +1193,7 @@
         async function viewProfile(u) {
             switchView('profile-view'); viewedUser=u; window.history.replaceState({}, document.title, "?u=" + u);
             const n=document.getElementById('prof-name'), b=document.getElementById('prof-bio'), r=document.getElementById('prof-role'), p=document.getElementById('prof-pfp'), fbtn=document.getElementById('btn-follow');
-            n.textContent=u; b.innerHTML="Cargando..."; p.src='https://ui-avatars.com/api/?name='+u[0].toUpperCase()+'&background=1a1a24&color=00ff6b&size=120'; p.className = ''; document.getElementById('profile-admin-actions').style.display = (currentUser&&(currentUser.role==='admin' || currentUser.role==='creator')&&currentUser.username.toLowerCase()!==u.toLowerCase())?'flex':'none'; fbtn.style.display = (currentUser && currentUser.username.toLowerCase() !== u.toLowerCase()) ? 'inline-block' : 'none';
+            n.textContent=u; b.innerHTML=t("Cargando...", "Loading..."); p.src='https://ui-avatars.com/api/?name='+u[0].toUpperCase()+'&background=1a1a24&color=00ff6b&size=120'; p.className = ''; document.getElementById('profile-admin-actions').style.display = (currentUser&&(currentUser.role==='admin' || currentUser.role==='creator')&&currentUser.username.toLowerCase()!==u.toLowerCase())?'flex':'none'; fbtn.style.display = (currentUser && currentUser.username.toLowerCase() !== u.toLowerCase()) ? 'inline-block' : 'none';
             
             const creatorActDiv = document.getElementById('profile-creator-actions');
             if (creatorActDiv) creatorActDiv.style.display = 'none';
@@ -1155,20 +1201,20 @@
             try {
                 const d = await dbGet(USER_PREFIX + u.toLowerCase());
                 if(d) {
-                    p.src=d.pfp||p.src; b.innerHTML=processText(d.bio||'Sin biografía.', d.role); document.getElementById('prof-stats-txt').textContent = `${d.followers?d.followers.length:0} Seguidores`;
+                    p.src=d.pfp||p.src; b.innerHTML=processText(d.bio||t('Sin biografía.', 'No biography.'), d.role); document.getElementById('prof-stats-txt').textContent = `${d.followers?d.followers.length:0} ${t('Seguidores', 'Followers')}`;
                     
-                    if(d.role==='creator') { r.innerHTML='<img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> EL CREADOR'; p.className = 'admin-profile-fx ' + getParticleClass(d.adminParticle); p.style = `width: 120px; height: 120px; border-radius: 50%; object-fit: cover; ${getParticleStyle(d.adminParticle)}`; n.innerHTML=escapeHTML(u)+' <span class="creator-badge-sparkle"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> CREADOR</span>'; }
-                    else if(d.role==='admin') { r.innerHTML='👑 Administrador'; p.className = 'admin-profile-fx ' + getParticleClass(d.adminParticle); p.style = `width: 120px; height: 120px; border-radius: 50%; object-fit: cover; ${getParticleStyle(d.adminParticle)}`; n.innerHTML=escapeHTML(u)+' <span class="admin-badge-sparkle">👑 ADMIN</span>'; } 
-                    else { r.innerHTML='Tripulante'; p.style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #000; object-fit: cover;"; }
+                    if(d.role==='creator') { r.innerHTML=`<img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> ${t('EL CREADOR', 'THE CREATOR')}`; p.className = 'admin-profile-fx ' + getParticleClass(d.adminParticle); p.style = `width: 120px; height: 120px; border-radius: 50%; object-fit: cover; ${getParticleStyle(d.adminParticle)}`; n.innerHTML=escapeHTML(u)+` <span class="creator-badge-sparkle"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> ${t('CREADOR', 'CREATOR')}</span>`; }
+                    else if(d.role==='admin') { r.innerHTML=`👑 ${t('Administrador', 'Administrator')}`; p.className = 'admin-profile-fx ' + getParticleClass(d.adminParticle); p.style = `width: 120px; height: 120px; border-radius: 50%; object-fit: cover; ${getParticleStyle(d.adminParticle)}`; n.innerHTML=escapeHTML(u)+' <span class="admin-badge-sparkle">👑 ADMIN</span>'; } 
+                    else { r.innerHTML=t('Tripulante', 'Crewmate'); p.style="width: 120px; height: 120px; border-radius: 50%; border: 4px solid #000; object-fit: cover;"; }
                     
-                    if(currentUser && d.followers && d.followers.includes(currentUser.username)) { fbtn.textContent='Dejar de seguir'; fbtn.className='btn-danger btn-small'; } else { fbtn.textContent='Seguir'; fbtn.className='btn-secondary btn-small'; }
+                    if(currentUser && d.followers && d.followers.includes(currentUser.username)) { fbtn.textContent=t('Dejar de seguir', 'Unfollow'); fbtn.className='btn-danger btn-small'; } else { fbtn.textContent=t('Seguir', 'Follow'); fbtn.className='btn-secondary btn-small'; }
 
                     if (currentUser && currentUser.role === 'creator' && currentUser.username.toLowerCase() !== u.toLowerCase() && d.role !== 'creator') {
                         creatorActDiv.style.display = 'block';
                         const btnToggleAdmin = document.getElementById('btn-toggle-admin');
                         const permsPanel = document.getElementById('admin-perms-panel');
                         if(d.role === 'admin') {
-                            btnToggleAdmin.textContent = '❌ Quitar Admin';
+                            btnToggleAdmin.innerHTML = `❌ ${t('Quitar Admin', 'Remove Admin')}`;
                             btnToggleAdmin.className = 'btn-danger btn-small';
                             btnToggleAdmin.onclick = () => setRoleForUser(u, 'user');
                             permsPanel.style.display = 'block';
@@ -1176,20 +1222,20 @@
                             document.getElementById('perm-feature').checked = d.adminPerms ? d.adminPerms.canFeature !== false : true;
                             document.getElementById('perm-delproj').checked = d.adminPerms ? d.adminPerms.canDeleteProjects !== false : true;
                         } else {
-                            btnToggleAdmin.textContent = '👑 Hacer Admin';
+                            btnToggleAdmin.innerHTML = `👑 ${t('Hacer Admin', 'Make Admin')}`;
                             btnToggleAdmin.className = 'btn-warning btn-small';
                             btnToggleAdmin.onclick = () => setRoleForUser(u, 'admin');
                             permsPanel.style.display = 'none';
                         }
                     }
-                } else b.textContent='Expulsado o Fantasma.';
+                } else b.textContent=t('Expulsado o Fantasma.', 'Ejected or Ghost.');
             } catch(e){} p.onerror = function() { this.src = 'https://ui-avatars.com/api/?name='+u[0].toUpperCase()+'&background=1a1a24&color=00ff6b&size=120'; };
             const pg=document.getElementById('profile-gallery'); pg.innerHTML=''; 
             const up=allProjects.filter(x=>x.author===u && (!x.hidden || (currentUser && (currentUser.username === u || currentUser.role === 'admin' || currentUser.role === 'creator')))); 
-            if(up.length===0) pg.innerHTML='<p style="font-weight:bold; color:gray;">Nada publicado aún.</p>'; up.forEach(x=>pg.appendChild(createCardHTML(x)));
+            if(up.length===0) pg.innerHTML=`<p style="font-weight:bold; color:gray;">${t('Nada publicado aún.', 'Nothing published yet.')}</p>`; up.forEach(x=>pg.appendChild(createCardHTML(x)));
         }
 
-        function copyProfileLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + '?u=' + viewedUser); alert("¡Enlace copiado!"); }
+        function copyProfileLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + '?u=' + viewedUser); alert(t("¡Enlace copiado!", "Link copied!")); }
         
         async function playProject(k) {
             const p = allProjects.find(x=>x._key===k); if(!p) return; currentProjectKey=k; switchView('game-view'); window.history.replaceState({}, document.title, "?p=" + k);
@@ -1202,7 +1248,7 @@
             }
 
             document.getElementById('view-game-title').textContent = p.name;
-            document.getElementById('view-game-updated').textContent = p.updated ? " (🔄 Actualizado)" : ""; 
+            document.getElementById('view-game-updated').textContent = p.updated ? ` (🔄 ${t('Actualizado', 'Updated')})` : ""; 
             document.getElementById('view-game-author').textContent = "@" + p.author; document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
             
             const iframe = document.getElementById('game-iframe');
@@ -1223,15 +1269,15 @@
             
             p.views=(p.views||0)+1; renderGameStats(p); await dbStore(k, p); loadComments(k);
         }
-        function copyProjectLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + '?p=' + currentProjectKey); alert("¡Enlace copiado!"); }
+        function copyProjectLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + '?p=' + currentProjectKey); alert(t("¡Enlace copiado!", "Link copied!")); }
 
         // --- SISTEMA DE COMENTARIOS ---
         async function loadComments(k) {
-            const lst=document.getElementById('comments-list'); lst.innerHTML='<p style="font-weight:bold;">Cargando comunicaciones...</p>'; const cK=k.replace(PROJ_PREFIX,CMT_PREFIX);
+            const lst=document.getElementById('comments-list'); lst.innerHTML=`<p style="font-weight:bold;">${t('Cargando comunicaciones...', 'Loading communications...')}</p>`; const cK=k.replace(PROJ_PREFIX,CMT_PREFIX);
             const p=allProjects.find(x=>x._key===k); const isOwn=p&&currentUser&&p.author===currentUser.username; const isAdmOrCrea=currentUser&&(currentUser.role==='admin'||currentUser.role==='creator');
             try {
                 const d=await dbGet(cK); if(d) {
-                    if(d.length===0) { lst.innerHTML='<p style="font-weight:bold; color:gray;">Sé el primero en reportar.</p>'; return; } lst.innerHTML='';
+                    if(d.length===0) { lst.innerHTML=`<p style="font-weight:bold; color:gray;">${t('Sé el primero en reportar.', 'Be the first to report.')}</p>`; return; } lst.innerHTML='';
                     
                     d.sort((a, b) => {
                         if (a.pinned && !b.pinned) return -1;
@@ -1245,7 +1291,7 @@
                     d.forEach(c => {
                         const authorProf = liveUsers[c.name.toLowerCase()] || { role: c.role, pfp: c.pfpUrl, adminParticle: 'default' };
                         const isCAdm=authorProf.role==='admin' || authorProf.role==='creator';
-                        let bAdm = ''; if(authorProf.role==='creator') bAdm = '<span class="creator-badge-sparkle"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> CREADOR</span>'; else if(authorProf.role==='admin') bAdm = '<span class="admin-badge-sparkle">👑 ADMIN</span>';
+                        let bAdm = ''; if(authorProf.role==='creator') bAdm = `<span class="creator-badge-sparkle"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Creador.svg" class="svg-icon"> ${t('CREADOR', 'CREATOR')}</span>`; else if(authorProf.role==='admin') bAdm = '<span class="admin-badge-sparkle">👑 ADMIN</span>';
                         const safePfp = escapeHTML(authorProf.pfp) || 'https://ui-avatars.com/api/?name=' + c.name[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=45';
                         
                         let cCls = 'comment-item'; let cSty = '';
@@ -1253,14 +1299,14 @@
                         
                         let pinBtn='';
                         if(isOwn) {
-                            pinBtn = `<button class="reply-btn" style="color:var(--warning); margin-left:8px;" onclick="togglePinComment('${c.id}')">${c.pinned ? '📌 Desfijar' : '📌 Fijar'}</button>`;
+                            pinBtn = `<button class="reply-btn" style="color:var(--warning); margin-left:8px;" onclick="togglePinComment('${c.id}')">📌 ${c.pinned ? t('Desfijar', 'Unpin') : t('Fijar', 'Pin')}</button>`;
                         }
-                        const pinnedVisual = c.pinned ? `<div style="font-size:0.8rem; color:var(--warning); font-weight:bold; margin-bottom:8px; border:1px solid var(--warning); display:inline-block; padding:2px 8px; border-radius:10px;">📌 Fijado por el creador</div>` : '';
+                        const pinnedVisual = c.pinned ? `<div style="font-size:0.8rem; color:var(--warning); font-weight:bold; margin-bottom:8px; border:1px solid var(--warning); display:inline-block; padding:2px 8px; border-radius:10px;">📌 ${t('Fijado por el creador', 'Pinned by creator')}</div>` : '';
                         if(c.pinned) cSty += ' border-color: var(--warning); background: rgba(245, 125, 14, 0.1);';
 
                         let dBtn=''; if(isAdmOrCrea||isOwn||(currentUser&&c.name===currentUser.username)) dBtn=`<button class="reply-btn" style="color:var(--danger);margin-left:8px;" onclick="deleteComment('${c.id}')">🗑️</button>`;
-                        let eBtn=''; if(currentUser&&c.name===currentUser.username) eBtn=`<button class="reply-btn" style="color:var(--primary); margin-left:8px;" onclick="editComment('${c.id}')">✏️ Editar</button>`;
-                        const editedCmt = c.edited ? '<span style="font-size:0.7rem; opacity:0.6; font-weight:bold;">(editado)</span>' : '';
+                        let eBtn=''; if(currentUser&&c.name===currentUser.username) eBtn=`<button class="reply-btn" style="color:var(--primary); margin-left:8px;" onclick="editComment('${c.id}')">✏️ ${t('Editar', 'Edit')}</button>`;
+                        const editedCmt = c.edited ? `<span style="font-size:0.7rem; opacity:0.6; font-weight:bold;">(${t('editado', 'edited')})</span>` : '';
 
                         let rHtml=''; if(c.replies) { rHtml='<div class="replies-list">'; c.replies.forEach(r=>{
                             const rProf = liveUsers[r.name.toLowerCase()] || { role: r.role, pfp: r.pfpUrl };
@@ -1269,17 +1315,17 @@
                             const safeRepPfp = escapeHTML(rProf.pfp) || 'https://ui-avatars.com/api/?name=' + r.name[0].toUpperCase() + '&background=1a1a24&color=00ff6b&size=30';
                             
                             let rDBtn=''; if(isAdmOrCrea||isOwn||(currentUser&&r.name===currentUser.username)) rDBtn=`<button class="reply-btn" style="color:var(--danger);font-size:0.8rem;margin-left:8px;" onclick="deleteReply('${c.id}','${r.id}')">🗑️</button>`;
-                            let rEBtn=''; if(currentUser&&r.name===currentUser.username) rEBtn=`<button class="reply-btn" style="color:var(--primary);font-size:0.8rem;margin-left:8px;" onclick="editReply('${c.id}','${r.id}')">✏️ Editar</button>`;
-                            const editedRep = r.edited ? '<span style="font-size:0.7rem; opacity:0.6; font-weight:bold;">(editado)</span>' : '';
+                            let rEBtn=''; if(currentUser&&r.name===currentUser.username) rEBtn=`<button class="reply-btn" style="color:var(--primary);font-size:0.8rem;margin-left:8px;" onclick="editReply('${c.id}','${r.id}')">✏️ ${t('Editar', 'Edit')}</button>`;
+                            const editedRep = r.edited ? `<span style="font-size:0.7rem; opacity:0.6; font-weight:bold;">(${t('editado', 'edited')})</span>` : '';
 
                             rHtml+=`<div class="reply-item" style="${rSty}"><img src="${safeRepPfp}" class="reply-pfp" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=30'"><div style="flex: 1;"><b style="color:var(--primary);cursor:pointer; text-transform:uppercase;" onclick="viewProfile('${escapeHTML(r.name)}')">${escapeHTML(r.name)}</b> ${rBAdm} <span style="font-size:0.75rem;color:gray; font-weight:bold;">${new Date(r.date).toLocaleDateString()}</span> ${rEBtn}${rDBtn}<div style="font-size:0.9rem;color:#ccc; font-weight:bold; margin-top:4px;">${processText(r.text, rProf.role)} ${editedRep}</div></div></div>`;
                         }); rHtml+='</div>';}
                         
-                        const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:10px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="Respuesta..." style="min-height:35px; padding:8px;"></div> <button class="btn-secondary" style="padding:8px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button> <button onclick="postReply('${c.id}')" style="padding:8px 15px;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> Enviar</button></div>`:'';
-                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=45'"><div class="comment-content">${pinnedVisual}<div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span style="font-size:0.8rem; color:gray; font-weight:bold;">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">Responder</button>`:''}${pinBtn}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
+                        const rInp=currentUser?`<div id="rb-${c.id}" style="display:none;margin-top:10px;gap:5px;z-index:5;position:relative; align-items: flex-end;"><div contenteditable="true" id="rt-${c.id}" class="rich-input" placeholder="${t('Respuesta...', 'Reply...')}" style="min-height:35px; padding:8px;"></div> <button class="btn-secondary" style="padding:8px;" onclick="toggleEmojiPicker(event, 'rt-${c.id}')"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Amojis.svg" class="svg-icon"></button> <button onclick="postReply('${c.id}')" style="padding:8px 15px;"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Enviar.svg" class="svg-icon"> ${t('Enviar', 'Send')}</button></div>`:'';
+                        lst.innerHTML+=`<div class="${cCls}" style="${cSty}"><div class="comment-header-row"><img src="${safePfp}" class="comment-pfp" style="cursor:pointer;" onclick="viewProfile('${escapeHTML(c.name)}')" onerror="this.src='https://ui-avatars.com/api/?name=?&background=1a1a24&color=00ff6b&size=45'"><div class="comment-content">${pinnedVisual}<div><span class="comment-name" onclick="viewProfile('${escapeHTML(c.name)}')">@${escapeHTML(c.name)}</span> ${bAdm} <span style="font-size:0.8rem; color:gray; font-weight:bold;">${new Date(c.date).toLocaleDateString()}</span></div><div class="comment-text">${processText(c.text, authorProf.role)} ${editedCmt}</div>${currentUser?`<button class="reply-btn" onclick="document.getElementById('rb-${c.id}').style.display='flex'">${t('Responder', 'Reply')}</button>`:''}${pinBtn}${eBtn}${dBtn}${rInp}</div></div>${rHtml}</div>`;
                     });
-                } else lst.innerHTML='<p style="font-weight:bold; color:gray;">Sé el primero en reportar.</p>';
-            } catch(e) { lst.innerHTML='<p style="color:var(--danger); font-weight:bold;">Error en las comunicaciones.</p>'; }
+                } else lst.innerHTML=`<p style="font-weight:bold; color:gray;">${t('Sé el primero en reportar.', 'Be the first to report.')}</p>`;
+            } catch(e) { lst.innerHTML=`<p style="color:var(--danger); font-weight:bold;">${t('Error en las comunicaciones.', 'Error in communications.')}</p>`; }
         }
 
         async function togglePinComment(cid) {
@@ -1291,29 +1337,29 @@
         }
 
         async function postComment() {
-            if(!currentUser||!currentProjectKey) return; const t=extractRichText('cmt-text'); if(!t) return;
+            if(!currentUser||!currentProjectKey) return; const tText=extractRichText('cmt-text'); if(!tText) return;
             try {
                 const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k)||[];
-                c.push({id:'cmt_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[], pinned: false});
+                c.push({id:'cmt_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:tText, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role, replies:[], pinned: false});
                 await dbStore(k, c); document.getElementById('cmt-text').innerHTML=''; loadComments(currentProjectKey);
                 const proj = allProjects.find(x => x._key === currentProjectKey);
                 if(proj && proj.author !== currentUser.username) {
                     const tD = await dbGet(USER_PREFIX + proj.author.toLowerCase());
-                    if(tD) { await pushNotification(tD, `💬 ${currentUser.username} reportó en tu tarea "${proj.name}".`); await dbStore(USER_PREFIX + proj.author.toLowerCase(), tD); }
+                    if(tD) { await pushNotification(tD, `💬 ${currentUser.username} ${t('reportó en tu tarea', 'reported on your task')} "${proj.name}".`); await dbStore(USER_PREFIX + proj.author.toLowerCase(), tD); }
                 }
             } catch(e) {}
         }
 
         async function postReply(cid) {
-            if(!currentUser||!currentProjectKey) return; const t=extractRichText(`rt-${cid}`); if(!t) return;
+            if(!currentUser||!currentProjectKey) return; const tText=extractRichText(`rt-${cid}`); if(!tText) return;
             try {
                 const k=currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid);
                 if(tg) {
-                    tg.replies=tg.replies||[]; tg.replies.push({id:'rep_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:t, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role});
+                    tg.replies=tg.replies||[]; tg.replies.push({id:'rep_'+Date.now() + Math.floor(Math.random()*1000), name:currentUser.username, text:tText, pfpUrl:currentUser.pfp, date:Date.now(), role:currentUser.role});
                     await dbStore(k,c); loadComments(currentProjectKey);
                     if(tg.name !== currentUser.username) {
                         const tD = await dbGet(USER_PREFIX + tg.name.toLowerCase());
-                        if(tD) { await pushNotification(tD, `↩️ ${currentUser.username} respondió a tu reporte.`); await dbStore(USER_PREFIX + tg.name.toLowerCase(), tD); }
+                        if(tD) { await pushNotification(tD, `↩️ ${currentUser.username} ${t('respondió a tu reporte.', 'replied to your report.')}`); await dbStore(USER_PREFIX + tg.name.toLowerCase(), tD); }
                     }
                 }
             } catch(e){}
@@ -1322,18 +1368,18 @@
         async function editComment(id) {
             const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(!c) return;
             const tg = c.find(x=>x.id===id); if(!tg) return;
-            const nt = prompt("Editar reporte (Escribe el texto con o sin emojis :nombre:):", tg.text); if(nt===null || !nt.trim()) return;
+            const nt = prompt(t("Editar reporte (Escribe el texto con o sin emojis :nombre:):", "Edit report (Write text with or without emojis :name:):"), tg.text); if(nt===null || !nt.trim()) return;
             tg.text = nt.trim(); tg.edited = true; await dbStore(k, c); loadComments(currentProjectKey);
         }
         async function editReply(cid, rid) {
             const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(!c) return;
             const tg = c.find(x=>x.id===cid); if(!tg || !tg.replies) return;
             const rtg = tg.replies.find(x=>x.id===rid); if(!rtg) return;
-            const nt = prompt("Editar respuesta:", rtg.text); if(nt===null || !nt.trim()) return;
+            const nt = prompt(t("Editar respuesta:", "Edit reply:"), rtg.text); if(nt===null || !nt.trim()) return;
             rtg.text = nt.trim(); rtg.edited = true; await dbStore(k, c); loadComments(currentProjectKey);
         }
-        async function deleteComment(id) { if(!confirm("¿Borrar reporte?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(c){ c=c.filter(x=>x.id!==id); await dbStore(k,c); loadComments(currentProjectKey); } }
-        async function deleteReply(cid, rid) { if(!confirm("¿Borrar respuesta?"))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid); if(tg&&tg.replies){ tg.replies=tg.replies.filter(x=>x.id!==rid); await dbStore(k,c); loadComments(currentProjectKey); } }
+        async function deleteComment(id) { if(!confirm(t("¿Borrar reporte?", "Delete report?")))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(c){ c=c.filter(x=>x.id!==id); await dbStore(k,c); loadComments(currentProjectKey); } }
+        async function deleteReply(cid, rid) { if(!confirm(t("¿Borrar respuesta?", "Delete reply?")))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid); if(tg&&tg.replies){ tg.replies=tg.replies.filter(x=>x.id!==rid); await dbStore(k,c); loadComments(currentProjectKey); } }
 
         // --- SISTEMA DE CHAT AVANZADO ---
         function initCloudLink() {
@@ -1359,8 +1405,8 @@
 
         async function openChat() {
             if(!currentUser) return; switchView('chat-view'); unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none';
-            document.getElementById('chat-messages').innerHTML = '<p style="color:gray; font-weight:bold; text-align:center;">Selecciona un tripulante a la izquierda para chatear.</p>';
-            document.getElementById('chat-input-area').style.display = 'none'; document.getElementById('chat-header').textContent = "Canal de Comunicación";
+            document.getElementById('chat-messages').innerHTML = `<p style="color:gray; font-weight:bold; text-align:center;">${t('Selecciona un tripulante a la izquierda para chatear.', 'Select a crewmate on the left to chat.')}</p>`;
+            document.getElementById('chat-input-area').style.display = 'none'; document.getElementById('chat-header').textContent = t("Canal de Comunicación", "Communication Channel");
             
             const side = document.getElementById('chat-sidebar'); side.innerHTML = ''; const miData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
             
@@ -1369,7 +1415,7 @@
             (miData.followers || []).forEach(u => contactsMap[u.toLowerCase()] = u);
             let contacts = Object.values(contactsMap);
             
-            if(contacts.length === 0) { side.innerHTML = '<p style="padding:15px; color:gray; font-weight:bold; text-align:center;">Sigue a alguien en la nave para chatear.</p>'; return; }
+            if(contacts.length === 0) { side.innerHTML = `<p style="padding:15px; color:gray; font-weight:bold; text-align:center;">${t('Sigue a alguien en la nave para chatear.', 'Follow someone on the ship to chat.')}</p>`; return; }
             
             contacts.forEach(async c => {
                 const u = await dbGet(USER_PREFIX + c.toLowerCase());
@@ -1384,7 +1430,7 @@
 
         async function startChatWith(username) {
             activeChatUser = username; currentUser.blocked = currentUser.blocked || []; const isBlocked = currentUser.blocked.includes(username);
-            document.getElementById('chat-header').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span>💬 Hablando con ${username}</span><div style="display:flex; gap:10px;"><button class="btn-small" style="background:${isBlocked?'var(--warning)':'var(--secondary)'};color:white;border:2px solid #000;border-radius:6px; font-weight:bold; text-transform:uppercase;" onclick="toggleBlockContact()">${isBlocked?'Desbloquear':'Bloquear'}</button><button class="btn-danger btn-small" onclick="wipeChatContact()">🗑️ Borrar Chat</button></div></div>`;
+            document.getElementById('chat-header').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span>💬 ${t('Hablando con', 'Talking to')} ${username}</span><div style="display:flex; gap:10px;"><button class="btn-small" style="background:${isBlocked?'var(--warning)':'var(--secondary)'};color:white;border:2px solid #000;border-radius:6px; font-weight:bold; text-transform:uppercase;" onclick="toggleBlockContact()">${isBlocked?t('Desbloquear', 'Unblock'):t('Bloquear', 'Block')}</button><button class="btn-danger btn-small" onclick="wipeChatContact()">🗑️ ${t('Borrar Chat', 'Clear Chat')}</button></div></div>`;
             loadChatMessages(username);
         }
 
@@ -1393,7 +1439,7 @@
             await dbStore(USER_PREFIX + currentUser.username.toLowerCase(), currentUser); localStorage.setItem('scratch32_session', JSON.stringify(currentUser)); startChatWith(activeChatUser);
         }
 
-        async function wipeChatContact() { if(!confirm("¿Borrar todo el historial de esta comunicación?")) return; await dbDelete(getChatDBKey(currentUser.username, activeChatUser)); loadChatMessages(activeChatUser); pingChat(activeChatUser); }
+        async function wipeChatContact() { if(!confirm(t("¿Borrar todo el historial de esta comunicación?", "Clear entire communication history?"))) return; await dbDelete(getChatDBKey(currentUser.username, activeChatUser)); loadChatMessages(activeChatUser); pingChat(activeChatUser); }
 
         async function sendChatImage(input) {
             if(!input.files || input.files.length === 0 || !activeChatUser) return;
@@ -1406,23 +1452,23 @@
                 history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: '', imageUrl: url, date: Date.now() });
                 if(history.length > 50) history.shift();
                 await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
-            } catch(e) { alert("Error subiendo imagen"); }
+            } catch(e) { alert(t("Error subiendo imagen", "Error uploading image")); }
             btn.disabled = false; btn.textContent = '📷'; input.value = '';
         }
 
         async function loadChatMessages(username) {
-            const box = document.getElementById('chat-messages'); box.innerHTML = '<p style="font-weight:bold; text-align:center;">Cargando comunicaciones...</p>';
+            const box = document.getElementById('chat-messages'); box.innerHTML = `<p style="font-weight:bold; text-align:center;">${t('Cargando comunicaciones...', 'Loading communications...')}</p>`;
             const oU = await dbGet(USER_PREFIX + username.toLowerCase()); const amIB = oU && oU.blocked && oU.blocked.includes(currentUser.username); const didIB = currentUser.blocked && currentUser.blocked.includes(username);
             if (amIB || didIB) document.getElementById('chat-input-area').style.display = 'none'; else document.getElementById('chat-input-area').style.display = 'flex';
             const history = await dbGet(getChatDBKey(currentUser.username, username)) || [];
-            box.innerHTML = ''; if(history.length===0) box.innerHTML = '<p style="color:gray;text-align:center; font-weight:bold;">Ningún mensaje en este canal.</p>';
-            if (amIB) box.innerHTML = '<p style="color:var(--danger);text-align:center; font-weight:bold;">El canal está bloqueado por el receptor.</p>' + box.innerHTML;
-            if (didIB) box.innerHTML = '<p style="color:var(--warning);text-align:center; font-weight:bold;">Has bloqueado las comunicaciones con este tripulante.</p>' + box.innerHTML;
+            box.innerHTML = ''; if(history.length===0) box.innerHTML = `<p style="color:gray;text-align:center; font-weight:bold;">${t('Ningún mensaje en este canal.', 'No messages in this channel.')}</p>`;
+            if (amIB) box.innerHTML = `<p style="color:var(--danger);text-align:center; font-weight:bold;">${t('El canal está bloqueado por el receptor.', 'Channel blocked by recipient.')}</p>` + box.innerHTML;
+            if (didIB) box.innerHTML = `<p style="color:var(--warning);text-align:center; font-weight:bold;">${t('Has bloqueado las comunicaciones con este tripulante.', 'You have blocked communications with this crewmate.')}</p>` + box.innerHTML;
 
             history.forEach(m => {
                 const isMe = m.sender === currentUser.username, d = new Date(m.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const editedStr = m.edited ? ' <span style="font-size:0.65rem; opacity:0.8; font-weight:bold;">(editado)</span>' : '';
-                let act = isMe ? `<div style="font-size:0.75rem; text-align:right; margin-top:5px; font-weight:bold;"><span style="cursor:pointer; color:#000;" onclick="editChatMessage('${m.id}')">✏️ Editar</span><span style="cursor:pointer; color:#550000; margin-left:10px;" onclick="deleteChatMessage('${m.id}')">🗑️</span></div>` : '';
+                const editedStr = m.edited ? ` <span style="font-size:0.65rem; opacity:0.8; font-weight:bold;">(${t('editado', 'edited')})</span>` : '';
+                let act = isMe ? `<div style="font-size:0.75rem; text-align:right; margin-top:5px; font-weight:bold;"><span style="cursor:pointer; color:#000;" onclick="editChatMessage('${m.id}')">✏️ ${t('Editar', 'Edit')}</span><span style="cursor:pointer; color:#550000; margin-left:10px;" onclick="deleteChatMessage('${m.id}')">🗑️</span></div>` : '';
                 
                 let contentHtml = '';
                 if(m.text) contentHtml += processText(m.text, isMe ? currentUser.role : 'user');
@@ -1443,17 +1489,17 @@
         }
         async function editChatMessage(msgId) {
             const key = getChatDBKey(currentUser.username, activeChatUser); let history = await dbGet(key); if(!history) return;
-            const msg = history.find(x => x.id === msgId); if(!msg || msg.imageUrl) return; const nTxt = prompt("Editar transmisión:", msg.text); if(nTxt === null || !nTxt.trim()) return;
+            const msg = history.find(x => x.id === msgId); if(!msg || msg.imageUrl) return; const nTxt = prompt(t("Editar transmisión:", "Edit transmission:"), msg.text); if(nTxt === null || !nTxt.trim()) return;
             msg.text = nTxt.trim(); msg.edited = true; await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
         }
         async function deleteChatMessage(msgId) {
-            if(!confirm("¿Borrar mensaje?")) return; const key = getChatDBKey(currentUser.username, activeChatUser); let history = await dbGet(key); if(!history) return;
+            if(!confirm(t("¿Borrar mensaje?", "Delete message?"))) return; const key = getChatDBKey(currentUser.username, activeChatUser); let history = await dbGet(key); if(!history) return;
             history = history.filter(x => x.id !== msgId); await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
         }
 
         // --- ACCIONES ESPECÍFICAS DE CREADOR (PERMISOS DE ADMIN) ---
         async function setRoleForUser(u, newRole) {
-            if(!confirm(`¿Cambiar el rol de ${u} a ${newRole}?`)) return;
+            if(!confirm(`${t('¿Cambiar el rol de', 'Change role of')} ${u} ${t('a', 'to')} ${newRole}?`)) return;
             const key = USER_PREFIX + u.toLowerCase();
             const data = await dbGet(key);
             if(data) {
@@ -1462,7 +1508,7 @@
                     data.adminPerms = { canBan: true, canFeature: true, canDeleteProjects: true };
                 }
                 await dbStore(key, data);
-                alert(`Rol de ${u} actualizado a ${newRole.toUpperCase()}`);
+                alert(`${t('Rol de', 'Role for')} ${u} ${t('actualizado a', 'updated to')} ${newRole.toUpperCase()}`);
                 viewProfile(u); 
             }
         }
@@ -1478,7 +1524,7 @@
                     canDeleteProjects: document.getElementById('perm-delproj').checked
                 };
                 await dbStore(key, data);
-                alert("Permisos de la nave guardados correctamente.");
+                alert(t("Permisos de la nave guardados correctamente.", "Ship permissions successfully saved."));
             }
         }
     </script>
