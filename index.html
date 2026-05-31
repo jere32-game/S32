@@ -125,6 +125,15 @@
         #game-header { background: var(--panel); padding: 1.5rem; border-radius: var(--radius); margin-bottom: 1rem; border: var(--border-au); box-shadow: 0 6px 0 rgba(0,0,0,0.5); display: flex; justify-content: space-between; align-items: center;}
         #game-iframe { width: 100%; height: 75vh; border: var(--border-au); border-radius: var(--radius); background-color: #000; box-shadow: 0 8px 0 rgba(0,0,0,0.6); margin-bottom: 1.5rem; }
 
+        /* --- NUEVO: ESTILO PARA MODO REDUCIDO EN GAMA BAJA --- */
+        #game-iframe.low-end-active {
+            height: 48vh !important;
+            max-width: 90%;
+            margin: 0 auto 1.5rem auto;
+            display: block;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.6);
+        }
+
         .comments-section { background-color: var(--panel); border-radius: var(--radius); padding: 2rem; border: var(--border-au); box-shadow: 0 6px 0 rgba(0,0,0,0.5); }
         .comments-section h3 { text-transform: uppercase; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; color: var(--warning); }
         .comment-form { background-color: #15181c; padding: 1rem; border-radius: 12px; border: var(--border-au); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
@@ -522,8 +531,17 @@
                 </div>
             </div>
             
-            <iframe id="game-iframe" src="" allow="autoplay; camera; microphone; clipboard-read; clipboard-write"></iframe>
+            <iframe id="game-iframe" src="" allow="autoplay; camera; microphone; clipboard-read; clipboard-write; fullscreen"></iframe>
             
+            <div id="game-controls" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <button class="btn-secondary" onclick="toggleFullscreenGame()" title="Pantalla Completa" data-es-title="Pantalla Completa" data-en-title="Fullscreen">
+                    <span class="es-text">📺 Pantalla Completa</span><span class="en-text">📺 Fullscreen</span>
+                </button>
+                <button class="btn-warning" id="btn-small-mode" onclick="toggleSmallMode()" title="Optimizar rendimiento" data-es-title="Optimizar rendimiento" data-en-title="Optimize performance">
+                    <span class="es-text">📱 Modo Gama Baja</span><span class="en-text">📱 Low-End Mode</span>
+                </button>
+            </div>
+
             <div class="comments-section">
                 <h3><span class="es-text">Reportes del Proyecto (Comentarios)</span><span class="en-text">Project Reports (Comments)</span></h3>
                 <div id="comment-input-area" class="comment-form form-group" style="display: none; align-items: flex-end;">
@@ -1398,6 +1416,42 @@
                 voiceRecorder.stop();
                 voiceRecorder.stream.getTracks().forEach(track => track.stop());
                 isVoiceRecording = false;
+            }
+        }
+
+        // --- NUEVAS FUNCIONES: PANTALLA COMPLETA Y CONTROL DE GAMA BAJA ---
+        function toggleFullscreenGame() {
+            const iframe = document.getElementById('game-iframe');
+            if (!iframe) return;
+            
+            if (iframe.requestFullscreen) {
+                iframe.requestFullscreen();
+            } else if (iframe.mozRequestFullScreen) { /* Firefox */
+                iframe.mozRequestFullScreen();
+            } else if (iframe.webkitRequestFullscreen) { /* Chrome, Safari y Opera */
+                iframe.webkitRequestFullscreen();
+            } else if (iframe.msRequestFullscreen) { /* IE/Edge */
+                iframe.msRequestFullscreen();
+            }
+        }
+
+        function toggleSmallMode() {
+            const iframe = document.getElementById('game-iframe');
+            const btn = document.getElementById('btn-small-mode');
+            if (!iframe) return;
+            
+            // Alterna la clase CSS reducida
+            iframe.classList.toggle('low-end-active');
+            
+            // Cambia el diseño del botón para avisar al tripulante si está activo o no
+            if (iframe.classList.contains('low-end-active')) {
+                btn.style.backgroundColor = 'var(--danger)'; // Color rojo de Alerta/Impostor
+                btn.querySelector('.es-text').textContent = '📱 Modo Normal (Grande)';
+                btn.querySelector('.en-text').textContent = '📱 Normal Mode (Large)';
+            } else {
+                btn.style.backgroundColor = 'var(--warning)'; // Color naranja de Tareas estándar
+                btn.querySelector('.es-text').textContent = '📱 Modo Gama Baja';
+                btn.querySelector('.en-text').textContent = '📱 Low-End Mode';
             }
         }
 
