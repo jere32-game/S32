@@ -444,6 +444,12 @@
                 <p id="publish-status" style="font-size: 1rem; margin-top: 10px; font-weight: bold;"></p>
             </div>
 
+            <div id="whatsnew-section" class="section-box" style="display: none; background: rgba(0, 255, 107, 0.05); border-color: var(--primary);">
+                <h3 style="color: var(--primary); margin-bottom: 10px; text-transform: uppercase;">📰 <span class="es-text">¿Qué hay de nuevo?</span><span class="en-text">What's new?</span></h3>
+                <div id="whatsnew-content" style="white-space: pre-wrap; font-size: 1.05rem;">Cargando...</div>
+                <button id="btn-edit-whatsnew" class="btn-warning btn-small" style="display:none; margin-top: 15px;" onclick="editWhatsNew()">✏️ Editar Novedades</button>
+            </div>
+
             <div id="featured-section" style="display: none;">
                 <h2 style="color: gold; margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;"><span class="es-text">⭐ Proyectos Destacados</span><span class="en-text">⭐ Featured Projects</span></h2>
                 <div class="gallery" id="featured-container"></div>
@@ -452,7 +458,7 @@
             <h2 style="margin-bottom: 1rem; border-bottom: 2px solid #000; padding-bottom: 0.5rem; text-transform: uppercase;"><span class="es-text">🌎 Galería Global</span><span class="en-text">🌎 Global Gallery</span></h2>
             
             <div style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                <input type="text" id="search-input" class="search-bar" style="margin-bottom: 0; flex: 1; min-width: 250px;" placeholder="🔍 Buscar tareas o tripulantes..." data-es-placeholder="🔍 Buscar tareas o tripulantes..." data-en-placeholder="🔍 Search tasks or crewmates..." onkeyup="filterGallery()">
+                <input type="text" id="search-input" class="search-bar" style="margin-bottom: 0; flex: 1; min-width: 250px;" placeholder="🔍 Buscar tareas o tripulantes..." data-es-placeholder="🔍 Buscar tareas o tripulantes..." data-en-placeholder="🔍 Search tasks or crewmates..." onkeyup="filterGallery(true)">
                 <button class="btn-warning" onclick="playRandomProject()"><span class="es-text">🎲 Proyecto Aleatorio</span><span class="en-text">🎲 Random Project</span></button>
             </div>
             
@@ -460,6 +466,7 @@
 
             <div id="loading-msg"><span class="es-text">Conectando a la central espacial ikelene.dev...</span><span class="en-text">Connecting to space central ikelene.dev...</span></div>
             <div class="gallery" id="gallery-container"></div>
+            <button id="btn-load-more" class="btn-secondary" style="display:none; width:100%; margin-bottom:2rem;" onclick="loadMoreProjects()"><span class="es-text">⬇️ Cargar más tareas</span><span class="en-text">⬇️ Load more tasks</span></button>
         </div>
 
         <div id="ranking-view" class="view">
@@ -600,6 +607,8 @@
 
         // Sonido de notificación proporcionado
         const chatNotifSound = new Audio('http://googleusercontent.com/file_content/0');
+        
+        let currentGalleryLimit = 15; // Límite inicial de proyectos
 
         function t(es_text, en_text) {
             return currentLang === 'es' ? es_text : en_text;
@@ -634,7 +643,7 @@
             
             // Forzar actualización de elementos generados por JS en vivo
             renderAuthBar();
-            if(document.getElementById('home-view').classList.contains('active')) filterGallery();
+            if(document.getElementById('home-view').classList.contains('active')) filterGallery(true);
             if(document.getElementById('ranking-view').classList.contains('active')) loadAllProjects();
             if(document.getElementById('profile-view').classList.contains('active') && viewedUser) viewProfile(viewedUser);
             if(document.getElementById('game-view').classList.contains('active') && currentProjectKey) {
@@ -646,6 +655,7 @@
             if(document.getElementById('chat-view').classList.contains('active') && !activeChatUser) openChat();
             if(document.getElementById('emoji-manager').style.display === 'block') renderAdminEmojis();
             if(document.getElementById('notif-modal').style.display === 'block') renderNotifications();
+            loadWhatsNew();
         }
 
         let currentUser = null; 
@@ -692,12 +702,46 @@
             document.getElementById('editor-iframe').src = 'about:blank';
         }
 
-        // --- FUNCIONES UTILIDAD DB Y PARSEO ---
+        // --- FUNCIONES UTILIDAD DB Y PARSEO (AQUÍ ESTÁ LA MAGIA DE LA DB HÍBRIDA) ---
         async function dbGet(key) {
-            try { const res = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key }) });
-                const data = await res.json(); if (data.success && data.data) return JSON.parse(data.data.value); } catch(e) {} return null;
+            try { 
+                const res = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key }) });
+                const data = await res.json(); 
+                if (data.success && data.data) {
+                    const val = data.data.value;
+                    // Detectar si es un puntero a YeetYourFiles
+                    if (typeof val === 'string' && val.startsWith('YYF_PTR:')) {
+                        const yyfUrl = val.substring(8);
+                        const yyfRes = await fetch(yyfUrl);
+                        return await yyfRes.json();
+                    }
+                    // Si no es un puntero, devolver la data normal (Retrocompatibilidad)
+                    return JSON.parse(val); 
+                } 
+            } catch(e) { console.error("Error en la DB híbrida al leer:", e); } 
+            return null;
         }
-        async function dbStore(key, valueObj) { await fetch(SERVER_URL + 'store.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key, value: JSON.stringify(valueObj), mimeType: 'application/json' }) }); }
+
+        async function dbStore(key, valueObj) { 
+            try {
+                // 1. Convertir los datos a un archivo JSON en memoria
+                const jsonString = JSON.stringify(valueObj);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const file = new File([blob], key + ".json", { type: "application/json" });
+                
+                // 2. Subirlo a YeetYourFiles
+                const yyfUrl = await uploadFileToYYF(file);
+                
+                // 3. Guardar SOLO EL PUNTERO en ikelene.dev (Esquivando el límite para siempre)
+                const pointer = 'YYF_PTR:' + yyfUrl;
+                await fetch(SERVER_URL + 'store.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key, value: pointer, mimeType: 'text/plain' }) }); 
+            } catch(e) {
+                console.error("Fallo la subida híbrida a YYF, intentando guardar directo...", e);
+                // Fallback de emergencia si YYF falla (se guarda directo en ikelene)
+                await fetch(SERVER_URL + 'store.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key, value: JSON.stringify(valueObj), mimeType: 'application/json' }) });
+            }
+        }
+
         async function dbDelete(key) { await fetch(SERVER_URL + 'delete.php', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key }) }); }
 
         function escapeHTML(str) { if (typeof str !== 'string') return ''; return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
@@ -799,10 +843,12 @@
                 } else {
                     currentUser = liveUser; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
                     document.getElementById('publish-box').style.display = 'block'; document.getElementById('comment-input-area').style.display = 'flex'; document.getElementById('cmt-login-req').style.display = 'none'; document.getElementById('btn-notif').style.display = 'inline-block'; document.getElementById('btn-chat').style.display = 'inline-block';
+                    document.getElementById('btn-edit-whatsnew').style.display = (currentUser.role === 'creator') ? 'inline-block' : 'none';
                     initCloudLink(); updateNotifBadge();
                 }
             } else {
                 currentUser = null; document.getElementById('publish-box').style.display = 'none'; document.getElementById('comment-input-area').style.display = 'none'; document.getElementById('cmt-login-req').style.display = 'block'; document.getElementById('btn-notif').style.display = 'none'; document.getElementById('btn-chat').style.display = 'none';
+                document.getElementById('btn-edit-whatsnew').style.display = 'none';
                 if(cloudLinkSocket) cloudLinkSocket.close();
             }
             renderAuthBar();
@@ -1092,6 +1138,42 @@
             } catch(e) { sts.style.color = 'var(--danger)'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
+        // --- SISTEMA DE NOVEDADES (WHAT'S NEW) ---
+        async function loadWhatsNew() {
+            try {
+                const data = await dbGet(CONFIG_PREFIX + 'whatsnew');
+                const contentDiv = document.getElementById('whatsnew-content');
+                const section = document.getElementById('whatsnew-section');
+                
+                if (data && data.text) {
+                    contentDiv.innerHTML = processText(data.text, 'creator');
+                    section.style.display = 'block';
+                } else {
+                    contentDiv.innerHTML = `<span style="color: gray; font-style: italic;">${t("No hay novedades en la nave por el momento.", "No news on the ship at the moment.")}</span>`;
+                    if (currentUser && currentUser.role === 'creator') section.style.display = 'block';
+                    else section.style.display = 'none';
+                }
+            } catch(e) {}
+        }
+
+        async function editWhatsNew() {
+            if(!currentUser || currentUser.role !== 'creator') return;
+            const data = await dbGet(CONFIG_PREFIX + 'whatsnew');
+            const currentText = data ? data.text : '';
+            const nTxt = prompt(t("Escribe las novedades de la nave (Soporta links y :emojis:):", "Write ship news (Supports links and :emojis:):"), currentText);
+            
+            if (nTxt !== null) {
+                await dbStore(CONFIG_PREFIX + 'whatsnew', { text: nTxt.trim() });
+                loadWhatsNew();
+                alert(t("Novedades actualizadas correctamente.", "News updated correctly."));
+            }
+        }
+
+        function loadMoreProjects() {
+            currentGalleryLimit += 15;
+            filterGallery(false);
+        }
+
         // --- CARGA GALERÍA Y NAVEGACIÓN ---
         async function loadAllProjects() {
             const ld = document.getElementById('loading-msg'); ld.style.display = 'block'; ld.textContent = t("Escaneando la nave...", "Scanning the ship...");
@@ -1101,7 +1183,10 @@
                 const keys = listData.keys.filter(k => k.startsWith(PROJ_PREFIX)).reverse(); allProjects = [];
                 for (const k of keys) { const d = await dbGet(k); if(d) { d._key = k; allProjects.push(d); } }
                 const userKeys = listData.keys.filter(k => k.startsWith(USER_PREFIX)); allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
-                ld.style.display = 'none'; filterGallery();
+                
+                ld.style.display = 'none'; 
+                loadWhatsNew();
+                filterGallery(true); // Se fuerza el reseteo del límite de galería al iniciar
 
                 // --- ESTADÍSTICAS Y LEADERBOARD EN LA VISTA SEPARADA ---
                 document.getElementById('stat-total-users').textContent = allUsernames.length;
@@ -1137,16 +1222,44 @@
             } catch (e) { ld.style.color = 'var(--danger)'; ld.textContent = e.message; }
         }
 
-        function filterGallery() {
-            const f = document.getElementById('search-input').value.toLowerCase(), gc = document.getElementById('gallery-container'), fc = document.getElementById('featured-container'), fs = document.getElementById('featured-section'), uc = document.getElementById('users-container');
-            gc.innerHTML = ''; fc.innerHTML = ''; uc.innerHTML = ''; let hf = false;
+        function filterGallery(resetLimit = false) {
+            if (resetLimit) {
+                currentGalleryLimit = 15;
+            }
+
+            const f = document.getElementById('search-input').value.toLowerCase();
+            const gc = document.getElementById('gallery-container');
+            const fc = document.getElementById('featured-container');
+            const fs = document.getElementById('featured-section');
+            const uc = document.getElementById('users-container');
+            const btnLoadMore = document.getElementById('btn-load-more');
+            
+            gc.innerHTML = ''; fc.innerHTML = ''; uc.innerHTML = ''; 
+            let hf = false;
+            let renderedCount = 0;
+            let totalMatches = 0;
+
             allProjects.forEach(p => {
                 if(p.hidden && (!currentUser || (currentUser.username !== p.author && currentUser.role !== 'admin' && currentUser.role !== 'creator'))) return;
+                
                 const match = p.name.toLowerCase().includes(f) || p.author.toLowerCase().includes(f);
-                if (match) gc.appendChild(createCardHTML(p));
-                if (p.featured) { hf = true; if(match || f==='') fc.appendChild(createCardHTML(p)); }
+                if (match) {
+                    totalMatches++;
+                    if (renderedCount < currentGalleryLimit) {
+                        gc.appendChild(createCardHTML(p));
+                        renderedCount++;
+                    }
+                }
+                
+                if (p.featured) { 
+                    hf = true; 
+                    if(match || f === '') fc.appendChild(createCardHTML(p)); 
+                }
             });
+
             fs.style.display = hf ? 'block' : 'none';
+            btnLoadMore.style.display = (totalMatches > currentGalleryLimit) ? 'block' : 'none';
+
             if (f.trim() !== '') {
                 const matchedUsers = allUsernames.filter(u => u.toLowerCase().includes(f));
                 if (matchedUsers.length > 0) {
@@ -1195,7 +1308,7 @@
                 if(!emj) return alert(t("Emoji no encontrado. Revisa en la lista de emojis gestionados.", "Emoji not found. Check the managed emojis list."));
                 p.sticker = emj.url;
             }
-            await dbStore(k, p); filterGallery(); 
+            await dbStore(k, p); filterGallery(true); 
         }
 
         function playRandomProject() { 
@@ -1213,7 +1326,7 @@
         
         async function toggleFeatured(k) { 
             if(currentUser && currentUser.role === 'admin' && currentUser.adminPerms && currentUser.adminPerms.canFeature === false) return alert(t("No tienes permiso para destacar proyectos.", "You do not have permission to feature projects."));
-            const p=allProjects.find(x=>x._key===k); if(p){ p.featured=!p.featured; await dbStore(k,p); filterGallery(); } 
+            const p=allProjects.find(x=>x._key===k); if(p){ p.featured=!p.featured; await dbStore(k,p); filterGallery(true); } 
         }
         
         async function toggleLike(tAction) {
@@ -1228,7 +1341,7 @@
         }
 
         function switchView(id) { document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-        function goHome() { document.getElementById('game-iframe').src=''; currentProjectKey=''; viewedUser=''; window.history.replaceState({}, document.title, window.location.pathname); switchView('home-view'); filterGallery(); }
+        function goHome() { document.getElementById('game-iframe').src=''; currentProjectKey=''; viewedUser=''; window.history.replaceState({}, document.title, window.location.pathname); switchView('home-view'); filterGallery(true); }
         
         async function viewProfile(u) {
             switchView('profile-view'); viewedUser=u; window.history.replaceState({}, document.title, "?u=" + u);
