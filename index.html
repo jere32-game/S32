@@ -49,7 +49,12 @@
             margin: 0 2px;
         }
 
-        header { background-color: var(--panel); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--border-au); box-shadow: 0 6px 0px rgba(0, 0, 0, 0.4); position: sticky; top: 0; z-index: 100; }
+        /* HEADER DESPLEGABLE */
+        header { background-color: var(--panel); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: var(--border-au); box-shadow: 0 6px 0px rgba(0, 0, 0, 0.4); position: sticky; top: 0; z-index: 100; transition: transform 0.3s ease; }
+        header.collapsed { transform: translateY(calc(-100% + 20px)); }
+        .header-toggle-btn { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); width: 60px; height: 20px; background-color: var(--panel); border: var(--border-au); border-top: none; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px; cursor: pointer; display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 14px; box-shadow: 0 4px 0 rgba(0,0,0,0.5); z-index: 101; font-weight: bold; }
+        .header-toggle-btn:hover { background-color: #2a303a; color: var(--primary-hover); }
+
         .header-logo { cursor: pointer; display: flex; align-items: center; transition: transform 0.2s; }
         .header-logo:hover { transform: scale(1.05); }
         .header-actions { display: flex; align-items: center; gap: 15px; }
@@ -107,6 +112,9 @@
         .hidden-badge { position: absolute; top: -10px; left: -10px; background: #555; color: white; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 0.8rem; box-shadow: 0 4px 0 #000; z-index: 2; border: 2px solid #000; }
         .updated-badge { position: absolute; top: 130px; left: 10px; background: var(--primary); color: #000; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 0 #000; z-index: 2; border: 2px solid #000; }
         .html-badge { position: absolute; top: 100px; left: 10px; background: #e34f26; color: white; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 0 #000; z-index: 2; border: 2px solid #000; }
+        
+        /* STICKER PARA REMIX */
+        .remix-badge { position: absolute; top: 160px; left: 10px; background: #00ffff; color: #000; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 0.75rem; box-shadow: 0 2px 0 #000; z-index: 2; border: 2px solid #000; }
 
         .sticker-badge { position: absolute; bottom: 85px; right: 10px; background: rgba(0,0,0,0.8); padding: 6px; border-radius: 50%; border: 3px solid #8800ff; box-shadow: 0 4px 0 #000, 0 0 15px #8800ff; z-index: 2; display: flex; align-items: center; justify-content: center; }
         .sticker-badge img { width: 35px; height: 35px; object-fit: contain; }
@@ -159,7 +167,7 @@
         .contact-item b { font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .chat-main { flex: 1; display: flex; flex-direction: column; background: var(--panel); }
         .chat-messages { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .msg-bubble { max-width: 70%; padding: 12px 18px; border-radius: 15px; word-wrap: break-word; border: var(--border-au); box-shadow: 0 4px 0 rgba(0,0,0,0.3); font-weight: bold; }
+        .msg-bubble { max-width: 70%; padding: 12px 18px; border-radius: 15px; word-wrap: break-word; border: var(--border-au); box-shadow: 0 4px 0 rgba(0,0,0,0.3); font-weight: bold; position: relative; }
         .msg-mine { align-self: flex-end; background: var(--primary); color: #000; border-bottom-right-radius: 0; }
         .msg-theirs { align-self: flex-start; background: #3f4752; color: #fff; border-bottom-left-radius: 0; }
         .chat-input { padding: 1rem; border-top: var(--border-au); display: flex; gap: 10px; background: #15181c; align-items: flex-end;}
@@ -291,6 +299,7 @@
         </div>
         <div class="header-actions">
             <button class="btn-secondary btn-small" style="background-color: var(--primary); color: #000; border: var(--border-au);" onclick="openEditor()"><span class="es-text">Crear Tarea</span><span class="en-text">Create Task</span></button>
+            <button class="btn-warning btn-small" id="btn-publish-header" style="display:none; color: #000; border: var(--border-au);" onclick="openPublishModal()">🚀 <span class="es-text">Publicar</span><span class="en-text">Publish Project</span></button>
             <button class="btn-secondary btn-small" onclick="switchView('ranking-view')" title="Ver Ranking y Estadísticas Globales" data-es-title="Ver Ranking y Estadísticas Globales" data-en-title="View Ranking and Global Stats"><span class="es-text">🏆 Ranking</span><span class="en-text">🏆 Ranking</span></button>
             
             <div class="warp-badge"><span class="es-text">Gracias Por cagarla jere l:l</span><span class="en-text">Thanks for messing it up jere l:l</span></div>
@@ -315,6 +324,8 @@
             </div>
             <div id="notif-list"></div>
         </div>
+        
+        <div class="header-toggle-btn" onclick="toggleHeader()" title="Ocultar/Mostrar Menú">▼</div>
     </header>
 
     <div id="auth-modal" class="overlay-modal">
@@ -337,6 +348,37 @@
                 <input type="file" id="reg-pfp" accept="image/*">
                 <button id="reg-btn" onclick="register()"><span class="es-text">Crear Identificación</span><span class="en-text">Create ID</span></button>
                 <p id="reg-status" style="color: var(--primary); font-size: 0.9rem; font-weight: bold;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="publish-modal" class="overlay-modal">
+        <div class="auth-box" style="border-color: var(--warning); max-width: 600px;">
+            <span class="close-auth" onclick="closePublishModal()">&times;</span>
+            <h3 style="color: var(--warning); margin-bottom: 1rem; text-align: center; text-transform: uppercase;"><span class="es-text">🚀 Reportar una Tarea (Publicar)</span><span class="en-text">🚀 Report a Task (Publish)</span></h3>
+            <div class="form-group">
+                <div class="input-box"><label><span class="es-text">Nombre del Juego</span><span class="en-text">Game Name</span></label><input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" data-es-placeholder="Ej: Mi Super Mod" data-en-placeholder="Ex: My Super Mod" autocomplete="off"></div>
+                <div class="input-box"><label><span class="es-text">Archivo (.sb3, .html pesados)</span><span class="en-text">File (.sb3, heavy .html)</span></label><input type="file" id="proj-file" accept=".sb3,.html"></div>
+                <div class="input-box"><label><span class="es-text">Imagen de Portada (Opcional)</span><span class="en-text">Cover Image (Optional)</span></label><input type="file" id="proj-image" accept="image/*"></div>
+            </div>
+            <label style="display:flex; align-items:center; gap:5px; margin-bottom: 15px; cursor:pointer; font-weight:bold;">
+                <input type="checkbox" id="proj-hidden" style="width:auto; height: 1.5rem;"> <span class="es-text">👻 Proyecto Oculto (En la ventilación)</span><span class="en-text">👻 Hidden Project (In the vents)</span>
+            </label>
+
+            <button id="publish-btn" onclick="publishProject()" style="width: 100%;"><span class="es-text">Subir y Publicar</span><span class="en-text">Upload and Publish</span></button>
+            <p id="publish-status" style="font-size: 1rem; margin-top: 10px; font-weight: bold;"></p>
+        </div>
+    </div>
+
+    <div id="group-modal" class="overlay-modal">
+        <div class="auth-box" style="border-color: #00ffff;">
+            <span class="close-auth" onclick="closeGroupModal()">&times;</span>
+            <h3 style="color: #00ffff; margin-bottom: 1rem; text-align: center; text-transform: uppercase;"><span class="es-text">👥 Crear Nuevo Grupo</span><span class="en-text">👥 Create New Group</span></h3>
+            <div class="auth-form active" style="display: flex;">
+                <input type="text" id="grp-name" placeholder="Nombre del Grupo" data-es-placeholder="Nombre del Grupo" data-en-placeholder="Group Name">
+                <input type="text" id="grp-members" placeholder="Usuarios a invitar (separados por coma, máx 14)" data-es-placeholder="Usuarios a invitar (separados por coma, máx 14)" data-en-placeholder="Users to invite (comma separated, max 14)">
+                <button onclick="submitCreateGroup()" style="background:#00ffff; color:#000;"><span class="es-text">Crear Grupo</span><span class="en-text">Create Group</span></button>
+                <p id="grp-status" style="color: var(--danger); font-size: 0.9rem; font-weight: bold;"></p>
             </div>
         </div>
     </div>
@@ -426,23 +468,32 @@
         </div>
     </div>
 
+    <div id="remix-modal" class="overlay-modal">
+        <div class="auth-box" style="border-color: #00ffff;">
+            <span class="close-auth" onclick="closeRemixModal()">&times;</span>
+            <h3 style="color: #00ffff; margin-bottom: 1rem; text-align: center; text-transform: uppercase;"><span class="es-text">🧬 Crear Remix</span><span class="en-text">🧬 Create Remix</span></h3>
+            <div class="auth-form active" style="display: flex;">
+                <label style="font-size: 0.8rem; color: var(--text-muted);"><span class="es-text">Nombre del Remix</span><span class="en-text">Remix Name</span></label>
+                <input type="text" id="rmx-name" placeholder="Ej: Mi versión mejorada" data-es-placeholder="Ej: Mi versión mejorada" data-en-placeholder="Ex: My improved version">
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;"><span class="es-text">Sube tu versión (.sb3 o .html pesado - Opcional)</span><span class="en-text">Upload your version (.sb3 or heavy .html - Optional)</span></label>
+                <input type="file" id="rmx-file" accept=".sb3,.html">
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted); margin-top: 10px;"><span class="es-text">Portada del Remix (Opcional)</span><span class="en-text">Remix Cover (Optional)</span></label>
+                <input type="file" id="rmx-image" accept="image/*">
+                
+                <label style="display:flex; align-items:center; gap:5px; margin-top: 10px; cursor:pointer; font-weight: bold;">
+                    <input type="checkbox" id="rmx-hidden" style="width:auto; height: 1.5rem;"> <span class="es-text">👻 Oculto en las alcantarillas</span><span class="en-text">👻 Hidden in the sewers</span>
+                </label>
+                
+                <button id="rmx-btn" onclick="submitProjectRemix()" style="margin-top: 15px; background-color: #00ffff; color: #000;"><span class="es-text">Publicar Remix</span><span class="en-text">Publish Remix</span></button>
+                <p id="rmx-status" style="font-size: 0.9rem; text-align: center; margin-top: 5px; font-weight: bold;"></p>
+            </div>
+        </div>
+    </div>
+
     <main>
         <div id="home-view" class="view active">
-
-            <div class="section-box" id="publish-box" style="display: none;">
-                <h2><span class="es-text">Reportar una Tarea (Publicar)</span><span class="en-text">Report a Task (Publish)</span></h2>
-                <div class="form-group">
-                    <div class="input-box"><label><span class="es-text">Nombre del Juego</span><span class="en-text">Game Name</span></label><input type="text" id="proj-name" placeholder="Ej: Mi Super Mod" data-es-placeholder="Ej: Mi Super Mod" data-en-placeholder="Ex: My Super Mod" autocomplete="off"></div>
-                    <div class="input-box"><label><span class="es-text">Archivo (.sb3, .html pesados)</span><span class="en-text">File (.sb3, heavy .html)</span></label><input type="file" id="proj-file" accept=".sb3,.html"></div>
-                    <div class="input-box"><label><span class="es-text">Imagen de Portada (Opcional)</span><span class="en-text">Cover Image (Optional)</span></label><input type="file" id="proj-image" accept="image/*"></div>
-                </div>
-                <label style="display:flex; align-items:center; gap:5px; margin-bottom: 15px; cursor:pointer; font-weight:bold;">
-                    <input type="checkbox" id="proj-hidden" style="width:auto; height: 1.5rem;"> <span class="es-text">👻 Proyecto Oculto (En la ventilación)</span><span class="en-text">👻 Hidden Project (In the vents)</span>
-                </label>
-
-                <button id="publish-btn" onclick="publishProject()" style="width: 100%;"><span class="es-text">Subir y Publicar</span><span class="en-text">Upload and Publish</span></button>
-                <p id="publish-status" style="font-size: 1rem; margin-top: 10px; font-weight: bold;"></p>
-            </div>
 
             <div id="whatsnew-section" class="section-box" style="display: none; background: rgba(0, 255, 107, 0.05); border-color: var(--primary);">
                 <h3 style="color: var(--primary); margin-bottom: 10px; text-transform: uppercase;">📰 <span class="es-text">¿Qué hay de nuevo?</span><span class="en-text">What's new?</span></h3>
@@ -530,6 +581,7 @@
                     <h2 id="view-game-title" style="margin:0; color:var(--primary); display:inline-block; text-transform: uppercase; text-shadow: 1px 1px 0 #000;"><span class="es-text">Cargando...</span><span class="en-text">Loading...</span></h2>
                     <span id="view-game-updated" style="color:var(--primary); font-size:0.9rem; font-weight:bold; vertical-align:middle;"></span>
                     <p id="view-game-author" style="color:var(--text-muted); margin-top:5px; cursor:pointer; text-decoration:underline; font-weight: bold; font-size: 1.1rem;">...</p>
+                    <p id="view-game-remixed" style="color:var(--warning); margin-top:2px; font-size:0.85rem; display:none; cursor:pointer; font-weight:bold;"></p>
                 </div>
                 <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
                     <div class="project-stats" id="game-stats-bar" style="margin: 0; font-size: 1.1rem;"></div>
@@ -599,6 +651,7 @@
         const USER_PREFIX = 'scratch32_usr_';
         const CONFIG_PREFIX = 'scratch32_cfg_';
         const CHAT_PREFIX = 'scratch32_chat_';
+        const GROUP_PREFIX = 'scratch32_grp_';
         
         // --- ESTADO GLOBAL & TRADUCCIONES JS ---
         let currentLang = localStorage.getItem('s32_lang') || 'es';
@@ -612,6 +665,14 @@
 
         function t(es_text, en_text) {
             return currentLang === 'es' ? es_text : en_text;
+        }
+
+        // --- SISTEMA HEADER DESPLEGABLE ---
+        function toggleHeader() {
+            const h = document.querySelector('header');
+            h.classList.toggle('collapsed');
+            const btn = document.querySelector('.header-toggle-btn');
+            btn.textContent = h.classList.contains('collapsed') ? '▲' : '▼';
         }
 
         function updateLanguageUI() {
@@ -661,13 +722,16 @@
         let currentUser = null; 
         let currentProjectKey = ''; 
         let allProjects = [];
+        let allGroups = [];
         let allUsernames = []; 
         let viewedUser = ''; 
         let cloudLinkSocket = null;
         let activeChatUser = '';
+        let isGroupChat = false;
         let unreadNotifs = 0;
         let globalEmojis = []; 
         let projectToUpdateKey = null; 
+        let projectToRemixKey = null; // Para el sistema de remix
 
         // Variables para indicador de tipeo
         let typingTimeout;
@@ -690,7 +754,7 @@
             });
         });
 
-        // --- SISTEMA DEL EDITOR ---
+        // --- SISTEMA DEL EDITOR Y MODALES DE PUBLICAR ---
         function openEditor() {
             const overlay = document.getElementById('editor-overlay');
             const iframe = document.getElementById('editor-iframe');
@@ -701,6 +765,12 @@
             document.getElementById('editor-overlay').style.display = 'none';
             document.getElementById('editor-iframe').src = 'about:blank';
         }
+        
+        function openPublishModal() { document.getElementById('publish-modal').style.display = 'flex'; }
+        function closePublishModal() { document.getElementById('publish-modal').style.display = 'none'; }
+        
+        function openGroupModal() { document.getElementById('group-modal').style.display = 'flex'; }
+        function closeGroupModal() { document.getElementById('group-modal').style.display = 'none'; }
 
         // --- FUNCIONES UTILIDAD DB Y PARSEO (AQUÍ ESTÁ LA MAGIA DE LA DB HÍBRIDA) ---
         async function dbGet(key) {
@@ -842,12 +912,12 @@
                     alert(msg); localStorage.removeItem('scratch32_session'); currentUser = null;
                 } else {
                     currentUser = liveUser; localStorage.setItem('scratch32_session', JSON.stringify(currentUser));
-                    document.getElementById('publish-box').style.display = 'block'; document.getElementById('comment-input-area').style.display = 'flex'; document.getElementById('cmt-login-req').style.display = 'none'; document.getElementById('btn-notif').style.display = 'inline-block'; document.getElementById('btn-chat').style.display = 'inline-block';
+                    document.getElementById('btn-publish-header').style.display = 'inline-block'; document.getElementById('comment-input-area').style.display = 'flex'; document.getElementById('cmt-login-req').style.display = 'none'; document.getElementById('btn-notif').style.display = 'inline-block'; document.getElementById('btn-chat').style.display = 'inline-block';
                     document.getElementById('btn-edit-whatsnew').style.display = (currentUser.role === 'creator') ? 'inline-block' : 'none';
                     initCloudLink(); updateNotifBadge();
                 }
             } else {
-                currentUser = null; document.getElementById('publish-box').style.display = 'none'; document.getElementById('comment-input-area').style.display = 'none'; document.getElementById('cmt-login-req').style.display = 'block'; document.getElementById('btn-notif').style.display = 'none'; document.getElementById('btn-chat').style.display = 'none';
+                currentUser = null; document.getElementById('btn-publish-header').style.display = 'none'; document.getElementById('comment-input-area').style.display = 'none'; document.getElementById('cmt-login-req').style.display = 'block'; document.getElementById('btn-notif').style.display = 'none'; document.getElementById('btn-chat').style.display = 'none';
                 document.getElementById('btn-edit-whatsnew').style.display = 'none';
                 if(cloudLinkSocket) cloudLinkSocket.close();
             }
@@ -1090,7 +1160,8 @@
                 let imgUrl = 'https://ui-avatars.com/api/?name=Sin+Portada&background=1a1a24&color=00ff6b&size=400'; if (imgIn.files.length > 0) { sts.textContent = t('Subiendo portada...', 'Uploading cover...'); imgUrl = await uploadFileToYYF(imgIn.files[0]); }
                 sts.textContent = t('Guardando en la base...', 'Saving to database...'); 
                 const pData = { name: name, author: currentUser.username, url: url, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false, hidden: isHidden, isHtml: isHtml, updated: null, sticker: null };
-                await dbStore(PROJ_PREFIX + Date.now(), pData); sts.style.color = 'var(--primary)'; sts.textContent = t('¡Tarea Completada!', 'Task Completed!'); document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; document.getElementById('proj-hidden').checked = false; loadAllProjects(); 
+                await dbStore(PROJ_PREFIX + Date.now(), pData); sts.style.color = 'var(--primary)'; sts.textContent = t('¡Tarea Completada!', 'Task Completed!'); document.getElementById('proj-name').value = ''; document.getElementById('proj-file').value = ''; document.getElementById('proj-hidden').checked = false; 
+                setTimeout(() => { closePublishModal(); loadAllProjects(); }, 1500);
             } catch (e) { sts.style.color = 'var(--danger)'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
@@ -1138,6 +1209,73 @@
             } catch(e) { sts.style.color = 'var(--danger)'; sts.textContent = e.message; } finally { btn.disabled = false; }
         }
 
+        // --- NUEVO SISTEMA DE REMIX CON MODAL DEDICADO ---
+        function remixProject(k) {
+            if(!currentUser) return alert(t("Inicia sesión para remixear tripulante.", "Log in to remix crewmate."));
+            const p = allProjects.find(x => x._key === k); if(!p) return;
+            projectToRemixKey = k;
+            
+            document.getElementById('rmx-name').value = p.name + " (Remix)";
+            document.getElementById('rmx-hidden').checked = false;
+            document.getElementById('rmx-file').value = '';
+            document.getElementById('rmx-image').value = '';
+            document.getElementById('rmx-status').textContent = '';
+            
+            document.getElementById('remix-modal').style.display = 'flex';
+        }
+        
+        function closeRemixModal() { 
+            document.getElementById('remix-modal').style.display = 'none'; 
+            projectToRemixKey = null; 
+        }
+
+        async function submitProjectRemix() {
+            if(!projectToRemixKey || !currentUser) return;
+            const p = allProjects.find(x => x._key === projectToRemixKey); if(!p) return;
+            
+            const newName = document.getElementById('rmx-name').value.trim();
+            const fileIn = document.getElementById('rmx-file');
+            const imgIn = document.getElementById('rmx-image');
+            const isHidden = document.getElementById('rmx-hidden').checked;
+            const sts = document.getElementById('rmx-status');
+            const btn = document.getElementById('rmx-btn');
+
+            if(!newName) { sts.style.color = 'var(--danger)'; sts.textContent = t('El nombre es obligatorio.', 'The name is required.'); return; }
+            
+            btn.disabled = true; sts.style.color = 'var(--text)';
+            try {
+                let fileUrl = p.url;
+                let isHtml = p.isHtml;
+                
+                if (fileIn.files.length > 0) {
+                    sts.textContent = t('Subiendo código del remix...', 'Uploading remix code...');
+                    let fileToUpload = fileIn.files[0];
+                    isHtml = fileToUpload.name.toLowerCase().endsWith('.html');
+                    if (isHtml) { fileToUpload = new File([fileToUpload], fileToUpload.name.replace(/\.html$/i, '.txt'), { type: 'text/plain' }); }
+                    fileUrl = await uploadFileToYYF(fileToUpload);
+                }
+                
+                let imgUrl = p.imageUrl;
+                if (imgIn.files.length > 0) {
+                    sts.textContent = t('Subiendo nueva portada...', 'Uploading new cover...');
+                    imgUrl = await uploadFileToYYF(imgIn.files[0]);
+                }
+                
+                sts.textContent = t('Guardando remix...', 'Saving remix...');
+                const nKey = PROJ_PREFIX + Date.now();
+                const pData = { name: newName, author: currentUser.username, url: fileUrl, imageUrl: imgUrl, timestamp: Date.now(), views: 0, likes: [], dislikes: [], featured: false, hidden: isHidden, isHtml: isHtml, updated: null, sticker: null, remixedFrom: p._key };
+                
+                await dbStore(nKey, pData);
+                
+                sts.style.color = 'var(--primary)'; sts.textContent = t('¡Remix creado con éxito!', 'Remix successfully created!');
+                setTimeout(() => { closeRemixModal(); loadAllProjects(); }, 1500);
+            } catch(e) {
+                sts.style.color = 'var(--danger)'; sts.textContent = e.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         // --- SISTEMA DE NOVEDADES (WHAT'S NEW) ---
         async function loadWhatsNew() {
             try {
@@ -1180,9 +1318,17 @@
             try {
                 const res = await fetch(SERVER_URL + 'listKeys.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY }) });
                 const listData = await res.json();
+                
+                // Proyectos
                 const keys = listData.keys.filter(k => k.startsWith(PROJ_PREFIX)).reverse(); allProjects = [];
                 for (const k of keys) { const d = await dbGet(k); if(d) { d._key = k; allProjects.push(d); } }
+                
+                // Usuarios
                 const userKeys = listData.keys.filter(k => k.startsWith(USER_PREFIX)); allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
+                
+                // Grupos
+                const groupKeys = listData.keys.filter(k => k.startsWith(GROUP_PREFIX)); allGroups = [];
+                for (const k of groupKeys) { const d = await dbGet(k); if(d) allGroups.push(d); }
                 
                 ld.style.display = 'none'; 
                 loadWhatsNew();
@@ -1272,12 +1418,14 @@
         function createCardHTML(p) {
             const c = document.createElement('div'); c.className = 'project-card';
             
-            let adm = ''; let own = ''; let creatorAction = '';
+            let adm = ''; let own = ''; let creatorAction = ''; let remixBtn = '';
+            
             if (currentUser) {
                 const isAdminOrCreator = currentUser.role === 'admin' || currentUser.role === 'creator';
                 if (isAdminOrCreator) adm = `<button class="btn-secondary btn-small" onclick="toggleFeatured('${p._key}')">${p.featured ? t('Quitar Destacado', 'Unfeature') : t('⭐ Destacar', '⭐ Feature')}</button><button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️</button>`;
                 if (p.author === currentUser.username) own = `<button class="btn-warning btn-small" onclick="triggerUpdate('${p._key}')">🔄 ${t('Actualizar', 'Update')}</button> ` + ((!isAdminOrCreator) ? `<button class="btn-danger btn-small" onclick="deleteProject('${p._key}')">🗑️ ${t('Eliminar', 'Delete')}</button>` : '');
                 if (currentUser.role === 'creator') creatorAction = `<button class="btn-secondary btn-small" style="background:#8800ff; color:white; border:2px solid #000;" onclick="addCreatorSticker('${p._key}')">🎖️ Sticker</button>`;
+                remixBtn = `<button class="btn-warning btn-small" style="background-color: #00ffff; color: #000;" onclick="remixProject('${p._key}')">🧬 Remix</button>`;
             }
 
             let stickerHtml = p.sticker ? `<div class="sticker-badge" title="Sticker del Creador"><img src="${escapeHTML(p.sticker)}"></div>` : '';
@@ -1292,8 +1440,8 @@
                 }
             }
 
-            c.innerHTML = `${p.featured ? `<div class="featured-badge">⭐ ${t('Destacado', 'Featured')}</div>` : ''} ${p.hidden ? `<div class="hidden-badge">👻 ${t('Oculto', 'Hidden')}</div>` : ''} ${showUpdated ? `<div class="updated-badge">🔄 ${t('Actualizado', 'Updated')}</div>` : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''} ${stickerHtml}
-            <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">${t('Por', 'By')}: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0}</div><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ ${t('Jugar Tarea', 'Play Task')}</button><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">${adm}${own}${creatorAction}</div>`;
+            c.innerHTML = `${p.featured ? `<div class="featured-badge">⭐ ${t('Destacado', 'Featured')}</div>` : ''} ${p.hidden ? `<div class="hidden-badge">👻 ${t('Oculto', 'Hidden')}</div>` : ''} ${showUpdated ? `<div class="updated-badge">🔄 ${t('Actualizado', 'Updated')}</div>` : ''} ${p.remixedFrom ? `<div class="remix-badge">🧬 ${t('Remixeado', 'Remixed')}</div>` : ''} ${p.isHtml ? '<div class="html-badge">🌐 HTML5</div>' : ''} ${stickerHtml}
+            <img class="project-image" src="${escapeHTML(p.imageUrl)}" loading="lazy"><div class="project-title">${escapeHTML(p.name)}</div><div class="project-author" onclick="viewProfile('${escapeHTML(p.author)}')">${t('Por', 'By')}: @${escapeHTML(p.author)}</div><div class="project-stats"><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Vistas.svg" class="svg-icon"> ${p.views||0}</div><div class="stat-item"><img src="https://raw.githubusercontent.com/jere32-game/S32-assets/refs/heads/main/Like.svg" class="svg-icon"> ${p.likes?p.likes.length:0}</div></div><button class="play-btn" onclick="playProject('${p._key}')">⚡ ${t('Jugar Tarea', 'Play Task')}</button><div style="display:flex; gap:5px; margin-top:10px; flex-wrap:wrap;">${remixBtn}${adm}${own}${creatorAction}</div>`;
             return c;
         }
 
@@ -1404,6 +1552,22 @@
             document.getElementById('view-game-updated').textContent = p.updated ? ` (🔄 ${t('Actualizado', 'Updated')})` : ""; 
             document.getElementById('view-game-author').textContent = "@" + p.author; document.getElementById('view-game-author').onclick = () => viewProfile(p.author);
             
+            if (p.remixedFrom) {
+                const rx = document.getElementById('view-game-remixed');
+                const orig = allProjects.find(x => x._key === p.remixedFrom);
+                if (orig) {
+                    rx.style.display = 'block';
+                    rx.textContent = `🧬 Remix de: ${orig.name} (@${orig.author})`;
+                    rx.onclick = () => playProject(orig._key);
+                } else {
+                    rx.style.display = 'block';
+                    rx.textContent = `🧬 Remix de una tarea eliminada`;
+                    rx.onclick = null;
+                }
+            } else {
+                document.getElementById('view-game-remixed').style.display = 'none';
+            }
+            
             // --- EVALUAR PERMISOS DE MICRÓFONO EN COMENTARIOS ---
             const canSendAudio = (currentUser && (currentUser.username === p.author || currentUser.role === 'admin' || currentUser.role === 'creator'));
             document.getElementById('btn-cmt-mic').style.display = canSendAudio ? 'inline-block' : 'none';
@@ -1472,11 +1636,13 @@
                         const url = await uploadFileToYYF(audioFile);
 
                         if (currentVoiceTarget === 'chat') {
-                            const key = getChatDBKey(currentUser.username, activeChatUser);
+                            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser);
                             const history = await dbGet(key) || [];
                             history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: '', audioUrl: url, isVoice: true, date: Date.now(), read: false });
                             if(history.length > 50) history.shift();
-                            await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
+                            await dbStore(key, history);
+                            if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser);
+                            loadChatMessages(activeChatUser);
                         }
                         else if (currentVoiceTarget === 'comment') {
                             const k = currentProjectKey.replace(PROJ_PREFIX, CMT_PREFIX);
@@ -1688,7 +1854,7 @@
         async function deleteComment(id) { if(!confirm(t("¿Borrar reporte?", "Delete report?")))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); if(c){ c=c.filter(x=>x.id!==id); await dbStore(k,c); loadComments(currentProjectKey); } }
         async function deleteReply(cid, rid) { if(!confirm(t("¿Borrar respuesta?", "Delete reply?")))return; const k=currentProjectKey.replace(PROJ_PREFIX,CMT_PREFIX); let c=await dbGet(k); const tg=c.find(x=>x.id===cid); if(tg&&tg.replies){ tg.replies=tg.replies.filter(x=>x.id!==rid); await dbStore(k,c); loadComments(currentProjectKey); } }
 
-        // --- SISTEMA DE CHAT AVANZADO ---
+        // --- SISTEMA DE CHAT AVANZADO (AHORA CON GRUPOS) ---
         function initCloudLink() {
             if (cloudLinkSocket) cloudLinkSocket.close();
             try {
@@ -1698,21 +1864,34 @@
                     try {
                         const msg = JSON.parse(e.data);
                         if (msg.cmd === "gvar") {
+                            // DMs
                             if (msg.name.startsWith(CHAT_PREFIX + currentUser.username.toLowerCase())) {
                                 const sender = msg.name.split('_from_')[1];
-                                
-                                // ¡NUEVO! Reproducir sonido de notificación
-                                try {
-                                    chatNotifSound.play();
-                                } catch(err) { console.log("Sonido bloqueado por el navegador", err); }
-
+                                try { chatNotifSound.play(); } catch(err) { console.log("Sonido bloqueado", err); }
                                 unreadNotifs++; document.getElementById('chat-badge').textContent = unreadNotifs; document.getElementById('chat-badge').style.display = 'block';
-                                if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
+                                if(document.getElementById('chat-view').classList.contains('active') && !isGroupChat && activeChatUser.toLowerCase() === sender) {
                                     loadChatMessages(activeChatUser); unreadNotifs--; document.getElementById('chat-badge').textContent = unreadNotifs; if(unreadNotifs<=0) document.getElementById('chat-badge').style.display = 'none';
                                 }
-                            } else if (msg.name.startsWith("scratch32_typing_" + currentUser.username.toLowerCase())) {
+                            } 
+                            // Grupos
+                            else if (msg.name.startsWith(GROUP_PREFIX) && msg.name.includes("_from_")) {
+                                const parts = msg.name.split('_from_');
+                                const groupId = parts[0];
+                                const sender = parts[1];
+                                
+                                // Checar si pertenezco
+                                const myGroup = allGroups.find(g => g.id === groupId && g.members.includes(currentUser.username));
+                                if (myGroup && sender !== currentUser.username.toLowerCase()) {
+                                    try { chatNotifSound.play(); } catch(err) {}
+                                    unreadNotifs++; document.getElementById('chat-badge').textContent = unreadNotifs; document.getElementById('chat-badge').style.display = 'block';
+                                    if(document.getElementById('chat-view').classList.contains('active') && isGroupChat && activeChatUser === groupId) {
+                                        loadChatMessages(activeChatUser); unreadNotifs--; document.getElementById('chat-badge').textContent = unreadNotifs; if(unreadNotifs<=0) document.getElementById('chat-badge').style.display = 'none';
+                                    }
+                                }
+                            }
+                            else if (msg.name.startsWith("scratch32_typing_" + currentUser.username.toLowerCase())) {
                                 const sender = msg.name.split('_from_')[1];
-                                if(document.getElementById('chat-view').classList.contains('active') && activeChatUser.toLowerCase() === sender) {
+                                if(document.getElementById('chat-view').classList.contains('active') && !isGroupChat && activeChatUser.toLowerCase() === sender) {
                                     showTypingIndicator(sender);
                                 }
                             }
@@ -1722,11 +1901,12 @@
             } catch(e){}
         }
         function pingChat(targetUser) { if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) { const tv = CHAT_PREFIX + targetUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase(); cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: tv, val: "ping" })); } }
+        function pingGroupChat(groupId) { if(cloudLinkSocket && cloudLinkSocket.readyState === WebSocket.OPEN) { const tv = groupId + "_from_" + currentUser.username.toLowerCase(); cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: tv, val: "ping" })); } }
 
         function handleChatInput() {
             if(!activeChatUser || !cloudLinkSocket || cloudLinkSocket.readyState !== WebSocket.OPEN) return;
             const now = Date.now();
-            if(now - lastTypingPing > 2000) { 
+            if(!isGroupChat && now - lastTypingPing > 2000) { 
                 const tv = "scratch32_typing_" + activeChatUser.toLowerCase() + "_from_" + currentUser.username.toLowerCase();
                 cloudLinkSocket.send(JSON.stringify({ cmd: "gvar", name: tv, val: "typing" }));
                 lastTypingPing = now;
@@ -1743,41 +1923,107 @@
             }, 3000);
         }
 
+        async function submitCreateGroup() {
+            if(!currentUser) return;
+            const gName = document.getElementById('grp-name').value.trim(); 
+            const membersStr = document.getElementById('grp-members').value.trim();
+            const status = document.getElementById('grp-status');
+            
+            if(!gName) { status.textContent = "El nombre del grupo es obligatorio."; return; }
+            
+            let members = [currentUser.username];
+            if(membersStr) {
+                const m = membersStr.split(',').map(x=>x.trim()).filter(x=>x).slice(0,14);
+                for(let u of m) {
+                    const d = await dbGet(USER_PREFIX + u.toLowerCase());
+                    if(d && !members.includes(d.username)) members.push(d.username);
+                }
+            }
+            
+            status.style.color = "var(--primary)";
+            status.textContent = "Creando grupo...";
+            try {
+                const gId = GROUP_PREFIX + Date.now();
+                const gData = { id: gId, name: gName, members: members, owner: currentUser.username };
+                await dbStore(gId, gData);
+                closeGroupModal();
+                alert(t("¡Grupo creado!", "Group created!"));
+                loadAllProjects().then(() => openChat()); 
+            } catch(e) {
+                status.style.color = "var(--danger)";
+                status.textContent = e.message;
+            }
+        }
+
         async function openChat() {
             if(!currentUser) return; switchView('chat-view'); 
             
-            // Forzar reinicio de notificaciones del chat al abrir la vista
             unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none'; document.getElementById('chat-badge').textContent = '0';
             
-            document.getElementById('chat-messages').innerHTML = `<p style="color:gray; font-weight:bold; text-align:center;">${t('Selecciona un tripulante a la izquierda para chatear.', 'Select a crewmate on the left to chat.')}</p>`;
+            document.getElementById('chat-messages').innerHTML = `<p style="color:gray; font-weight:bold; text-align:center;">${t('Selecciona un tripulante o grupo a la izquierda.', 'Select a crewmate or group on the left.')}</p>`;
             document.getElementById('chat-input-area').style.display = 'none'; document.getElementById('chat-header').textContent = t("Canal de Comunicación", "Communication Channel");
             document.getElementById('typing-indicator').style.display = 'none';
 
-            const side = document.getElementById('chat-sidebar'); side.innerHTML = ''; const miData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
+            const side = document.getElementById('chat-sidebar'); side.innerHTML = ''; 
             
+            // Boton para crear grupo
+            const createGrpBtn = document.createElement('div');
+            createGrpBtn.style = "padding: 10px; background: var(--primary); color: #000; text-align: center; font-weight: bold; cursor: pointer; text-transform: uppercase; border-bottom: 2px solid #000;";
+            createGrpBtn.innerHTML = `➕ ${t('Crear Grupo', 'Create Group')}`;
+            createGrpBtn.onclick = openGroupModal;
+            side.appendChild(createGrpBtn);
+
+            const miData = await dbGet(USER_PREFIX + currentUser.username.toLowerCase());
+            
+            // Cargar Grupos
+            const myGroups = allGroups.filter(g => g.members.includes(currentUser.username));
+            if (myGroups.length > 0) {
+                const sep = document.createElement('div'); sep.style = "padding: 5px 10px; background: #000; color: #00ffff; font-size: 0.8rem; font-weight: bold;"; sep.textContent = "GRUPOS"; side.appendChild(sep);
+                myGroups.forEach(g => {
+                    const d = document.createElement('div'); d.className = 'contact-item'; d.innerHTML = `👥 <b style="color: #00ffff;">${escapeHTML(g.name)}</b>`;
+                    d.onclick = () => { document.querySelectorAll('.contact-item').forEach(x=>x.classList.remove('active')); d.classList.add('active'); startGroupChat(g); }; side.appendChild(d);
+                });
+            }
+
+            // Cargar Mensajes Directos (DMs)
             let contactsMap = {};
             (miData.following || []).forEach(u => contactsMap[u.toLowerCase()] = u);
             (miData.followers || []).forEach(u => contactsMap[u.toLowerCase()] = u);
             let contacts = Object.values(contactsMap);
             
-            if(contacts.length === 0) { side.innerHTML = `<p style="padding:15px; color:gray; font-weight:bold; text-align:center;">${t('Sigue a alguien en la nave para chatear.', 'Follow someone on the ship to chat.')}</p>`; return; }
+            const sep2 = document.createElement('div'); sep2.style = "padding: 5px 10px; background: #000; color: var(--primary); font-size: 0.8rem; font-weight: bold;"; sep2.textContent = "TRIPULANTES (DMs)"; side.appendChild(sep2);
             
-            contacts.forEach(async c => {
-                const u = await dbGet(USER_PREFIX + c.toLowerCase());
-                if(u) {
-                    const d = document.createElement('div'); d.className = 'contact-item'; d.innerHTML = `<img src="${u.pfp}"> <b>${u.username}</b>`;
-                    d.onclick = () => { document.querySelectorAll('.contact-item').forEach(x=>x.classList.remove('active')); d.classList.add('active'); startChatWith(u.username); }; side.appendChild(d);
-                }
-            });
+            if(contacts.length === 0) { side.innerHTML += `<p style="padding:15px; color:gray; font-weight:bold; text-align:center; font-size:0.8rem;">${t('Sigue a alguien en la nave para DM.', 'Follow someone for DMs.')}</p>`; }
+            else {
+                contacts.forEach(async c => {
+                    const u = await dbGet(USER_PREFIX + c.toLowerCase());
+                    if(u) {
+                        const d = document.createElement('div'); d.className = 'contact-item'; d.innerHTML = `<img src="${u.pfp}"> <b>${u.username}</b>`;
+                        d.onclick = () => { document.querySelectorAll('.contact-item').forEach(x=>x.classList.remove('active')); d.classList.add('active'); startChatWith(u.username); }; side.appendChild(d);
+                    }
+                });
+            }
         }
 
         function getChatDBKey(u1, u2) { const arr = [u1.toLowerCase(), u2.toLowerCase()].sort(); return CHAT_PREFIX + arr[0] + "_" + arr[1]; }
 
         async function startChatWith(username) {
+            isGroupChat = false;
             activeChatUser = username; currentUser.blocked = currentUser.blocked || []; const isBlocked = currentUser.blocked.includes(username);
             document.getElementById('chat-header').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span>💬 ${t('Hablando con', 'Talking to')} ${username}</span><div style="display:flex; gap:10px;"><button class="btn-small" style="background:${isBlocked?'var(--warning)':'var(--secondary)'};color:white;border:2px solid #000;border-radius:6px; font-weight:bold; text-transform:uppercase;" onclick="toggleBlockContact()">${isBlocked?t('Desbloquear', 'Unblock'):t('Bloquear', 'Block')}</button><button class="btn-danger btn-small" onclick="wipeChatContact()">🗑️ ${t('Borrar Chat', 'Clear Chat')}</button></div></div>`;
             document.getElementById('typing-indicator').style.display = 'none';
             loadChatMessages(username);
+        }
+
+        async function startGroupChat(g) {
+            isGroupChat = true;
+            activeChatUser = g.id;
+            const isOwner = g.owner === currentUser.username;
+            let actBtn = isOwner ? `<button class="btn-danger btn-small" onclick="deleteGroup('${g.id}')">🗑️ ${t('Eliminar Grupo', 'Delete Group')}</button>` : `<button class="btn-warning btn-small" onclick="leaveGroup('${g.id}')">🚪 ${t('Salir', 'Leave')}</button>`;
+            
+            document.getElementById('chat-header').innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><span>👥 ${escapeHTML(g.name)} <span style="font-size:0.7rem; color:var(--text-muted);">(${g.members.length}/15)</span></span><div style="display:flex; gap:10px;">${actBtn}</div></div>`;
+            document.getElementById('typing-indicator').style.display = 'none';
+            loadChatMessages(g.id);
         }
 
         async function toggleBlockContact() {
@@ -1787,6 +2033,21 @@
 
         async function wipeChatContact() { if(!confirm(t("¿Borrar todo el historial de esta comunicación?", "Clear entire communication history?"))) return; await dbDelete(getChatDBKey(currentUser.username, activeChatUser)); loadChatMessages(activeChatUser); pingChat(activeChatUser); }
 
+        async function deleteGroup(gId) {
+            if(!confirm(t("¿Eliminar el grupo por completo?", "Delete group completely?"))) return;
+            await dbDelete(gId); alert(t("Grupo eliminado.", "Group deleted.")); loadAllProjects().then(() => openChat());
+        }
+
+        async function leaveGroup(gId) {
+            if(!confirm(t("¿Salir del grupo?", "Leave group?"))) return;
+            let g = allGroups.find(x => x.id === gId);
+            if(g) {
+                g.members = g.members.filter(m => m !== currentUser.username);
+                await dbStore(gId, g);
+                alert(t("Saliste del grupo.", "You left the group.")); loadAllProjects().then(() => openChat());
+            }
+        }
+
         async function sendChatMedia(input) {
             if(!input.files || input.files.length === 0 || !activeChatUser) return;
             const file = input.files[0]; const btn = document.getElementById('btn-chat-img');
@@ -1795,7 +2056,7 @@
             btn.disabled = true; btn.textContent = '⏳';
             try {
                 const url = await uploadFileToYYF(file);
-                const key = getChatDBKey(currentUser.username, activeChatUser);
+                const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser);
                 const history = await dbGet(key) || [];
                 if(isVideo) {
                     history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: '', videoUrl: url, date: Date.now(), read: false });
@@ -1805,22 +2066,30 @@
                     history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: '', imageUrl: url, date: Date.now(), read: false });
                 }
                 if(history.length > 50) history.shift();
-                await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
+                await dbStore(key, history); 
+                if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser);
+                loadChatMessages(activeChatUser);
             } catch(e) { alert(t("Error subiendo archivo", "Error uploading file")); }
             btn.disabled = false; btn.innerHTML = '📎'; input.value = '';
         }
 
-        async function loadChatMessages(username) {
+        async function loadChatMessages(chatId) {
             const box = document.getElementById('chat-messages'); box.innerHTML = `<p style="font-weight:bold; text-align:center;">${t('Cargando comunicaciones...', 'Loading communications...')}</p>`;
-            const oU = await dbGet(USER_PREFIX + username.toLowerCase()); const amIB = oU && oU.blocked && oU.blocked.includes(currentUser.username); const didIB = currentUser.blocked && currentUser.blocked.includes(username);
+            
+            let amIB = false; let didIB = false;
+            if (!isGroupChat) {
+                const oU = await dbGet(USER_PREFIX + chatId.toLowerCase()); 
+                amIB = oU && oU.blocked && oU.blocked.includes(currentUser.username); 
+                didIB = currentUser.blocked && currentUser.blocked.includes(chatId);
+            }
+
             if (amIB || didIB) document.getElementById('chat-input-area').style.display = 'none'; else document.getElementById('chat-input-area').style.display = 'flex';
             
-            // Forzar reinicio de notificaciones y campana siempre que se cargan los mensajes
             unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none'; document.getElementById('chat-badge').textContent = '0';
             
-            let history = await dbGet(getChatDBKey(currentUser.username, username)) || [];
+            const key = isGroupChat ? chatId : getChatDBKey(currentUser.username, chatId);
+            let history = await dbGet(key) || [];
             
-            // Lógica de Leído (Read Receipts)
             let needsSave = false;
             history.forEach(m => {
                 if (m.sender !== currentUser.username && !m.read) {
@@ -1829,22 +2098,41 @@
                 }
             });
             if (needsSave) {
-                await dbStore(getChatDBKey(currentUser.username, username), history);
-                pingChat(username); // Informamos al otro cliente que se ha leído
+                await dbStore(key, history);
+                if(isGroupChat) pingGroupChat(chatId); else pingChat(chatId);
             }
 
             box.innerHTML = ''; if(history.length===0) box.innerHTML = `<p style="color:gray;text-align:center; font-weight:bold;">${t('Ningún mensaje en este canal.', 'No messages in this channel.')}</p>`;
             if (amIB) box.innerHTML = `<p style="color:var(--danger);text-align:center; font-weight:bold;">${t('El canal está bloqueado por el receptor.', 'Channel blocked by recipient.')}</p>` + box.innerHTML;
             if (didIB) box.innerHTML = `<p style="color:var(--warning);text-align:center; font-weight:bold;">${t('Has bloqueado las comunicaciones con este tripulante.', 'You have blocked communications with this crewmate.')}</p>` + box.innerHTML;
 
+            // Extraemos los perfiles si es un grupo para mostrar las fotos
+            const userCache = {};
+            if(isGroupChat) {
+                const g = allGroups.find(x => x.id === chatId);
+                if(g) {
+                    for(let m of g.members) {
+                        const d = await dbGet(USER_PREFIX + m.toLowerCase());
+                        if(d) userCache[m] = d;
+                    }
+                }
+            }
+
             history.forEach(m => {
                 const isMe = m.sender === currentUser.username, d = new Date(m.date).toLocaleTimeString(currentLang === 'es' ? 'es-ES' : 'en-US', {hour: '2-digit', minute:'2-digit'});
                 const editedStr = m.edited ? ` <span style="font-size:0.65rem; opacity:0.8; font-weight:bold;">(${t('editado', 'edited')})</span>` : '';
                 let act = isMe ? `<div style="font-size:0.75rem; text-align:right; margin-top:5px; font-weight:bold;"><span style="cursor:pointer; color:#000;" onclick="editChatMessage('${m.id}')">✏️ ${t('Editar', 'Edit')}</span><span style="cursor:pointer; color:#550000; margin-left:10px;" onclick="deleteChatMessage('${m.id}')">🗑️</span></div>` : '';
                 
-                // Confirmación visual de doble tick -> cambiado a texto
+                // Confirmación visual de doble tick -> cambiado a texto (en grupos no es tan preciso, pero se marca igual)
                 const readText = m.read ? t('leído', 'read') : t('no leído', 'unread');
-                const readStatus = isMe ? `<span style="color:${m.read?'#00ffff':'#aaa'}; margin-left:8px; font-weight:bold; font-size:0.65rem; text-transform:uppercase;">(${readText})</span>` : '';
+                const readStatus = isMe && !isGroupChat ? `<span style="color:${m.read?'#00ffff':'#aaa'}; margin-left:8px; font-weight:bold; font-size:0.65rem; text-transform:uppercase;">(${readText})</span>` : '';
+
+                // Foto y Nombre para Grupos
+                let authorHeader = '';
+                if(isGroupChat && !isMe) {
+                    const usrData = userCache[m.sender] || { pfp: 'https://ui-avatars.com/api/?name='+m.sender[0]+'&background=1a1a24&color=00ff6b' };
+                    authorHeader = `<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;"><img src="${usrData.pfp}" style="width:25px; height:25px; border-radius:50%; border:2px solid #000;"> <b style="font-size:0.85rem; color:#00ffff; text-transform:uppercase;">${m.sender}</b></div>`;
+                }
 
                 let contentHtml = '';
                 if(m.text) contentHtml += processText(m.text, isMe ? currentUser.role : 'user');
@@ -1852,7 +2140,7 @@
                 if(m.videoUrl) contentHtml += `<br><video controls src="${escapeHTML(m.videoUrl)}" style="max-width:200px; border-radius:8px; border:2px solid #000; margin-top:8px;"></video>`;
                 
                 if(m.audioUrl) {
-                    const isVoiceMsg = m.isVoice !== false; // Para compatibilidad con anteriores, si es undefined o true, es nota de voz
+                    const isVoiceMsg = m.isVoice !== false; 
                     if (isVoiceMsg) {
                         contentHtml += `<br><div style="background: rgba(0,255,107,0.1); padding: 6px; border-radius: 12px; border: 2px dashed var(--primary); display: inline-flex; align-items: center; gap: 8px; margin-top:8px;"><span style="font-size: 1.2rem;" title="Mensaje de Voz">🎤</span><audio controls src="${escapeHTML(m.audioUrl)}" style="height: 35px; width: 200px; outline: none;"></audio></div>`;
                     } else {
@@ -1860,7 +2148,7 @@
                     }
                 }
 
-                box.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-mine' : 'msg-theirs'}">${contentHtml}${editedStr}<div style="font-size:0.7rem; margin-top:5px; opacity:0.8; text-align:${isMe?'right':'left'}; font-weight:bold; color:${isMe?'#000':'#aaa'};">${d}${readStatus}</div>${act}</div>`;
+                box.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-mine' : 'msg-theirs'}">${authorHeader}${contentHtml}${editedStr}<div style="font-size:0.7rem; margin-top:5px; opacity:0.8; text-align:${isMe?'right':'left'}; font-weight:bold; color:${isMe?'#000':'#aaa'};">${d}${readStatus}</div>${act}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         }
@@ -1869,18 +2157,29 @@
             const txt = extractRichText('chat-input-text'); if(!txt || !activeChatUser) return;
             document.getElementById('chat-input-text').innerHTML = '';
 
-            const key = getChatDBKey(currentUser.username, activeChatUser); const history = await dbGet(key) || [];
+            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser); 
+            const history = await dbGet(key) || [];
             history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: txt, date: Date.now(), read: false });
-            if(history.length > 50) history.shift(); await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
+            if(history.length > 50) history.shift(); await dbStore(key, history); 
+            
+            if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser); 
+            loadChatMessages(activeChatUser);
         }
         async function editChatMessage(msgId) {
-            const key = getChatDBKey(currentUser.username, activeChatUser); let history = await dbGet(key); if(!history) return;
+            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser); 
+            let history = await dbGet(key); if(!history) return;
             const msg = history.find(x => x.id === msgId); if(!msg || msg.imageUrl || msg.videoUrl || msg.audioUrl) return; const nTxt = prompt(t("Editar transmisión:", "Edit transmission:"), msg.text); if(nTxt === null || !nTxt.trim()) return;
-            msg.text = nTxt.trim(); msg.edited = true; await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
+            msg.text = nTxt.trim(); msg.edited = true; await dbStore(key, history); 
+            if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser); 
+            loadChatMessages(activeChatUser);
         }
         async function deleteChatMessage(msgId) {
-            if(!confirm(t("¿Borrar mensaje?", "Delete message?"))) return; const key = getChatDBKey(currentUser.username, activeChatUser); let history = await dbGet(key); if(!history) return;
-            history = history.filter(x => x.id !== msgId); await dbStore(key, history); pingChat(activeChatUser); loadChatMessages(activeChatUser);
+            if(!confirm(t("¿Borrar mensaje?", "Delete message?"))) return; 
+            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser); 
+            let history = await dbGet(key); if(!history) return;
+            history = history.filter(x => x.id !== msgId); await dbStore(key, history); 
+            if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser); 
+            loadChatMessages(activeChatUser);
         }
 
         // --- ACCIONES ESPECÍFICAS DE CREADOR (PERMISOS DE ADMIN) ---
