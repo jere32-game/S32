@@ -515,7 +515,7 @@
             
             <div id="users-container" style="display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap;"></div>
 
-            <div id="loading-msg"><span class="es-text">Conectando a la central espacial ikelene.dev...</span><span class="en-text">Connecting to space central ikelene.dev...</span></div>
+            <div id="loading-msg"><span class="es-text">Conectando a la base espacial central...</span><span class="en-text">Connecting to central space base...</span></div>
             <div class="gallery" id="gallery-container"></div>
             <button id="btn-load-more" class="btn-secondary" style="display:none; width:100%; margin-bottom:2rem;" onclick="loadMoreProjects()"><span class="es-text">⬇️ Cargar más tareas</span><span class="en-text">⬇️ Load more tasks</span></button>
         </div>
@@ -641,9 +641,8 @@
     </main>
 
     <script>
-        // --- CONSTANTES CORE ---
-        const SERVER_URL = 'https://ikelene.dev/storage/';
-        const API_KEY = '723cb2775320f1d255393b2d93d2f9262331d7e7'; 
+        // --- NUEVAS CONSTANTES CORE (DB CLOUD32 HÍBRIDA) ---
+        const CLOUD32_URL = 'wss://cloud-link-server--jere32game.replit.app';
         const YYF_URL = 'https://yyf.mubilop.com';
         
         const PROJ_PREFIX = 'scratch32_proj_';
@@ -652,6 +651,40 @@
         const CONFIG_PREFIX = 'scratch32_cfg_';
         const CHAT_PREFIX = 'scratch32_chat_';
         const GROUP_PREFIX = 'scratch32_grp_';
+
+        // --- SISTEMA DE MOTOR DE BASE DE DATOS CLOUD32 ---
+        let s32_db_socket = null;
+        let s32_pvars_cache = {}; 
+
+        function initCloud32DB() {
+            return new Promise((resolve) => {
+                s32_db_socket = new WebSocket(CLOUD32_URL);
+                s32_db_socket.onopen = () => {
+                    // Handshake inicial
+                    s32_db_socket.send(JSON.stringify({ cmd: "handshake", val: { language: "Scratch32", version: "1.0" } }));
+                    s32_db_socket.send(JSON.stringify({ cmd: "setid", val: "s32_web_database_" + Date.now() }));
+                    // Pedir todas las variables permanentes del servidor
+                    s32_db_socket.send(JSON.stringify({ cmd: "get_pvars" })); 
+                };
+                s32_db_socket.onmessage = (e) => {
+                    try {
+                        const msg = JSON.parse(e.data);
+                        if (msg.cmd === 'pvar_list') {
+                            if (msg.val && typeof msg.val === 'object') {
+                                s32_pvars_cache = msg.val;
+                                resolve(); // Base de datos lista para usarse
+                            }
+                        } else if (msg.cmd === 'pvar_update' || msg.cmd === 'pvar_value') {
+                            s32_pvars_cache[msg.name] = msg.val;
+                        } else if (msg.cmd === 'pvar_deleted') {
+                            delete s32_pvars_cache[msg.name];
+                        }
+                    } catch(err) { console.error("Error leyendo pvars:", err); }
+                };
+                // Fallback por si la red va mal
+                setTimeout(() => resolve(), 5000);
+            });
+        }
         
         // --- ESTADO GLOBAL & TRADUCCIONES JS ---
         let currentLang = localStorage.getItem('s32_lang') || 'es';
@@ -737,8 +770,12 @@
         let typingTimeout;
         let lastTypingPing = 0;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             updateLanguageUI();
+            
+            // Iniciar la base de datos de Cloud32 ANTES de verificar usuarios
+            await initCloud32DB();
+
             loadEmojisDB();
             checkSession().then(() => {
                 loadAllProjects().then(() => {
@@ -772,29 +809,26 @@
         function openGroupModal() { document.getElementById('group-modal').style.display = 'flex'; }
         function closeGroupModal() { document.getElementById('group-modal').style.display = 'none'; }
 
-        // --- FUNCIONES UTILIDAD DB Y PARSEO (AQUÍ ESTÁ LA MAGIA DE LA DB HÍBRIDA) ---
+        // --- FUNCIONES UTILIDAD DB (NUEVO MOTOR CLOUD32 - PVARS + YYF) ---
         async function dbGet(key) {
             try { 
-                const res = await fetch(SERVER_URL + 'get.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key }) });
-                const data = await res.json(); 
-                if (data.success && data.data) {
-                    const val = data.data.value;
-                    // Detectar si es un puntero a YeetYourFiles
-                    if (typeof val === 'string' && val.startsWith('YYF_PTR:')) {
-                        const yyfUrl = val.substring(8);
-                        const yyfRes = await fetch(yyfUrl);
-                        return await yyfRes.json();
-                    }
-                    // Si no es un puntero, devolver la data normal (Retrocompatibilidad)
-                    return JSON.parse(val); 
-                } 
-            } catch(e) { console.error("Error en la DB híbrida al leer:", e); } 
+                const val = s32_pvars_cache[key];
+                if (!val) return null;
+
+                // Detectar si es un puntero a YeetYourFiles (Base de datos híbrida)
+                if (typeof val === 'string' && val.startsWith('YYF_PTR:')) {
+                    const yyfUrl = val.substring(8);
+                    const yyfRes = await fetch(yyfUrl);
+                    return await yyfRes.json();
+                }
+                return JSON.parse(val); 
+            } catch(e) { console.error("Error al leer Cloud32 DB:", e); } 
             return null;
         }
 
         async function dbStore(key, valueObj) { 
             try {
-                // 1. Convertir los datos a un archivo JSON en memoria
+                // 1. Convertir los datos a archivo JSON
                 const jsonString = JSON.stringify(valueObj);
                 const blob = new Blob([jsonString], { type: 'application/json' });
                 const file = new File([blob], key + ".json", { type: "application/json" });
@@ -802,17 +836,28 @@
                 // 2. Subirlo a YeetYourFiles
                 const yyfUrl = await uploadFileToYYF(file);
                 
-                // 3. Guardar SOLO EL PUNTERO en ikelene.dev (Esquivando el límite para siempre)
+                // 3. Guardar el puntero en Cloud32 (pvars)
                 const pointer = 'YYF_PTR:' + yyfUrl;
-                await fetch(SERVER_URL + 'store.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key, value: pointer, mimeType: 'text/plain' }) }); 
+                if (s32_db_socket && s32_db_socket.readyState === WebSocket.OPEN) {
+                    s32_db_socket.send(JSON.stringify({ cmd: 'set_pvar', name: key, val: pointer }));
+                    s32_pvars_cache[key] = pointer;
+                }
             } catch(e) {
-                console.error("Fallo la subida híbrida a YYF, intentando guardar directo...", e);
-                // Fallback de emergencia si YYF falla (se guarda directo en ikelene)
-                await fetch(SERVER_URL + 'store.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key, value: JSON.stringify(valueObj), mimeType: 'application/json' }) });
+                console.error("Fallo subida a YYF, guardando directo en Cloud32...", e);
+                if (s32_db_socket && s32_db_socket.readyState === WebSocket.OPEN) {
+                    const jsonStr = JSON.stringify(valueObj);
+                    s32_db_socket.send(JSON.stringify({ cmd: 'set_pvar', name: key, val: jsonStr }));
+                    s32_pvars_cache[key] = jsonStr;
+                }
             }
         }
 
-        async function dbDelete(key) { await fetch(SERVER_URL + 'delete.php', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY, key: key }) }); }
+        async function dbDelete(key) { 
+            if (s32_db_socket && s32_db_socket.readyState === WebSocket.OPEN) {
+                s32_db_socket.send(JSON.stringify({ cmd: 'del_pvar', name: key }));
+                delete s32_pvars_cache[key];
+            }
+        }
 
         function escapeHTML(str) { if (typeof str !== 'string') return ''; return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
         function linkify(text) { if(!text) return ''; const urlRegex = /(https?:\/\/[^\s]+)/g; return text.replace(urlRegex, function(url) { return `<a href="${url}" target="_blank" style="color: var(--primary); text-decoration: underline;">${url}</a>`; }); }
@@ -1316,18 +1361,18 @@
         async function loadAllProjects() {
             const ld = document.getElementById('loading-msg'); ld.style.display = 'block'; ld.textContent = t("Escaneando la nave...", "Scanning the ship...");
             try {
-                const res = await fetch(SERVER_URL + 'listKeys.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey: API_KEY }) });
-                const listData = await res.json();
+                // Leer todas las variables (proyectos y usuarios) desde la memoria de Cloud32
+                const allDbKeys = Object.keys(s32_pvars_cache);
                 
                 // Proyectos
-                const keys = listData.keys.filter(k => k.startsWith(PROJ_PREFIX)).reverse(); allProjects = [];
+                const keys = allDbKeys.filter(k => k.startsWith(PROJ_PREFIX)).reverse(); allProjects = [];
                 for (const k of keys) { const d = await dbGet(k); if(d) { d._key = k; allProjects.push(d); } }
                 
                 // Usuarios
-                const userKeys = listData.keys.filter(k => k.startsWith(USER_PREFIX)); allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
+                const userKeys = allDbKeys.filter(k => k.startsWith(USER_PREFIX)); allUsernames = userKeys.map(k => k.replace(USER_PREFIX, ''));
                 
                 // Grupos
-                const groupKeys = listData.keys.filter(k => k.startsWith(GROUP_PREFIX)); allGroups = [];
+                const groupKeys = allDbKeys.filter(k => k.startsWith(GROUP_PREFIX)); allGroups = [];
                 for (const k of groupKeys) { const d = await dbGet(k); if(d) allGroups.push(d); }
                 
                 ld.style.display = 'none'; 
