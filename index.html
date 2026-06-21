@@ -1604,7 +1604,7 @@
                         const url = await uploadFileToYYF(audioFile);
 
                         if (currentVoiceTarget === 'chat') {
-                            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser);
+                            const key = isGroupChat ? activeChatUser + "_msgs" : getChatDBKey(currentUser.username, activeChatUser);
                             const history = await dbGet(key) || [];
                             history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: '', audioUrl: url, isVoice: true, date: Date.now(), read: false });
                             if(history.length > 50) history.shift();
@@ -1992,7 +1992,9 @@
 
         async function deleteGroup(gId) {
             if(!confirm(t("¿Eliminar el grupo por completo?", "Delete group completely?"))) return;
-            await dbDelete(gId); alert(t("Grupo eliminado.", "Group deleted.")); loadAllProjects().then(() => openChat());
+            await dbDelete(gId);
+            await dbDelete(gId + "_msgs");
+            alert(t("Grupo eliminado.", "Group deleted.")); loadAllProjects().then(() => openChat());
         }
 
         async function leaveGroup(gId) {
@@ -2013,7 +2015,7 @@
             btn.disabled = true; btn.textContent = '⏳';
             try {
                 const url = await uploadFileToYYF(file);
-                const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser);
+                const key = isGroupChat ? activeChatUser + "_msgs" : getChatDBKey(currentUser.username, activeChatUser);
                 const history = await dbGet(key) || [];
                 if(isVideo) {
                     history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: '', videoUrl: url, date: Date.now(), read: false });
@@ -2044,7 +2046,7 @@
             
             unreadNotifs = 0; document.getElementById('chat-badge').style.display = 'none'; document.getElementById('chat-badge').textContent = '0';
             
-            const key = isGroupChat ? chatId : getChatDBKey(currentUser.username, chatId);
+            const key = isGroupChat ? chatId + "_msgs" : getChatDBKey(currentUser.username, chatId);
             let history = await dbGet(key) || [];
             
             let needsSave = false;
@@ -2083,9 +2085,9 @@
                 const readStatus = isMe && !isGroupChat ? `<span style="color:${m.read?'#00ffff':'#aaa'}; margin-left:8px; font-weight:bold; font-size:0.65rem; text-transform:uppercase;">(${readText})</span>` : '';
 
                 let authorHeader = '';
-                if(isGroupChat && !isMe) {
+                if(isGroupChat) {
                     const usrData = userCache[m.sender] || { pfp: 'https://ui-avatars.com/api/?name='+m.sender[0]+'&background=1a1a24&color=00ff6b' };
-                    authorHeader = `<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px;"><img src="${usrData.pfp}" style="width:25px; height:25px; border-radius:50%; border:2px solid #000;"> <b style="font-size:0.85rem; color:#00ffff; text-transform:uppercase;">${m.sender}</b></div>`;
+                    authorHeader = `<div style="display:flex; align-items:center; gap:8px; margin-bottom:5px; justify-content:${isMe?'flex-end':'flex-start'};"><img src="${usrData.pfp}" style="width:25px; height:25px; border-radius:50%; border:2px solid #000;"> <b style="font-size:0.85rem; color:${isMe?'#000':'#00ffff'}; text-transform:uppercase;">${m.sender}</b></div>`;
                 }
 
                 let contentHtml = '';
@@ -2111,7 +2113,7 @@
             const txt = extractRichText('chat-input-text'); if(!txt || !activeChatUser) return;
             document.getElementById('chat-input-text').innerHTML = '';
 
-            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser); 
+            const key = isGroupChat ? activeChatUser + "_msgs" : getChatDBKey(currentUser.username, activeChatUser); 
             const history = await dbGet(key) || [];
             history.push({ id: 'm_' + Date.now() + Math.random(), sender: currentUser.username, text: txt, date: Date.now(), read: false });
             if(history.length > 50) history.shift(); await dbStore(key, history); 
@@ -2119,17 +2121,19 @@
             if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser); 
             loadChatMessages(activeChatUser);
         }
+        
         async function editChatMessage(msgId) {
-            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser); 
+            const key = isGroupChat ? activeChatUser + "_msgs" : getChatDBKey(currentUser.username, activeChatUser); 
             let history = await dbGet(key); if(!history) return;
             const msg = history.find(x => x.id === msgId); if(!msg || msg.imageUrl || msg.videoUrl || msg.audioUrl) return; const nTxt = prompt(t("Editar transmisión:", "Edit transmission:"), msg.text); if(nTxt === null || !nTxt.trim()) return;
             msg.text = nTxt.trim(); msg.edited = true; await dbStore(key, history); 
             if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser); 
             loadChatMessages(activeChatUser);
         }
+        
         async function deleteChatMessage(msgId) {
             if(!confirm(t("¿Borrar mensaje?", "Delete message?"))) return; 
-            const key = isGroupChat ? activeChatUser : getChatDBKey(currentUser.username, activeChatUser); 
+            const key = isGroupChat ? activeChatUser + "_msgs" : getChatDBKey(currentUser.username, activeChatUser); 
             let history = await dbGet(key); if(!history) return;
             history = history.filter(x => x.id !== msgId); await dbStore(key, history); 
             if(isGroupChat) pingGroupChat(activeChatUser); else pingChat(activeChatUser); 
